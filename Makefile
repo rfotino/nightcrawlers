@@ -4,4 +4,4 @@ all:
 	uglifyjs build/build.js --output build/build.min.js --compress --mangle
 
 clean:
-	rm -f build/*.js tmp/*.pid
+	rm -f build/*.js

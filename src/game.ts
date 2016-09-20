@@ -1,8 +1,8 @@
 /// <reference path="../typings/pixi.js/pixi.js.d.ts" />
 
-import { GameObject } from './gameobject';
-import { Planet } from './planet';
-import { Player } from './player';
+import { GameObject } from './objects/game-object';
+import { Planet } from './objects/planet';
+import { Player } from './objects/player';
 
 export class Game {
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
@@ -26,10 +26,9 @@ export class Game {
     );
     this._stage = new PIXI.Container();
     // Preload assets
-    let self = this;
     PIXI.loader.add('planet', 'assets/planet.png');
     PIXI.loader.add('player', 'assets/player.png');
-    PIXI.loader.load(() => self._onAssetsLoaded());
+    PIXI.loader.load(() => this._onAssetsLoaded());
   }
 
   private _onAssetsLoaded(): void {
@@ -46,8 +45,7 @@ export class Game {
 
   private _updateDrawLoop(): void {
     // Request the next frame
-    let self = this;
-    window.requestAnimationFrame(() => self._updateDrawLoop());
+    window.requestAnimationFrame(() => this._updateDrawLoop());
     // Resize the canvas to fit the screen
     if (this.view.width !== window.innerWidth ||
       this.view.height !== window.innerHeight) {
@@ -58,8 +56,10 @@ export class Game {
     // Update all of the game objects
     this._update();
     // Center the view on the player
-    this._stage.x = -this._player.pos.x;
-    this._stage.y = -this._player.pos.y;
+    this._stage.x = this._renderer.view.width / 2;
+    this._stage.y = this._renderer.view.height / 2;
+    this._stage.x -= this._player.pos.x;
+    this._stage.y -= this._player.pos.y;
     // Draw everything
     this._renderer.render(this._stage);
   }
