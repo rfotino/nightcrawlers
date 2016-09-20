@@ -6,7 +6,7 @@ export class PolarCoord {
   private _theta: number;
   private _x: number;
   private _y: number;
-  private _mirrorList: PIXI.Point[] = [];
+  private _mirrorList: PIXI.DisplayObject[] = [];
 
   public set r(r) {
     this._r = r;
@@ -40,10 +40,11 @@ export class PolarCoord {
     this._updateCartesian();
   }
 
-  public mirror(p: PIXI.Point) {
-    p.x = this._x;
-    p.y = this._y;
-    this._mirrorList.push(p);
+  public mirror(obj: PIXI.DisplayObject) {
+    obj.position.x = this._x;
+    obj.position.y = this._y;
+    obj.rotation = (Math.PI / 2) + this._theta;
+    this._mirrorList.push(obj);
   }
 
   public add(p: PolarCoord) {
@@ -61,9 +62,10 @@ export class PolarCoord {
   private _updateCartesian(): void {
     this._x = this._r * Math.cos(this._theta);
     this._y = this._r * Math.sin(this._theta);
-    this._mirrorList.forEach((p) => {
-      p.x = this._x;
-      p.y = this._y;
+    this._mirrorList.forEach(obj => {
+      obj.position.x = this._x;
+      obj.position.y = this._y;
+      obj.rotation = (Math.PI / 2) + this._theta;
     });
   }
 }

@@ -1,15 +1,18 @@
 import { GameObject } from './game-object';
 
 export class Planet extends GameObject {
-  public static get RADIUS(): number { return 1000; }
-  private _graphics: PIXI.Graphics;
+  public static get RADIUS(): number { return 1500; }
+  private _sprite: PIXI.Sprite;
+  private _canvas: HTMLCanvasElement;
 
   public constructor(container: PIXI.Container) {
     super();
-    this._graphics = new PIXI.Graphics();
-    this.pos.mirror(this._graphics.position);
+    this._canvas = document.createElement('canvas');
     this._draw();
-    container.addChild(this._graphics);
+    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
+    this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
+    this.pos.mirror(this._sprite);
+    container.addChild(this._sprite);
   }
 
   public get radius() {
@@ -17,9 +20,23 @@ export class Planet extends GameObject {
   }
 
   private _draw(): void {
-    this._graphics.clear();
-    this._graphics.beginFill(0xffffff);
-    this._graphics.drawCircle(this.pos.x, this.pos.y, this.radius);
-    this._graphics.endFill();
+    // Resize canvas
+    this._canvas.width = this._canvas.height = this.radius * 2;
+    // Draw circle with spokes
+    let ctx = this._canvas.getContext('2d');
+    ctx.save();
+    ctx.translate(this.radius, this.radius);
+    ctx.fillStyle = 'white';
+    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'blue';
+    ctx.beginPath();
+    for (var i = 0; i < 20; i++) {
+      let theta = (i / 20) * Math.PI * 2;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(this.radius * Math.cos(theta), this.radius * Math.sin(theta));
+    }
+    ctx.stroke();
+    ctx.restore();
   }
 }

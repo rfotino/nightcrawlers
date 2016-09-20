@@ -7,7 +7,8 @@ import { KeyState } from './input/keystate';
 
 export class Game {
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
-  private _stage: PIXI.Container;
+  private _outerStage: PIXI.Container;
+  private _innerStage: PIXI.Container;
   private _planet: Planet;
   private _player: Player;
   private _gameObjects: GameObject[];
@@ -26,7 +27,9 @@ export class Game {
         backgroundColor: 0x000000,
       }
     );
-    this._stage = new PIXI.Container();
+    this._outerStage = new PIXI.Container();
+    this._innerStage = new PIXI.Container();
+    this._outerStage.addChild(this._innerStage);
     // Add key listeners
     this._keyState = new KeyState();
     this._keyState.addListeners(this._renderer.view);
@@ -39,8 +42,8 @@ export class Game {
 
   private _onAssetsLoaded(): void {
     // Construct game objects
-    this._planet = new Planet(this._stage);
-    this._player = new Player(this._stage);
+    this._planet = new Planet(this._innerStage);
+    this._player = new Player(this._innerStage);
     this._gameObjects = [
       this._planet,
       this._player,
@@ -62,12 +65,12 @@ export class Game {
     // Update all of the game objects
     this._update();
     // Center the view on the player
-    this._stage.x = this._renderer.view.width / 2;
-    this._stage.y = this._renderer.view.height / 2;
-    this._stage.x -= this._player.pos.x;
-    this._stage.y -= this._player.pos.y;
+    this._outerStage.x = this._renderer.view.width / 2;
+    this._outerStage.y = this._renderer.view.height / 2;
+    this._innerStage.rotation = -(Math.PI / 2) - this._player.pos.theta;
+    this._innerStage.y = this._player.pos.r;
     // Draw everything
-    this._renderer.render(this._stage);
+    this._renderer.render(this._outerStage);
   }
 
   // The main update function for the game
@@ -75,6 +78,9 @@ export class Game {
     this._gameObjects.forEach(obj => {
       obj.update(this._keyState);
     });
+    this._gameObjects.forEach(obj => {
+      obj.rollOver();
+    })
     this._keyState.rollOver();
   }
 }
