@@ -1,4 +1,5 @@
 import { PolarCoord } from '../math/polar-coord';
+import { KeyState } from '../input/keystate';
 
 export class GameObject {
   private _pos: PolarCoord;
@@ -23,7 +24,7 @@ export class GameObject {
     this._accel = new PolarCoord();
   }
 
-  public update(): void {
+  public update(keyState: KeyState): void {
     this.vel.add(this.accel);
     this.pos.add(this.vel);
   }

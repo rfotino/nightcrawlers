@@ -3,6 +3,7 @@
 import { GameObject } from './objects/game-object';
 import { Planet } from './objects/planet';
 import { Player } from './objects/player';
+import { KeyState } from './input/keystate';
 
 export class Game {
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
@@ -10,6 +11,7 @@ export class Game {
   private _planet: Planet;
   private _player: Player;
   private _gameObjects: GameObject[];
+  private _keyState: KeyState;
 
   public get view(): HTMLCanvasElement {
     return this._renderer.view;
@@ -25,6 +27,10 @@ export class Game {
       }
     );
     this._stage = new PIXI.Container();
+    // Add key listeners
+    this._keyState = new KeyState();
+    this._keyState.addListeners(this._renderer.view);
+    this._renderer.view.tabIndex = -1;
     // Preload assets
     PIXI.loader.add('planet', 'assets/planet.png');
     PIXI.loader.add('player', 'assets/player.png');
@@ -66,6 +72,9 @@ export class Game {
 
   // The main update function for the game
   private _update(): void {
-    this._gameObjects.forEach((obj) => obj.update());
+    this._gameObjects.forEach(obj => {
+      obj.update(this._keyState);
+    });
+    this._keyState.rollOver();
   }
 }

@@ -1,7 +1,7 @@
 import { GameObject } from './game-object';
 
 export class Planet extends GameObject {
-  public static get RADIUS(): number { return 500; }
+  public static get RADIUS(): number { return 1000; }
   private _graphics: PIXI.Graphics;
 
   public constructor(container: PIXI.Container) {

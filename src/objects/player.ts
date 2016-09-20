@@ -1,5 +1,6 @@
 import { GameObject } from './game-object';
 import { Planet } from './planet';
+import { KeyState } from '../input/keystate';
 
 export class Player extends GameObject {
   private _graphics: PIXI.Graphics;
@@ -19,9 +20,16 @@ export class Player extends GameObject {
     this._draw();
   }
 
-  public update(): void {
-    super.update();
-    // Do some more player updating
+  public update(keyState: KeyState): void {
+    super.update(keyState);
+    // Handle turning due to user input
+    if (keyState.isDown('ArrowLeft') && !keyState.isDown('ArrowRight')) {
+      this.vel.theta = -0.005;
+    } else if (keyState.isDown('ArrowRight')) {
+      this.vel.theta = 0.005;
+    } else {
+      this.vel.theta = 0;
+    }
   }
 
   private _draw(): void {
