@@ -2,11 +2,13 @@ import { GameObject } from './game-object';
 import { Planet } from './planet';
 import { KeyState } from '../input/keystate';
 import { Game } from '../game';
+import { Platform } from './platform';
 
 export class Player extends GameObject {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
+  private _ridingPlatform: Platform = null;
 
   public get width(): number {
     return 25;
@@ -48,6 +50,23 @@ export class Player extends GameObject {
       this.pos.r = minR;
       this._onSolidGround = true;
       this.vel.r = 0;
+    }
+    // Handle collision with platforms
+    this._ridingPlatform = null;
+    game.platforms.forEach(platform => {
+      let minR = platform.pos.r + (this.height / 2);
+      if (this.pos.r < minR && this.prevPos.r >= minR) {
+        if (this.pos.theta >= platform.pos.theta &&
+            this.pos.theta <= platform.pos.theta + platform.width) {
+          this.pos.r = minR;
+          this._onSolidGround = true;
+          this._ridingPlatform = platform;
+          this.vel.r = 0;
+        }
+      }
+    });
+    if (null !== this._ridingPlatform) {
+      this.pos.theta += this._ridingPlatform.vel.theta;
     }
     // Handle jumping due to user input
     let jumpSpeed = 15;
