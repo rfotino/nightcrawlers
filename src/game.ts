@@ -56,10 +56,18 @@ export class Game {
     this.planet = new Planet(this._innerViewStage);
     this.player = new Player(this._innerViewStage);
     this.platforms = [
-      new Platform(this._innerViewStage, Planet.RADIUS + 100, 0, 0.25),
+      // Stairs
+      new Platform(this._innerViewStage, Planet.RADIUS + 100, 0.00, 0.25),
       new Platform(this._innerViewStage, Planet.RADIUS + 200, 0.25, 0.25),
+      new Platform(this._innerViewStage, Planet.RADIUS + 300, 0.50, 0.25),
+      new Platform(this._innerViewStage, Planet.RADIUS + 400, 0.75, 0.25),
+      new Platform(this._innerViewStage, Planet.RADIUS + 500, 1.00, 0.25),
+      // Moving platforms
+      new Platform(this._innerViewStage, Planet.RADIUS + 75, 0, 0.35),
+      new Platform(this._innerViewStage, Planet.RADIUS + 150, 0, 0.5),
     ];
-    this.platforms[0].vel.theta = 0.001;
+    this.platforms[5].vel.theta = 0.001;
+    this.platforms[6].vel.theta = -0.005;
     this._gameObjects = [].concat(
       [
         this.planet,
@@ -116,6 +124,11 @@ export class Game {
     } else if (this._playerView.theta > maxTheta) {
       this._playerView.theta = maxTheta;
     }
-    this._playerView.r = Planet.RADIUS + (this.view.height / 4);
+    this._playerView.r = Math.max(
+      // Minimum view height
+      Planet.RADIUS + (this.view.height / 4),
+      // Weighted average of current view height and current player height
+      (this.player.pos.r + (5 * this._playerView.r)) / 6
+    );
   }
 }

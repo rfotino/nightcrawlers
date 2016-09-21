@@ -45,6 +45,7 @@ export class Player extends GameObject {
     // Set acceleration due to gravity
     this.accel.r = Planet.GRAVITY;
     // Handle collision with the planet
+    this._onSolidGround = false;
     let minR = Planet.RADIUS + (this.height / 2);
     if (this.pos.r <= minR) {
       this.pos.r = minR;
@@ -55,9 +56,17 @@ export class Player extends GameObject {
     this._ridingPlatform = null;
     game.platforms.forEach(platform => {
       let minR = platform.pos.r + (this.height / 2);
+      let minTheta = platform.pos.theta;
+      let maxTheta = platform.pos.theta + platform.width;
+      let playerTheta = this.pos.theta;
+      while (playerTheta > maxTheta) {
+        playerTheta -= Math.PI * 2;
+      }
+      while (playerTheta < minTheta) {
+        playerTheta += Math.PI * 2;
+      }
       if (this.pos.r < minR && this.prevPos.r >= minR) {
-        if (this.pos.theta >= platform.pos.theta &&
-            this.pos.theta <= platform.pos.theta + platform.width) {
+        if (playerTheta <= maxTheta) {
           this.pos.r = minR;
           this._onSolidGround = true;
           this._ridingPlatform = platform;
