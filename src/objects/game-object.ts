@@ -1,5 +1,6 @@
 import { PolarCoord } from '../math/polar-coord';
 import { KeyState } from '../input/keystate';
+import { Game } from '../game';
 
 export class GameObject {
   private _pos: PolarCoord;
@@ -25,16 +26,17 @@ export class GameObject {
 
   public constructor() {
     this._pos = new PolarCoord();
+    this._prevPos = new PolarCoord();
     this._vel = new PolarCoord();
     this._accel = new PolarCoord();
   }
 
-  public update(keyState: KeyState): void {
+  public update(game: Game): void {
     this.vel.add(this.accel);
     this.pos.add(this.vel);
   }
 
   public rollOver(): void {
-    this._prevPos = new PolarCoord(this._pos.r, this._pos.theta);
+    this._prevPos = this._pos.clone();
   }
 }

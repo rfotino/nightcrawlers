@@ -59,6 +59,10 @@ export class PolarCoord {
     this._updateCartesian();
   }
 
+  public clone(): PolarCoord {
+    return new PolarCoord(this._r, this._theta);
+  }
+
   private _updateCartesian(): void {
     this._x = this._r * Math.cos(this._theta);
     this._y = this._r * Math.sin(this._theta);

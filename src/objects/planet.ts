@@ -1,7 +1,9 @@
 import { GameObject } from './game-object';
+import { Game } from '../game';
 
 export class Planet extends GameObject {
   public static get RADIUS(): number { return 1500; }
+  public static get GRAVITY(): number { return -1; }
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
 
@@ -30,6 +32,7 @@ export class Planet extends GameObject {
     ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 5;
     ctx.beginPath();
     for (var i = 0; i < 20; i++) {
       let theta = (i / 20) * Math.PI * 2;

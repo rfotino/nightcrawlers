@@ -3,16 +3,23 @@
 import { GameObject } from './objects/game-object';
 import { Planet } from './objects/planet';
 import { Player } from './objects/player';
+import { Platform } from './objects/platform';
 import { KeyState } from './input/keystate';
+import { PolarCoord } from './math/polar-coord';
+import { Debugger } from './debug';
 
 export class Game {
+  public planet: Planet;
+  public player: Player;
+  public platforms: Platform[];
+  public keyState: KeyState;
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
-  private _outerStage: PIXI.Container;
-  private _innerStage: PIXI.Container;
-  private _planet: Planet;
-  private _player: Player;
+  private _rootStage: PIXI.Container;
+  private _outerViewStage: PIXI.Container;
+  private _innerViewStage: PIXI.Container;
   private _gameObjects: GameObject[];
-  private _keyState: KeyState;
+  private _playerView: PolarCoord;
+  private _debugger: Debugger;
 
   public get view(): HTMLCanvasElement {
     return this._renderer.view;
@@ -20,19 +27,23 @@ export class Game {
 
   public constructor() {
     this._renderer = PIXI.autoDetectRenderer(
-      800, // width
-      600, // height
-      {    // options
+      window.innerWidth,
+      window.innerHeight,
+      {
         antialias: true,
         backgroundColor: 0x000000,
       }
     );
-    this._outerStage = new PIXI.Container();
-    this._innerStage = new PIXI.Container();
-    this._outerStage.addChild(this._innerStage);
+    this._rootStage = new PIXI.Container();
+    this._outerViewStage = new PIXI.Container();
+    this._innerViewStage = new PIXI.Container();
+    this._rootStage.addChild(this._outerViewStage);
+    this._outerViewStage.addChild(this._innerViewStage);
+    // Debugger
+    this._debugger = new Debugger(this._rootStage);
     // Add key listeners
-    this._keyState = new KeyState();
-    this._keyState.addListeners(this._renderer.view);
+    this.keyState = new KeyState();
+    this.keyState.addListeners(this._renderer.view);
     this._renderer.view.tabIndex = -1;
     // Preload assets
     PIXI.loader.add('planet', 'assets/planet.png');
@@ -42,12 +53,23 @@ export class Game {
 
   private _onAssetsLoaded(): void {
     // Construct game objects
-    this._planet = new Planet(this._innerStage);
-    this._player = new Player(this._innerStage);
-    this._gameObjects = [
-      this._planet,
-      this._player,
+    this.planet = new Planet(this._innerViewStage);
+    this.player = new Player(this._innerViewStage);
+    this.platforms = [
+      new Platform(this._innerViewStage, Planet.RADIUS + 100, 0, 0.25),
+      new Platform(this._innerViewStage, Planet.RADIUS + 200, 0.25, 0.25),
     ];
+    this.platforms[0].vel.theta = 0.001;
+    this._gameObjects = [].concat(
+      [
+        this.planet,
+        this.player,
+        this._debugger,
+      ],
+      this.platforms
+    );
+    // Initialize the player view
+    this._playerView = this.player.pos.clone();
     // Start the update/draw loop
     this._updateDrawLoop();
   }
@@ -65,22 +87,35 @@ export class Game {
     // Update all of the game objects
     this._update();
     // Center the view on the player
-    this._outerStage.x = this._renderer.view.width / 2;
-    this._outerStage.y = this._renderer.view.height / 2;
-    this._innerStage.rotation = -(Math.PI / 2) - this._player.pos.theta;
-    this._innerStage.y = this._player.pos.r;
+    this._outerViewStage.x = this._renderer.view.width / 2;
+    this._outerViewStage.y = this._renderer.view.height / 2;
+    this._innerViewStage.rotation = -(Math.PI / 2) - this._playerView.theta;
+    this._innerViewStage.y = this._playerView.r;
     // Draw everything
-    this._renderer.render(this._outerStage);
+    this._renderer.render(this._rootStage);
   }
 
   // The main update function for the game
   private _update(): void {
+    // Call each game object's update function
     this._gameObjects.forEach(obj => {
-      obj.update(this._keyState);
+      obj.update(this);
     });
+    // Roll over previous positions, key states, etc
     this._gameObjects.forEach(obj => {
       obj.rollOver();
     })
-    this._keyState.rollOver();
+    this.keyState.rollOver();
+    // Update the view if the player has moved
+    let viewableTheta = this.view.width / (this.planet.radius * 2);
+    let diffTheta = viewableTheta / 3;
+    let minTheta = this.player.pos.theta - diffTheta;
+    let maxTheta = this.player.pos.theta + diffTheta;
+    if (this._playerView.theta < minTheta) {
+      this._playerView.theta = minTheta;
+    } else if (this._playerView.theta > maxTheta) {
+      this._playerView.theta = maxTheta;
+    }
+    this._playerView.r = Planet.RADIUS + (this.view.height / 4);
   }
 }
