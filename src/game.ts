@@ -4,6 +4,8 @@ import { GameObject } from './objects/game-object';
 import { Planet } from './objects/planet';
 import { Player } from './objects/player';
 import { Platform } from './objects/platform';
+import { Background } from './objects/background';
+import { TimeKeeper } from './timekeeper';
 import { KeyState } from './input/keystate';
 import { PolarCoord } from './math/polar-coord';
 import { Debugger } from './debug';
@@ -12,7 +14,9 @@ export class Game {
   public planet: Planet;
   public player: Player;
   public platforms: Platform[];
+  public background: Background;
   public keyState: KeyState;
+  public timeKeeper: TimeKeeper;
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
   private _rootStage: PIXI.Container;
   private _outerViewStage: PIXI.Container;
@@ -68,10 +72,13 @@ export class Game {
     ];
     this.platforms[5].vel.theta = 0.001;
     this.platforms[6].vel.theta = -0.005;
+    this.timeKeeper = new TimeKeeper();
+    this.background = new Background(this._rootStage);
     this._gameObjects = [].concat(
       [
         this.planet,
         this.player,
+        this.background,
         this._debugger,
       ],
       this.platforms
@@ -105,6 +112,8 @@ export class Game {
 
   // The main update function for the game
   private _update(): void {
+    // Update time of day
+    this.timeKeeper.update();
     // Call each game object's update function
     this._gameObjects.forEach(obj => {
       obj.update(this);
