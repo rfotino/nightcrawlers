@@ -1,5 +1,6 @@
 import { Game } from '../game';
 import { GameObject } from './game-object';
+import { Color } from '../math/color';
 
 export class Background extends GameObject {
   private _sprite: PIXI.Sprite;
@@ -15,9 +16,24 @@ export class Background extends GameObject {
   public update(game: Game): void {
     super.update(game);
     this._sprite.scale.set(window.innerWidth, window.innerHeight);
-    let a = game.timeKeeper.isDay ? game.timeKeeper.time : 1 - game.timeKeeper.time;
-    let b = Math.round(a * 255);
-    this._sprite.tint = (b << 16) | (b << 8) | b;
+    // Update the background to be the appropriate colors based on time of day
+    var bgColor: Color;
+    let dayColor = new Color(135, 206, 250);
+    let nightColor = new Color(0, 0, 50);
+    let time = game.timeKeeper.time;
+    let threshold = 0.8;
+    if (game.timeKeeper.isDay) {
+      bgColor = dayColor.clone();
+      if (time > threshold) {
+        bgColor.blend(nightColor, (time - threshold) / (1 - threshold));
+      }
+    } else {
+      bgColor = nightColor.clone();
+      if (time > threshold) {
+        bgColor.blend(dayColor, (time - threshold) / (1 - threshold));
+      }
+    }
+    this._sprite.tint = bgColor.toPixi();
   }
 
   private _draw(): void {
