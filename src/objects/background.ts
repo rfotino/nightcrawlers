@@ -1,14 +1,15 @@
 import { Game } from '../game';
 import { Color } from '../math/color';
 
-export class Background {
+export class Background extends PIXI.Container {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
 
-  public constructor(container: PIXI.Container) {
+  public constructor() {
+    super();
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
-    container.addChildAt(this._sprite, 0);
+    this.addChild(this._sprite);
   }
 
   public update(game: Game): void {

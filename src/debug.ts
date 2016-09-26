@@ -1,11 +1,12 @@
 import { Game } from './game';
 
-export class Debugger {
+export class Debugger extends PIXI.Container {
   private _text: PIXI.Text;
   private _lastTime: number;
   private _frameTimes: number[];
 
-  public constructor(container: PIXI.Container, visible: boolean = false) {
+  public constructor(visible: boolean = false) {
+    super();
     this._text = new PIXI.Text('', {
       fontFamily: 'Monospace',
       fontSize: '24px',
@@ -14,7 +15,7 @@ export class Debugger {
     });
     this._text.position.set(15, 15);
     this._text.visible = visible;
-    container.addChild(this._text);
+    this.addChild(this._text);
     this._lastTime = Date.now();
     this._frameTimes = [];
   }

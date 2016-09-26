@@ -44,7 +44,7 @@ export class Game {
     this._rootStage.addChild(this._outerViewStage);
     this._outerViewStage.addChild(this._innerViewStage);
     // Debugger
-    this._debugger = new Debugger(this._rootStage, true);
+    this._debugger = new Debugger(true);
     // Add key listeners
     this.keyState = new KeyState();
     this.keyState.addListeners(this._renderer.view);
@@ -57,23 +57,23 @@ export class Game {
 
   private _onAssetsLoaded(): void {
     // Construct game objects
-    this.planet = new Planet(this._innerViewStage);
-    this.player = new Player(this._innerViewStage);
+    this.planet = new Planet();
+    this.player = new Player();
     this.platforms = [
       // Stairs
-      new Platform(this._innerViewStage, Planet.RADIUS + 100, 0.00, 0.25),
-      new Platform(this._innerViewStage, Planet.RADIUS + 200, 0.25, 0.25),
-      new Platform(this._innerViewStage, Planet.RADIUS + 300, 0.50, 0.25),
-      new Platform(this._innerViewStage, Planet.RADIUS + 400, 0.75, 0.25),
-      new Platform(this._innerViewStage, Planet.RADIUS + 500, 1.00, 0.25),
+      new Platform(Planet.RADIUS + 100, 0.00, 0.25),
+      new Platform(Planet.RADIUS + 200, 0.25, 0.25),
+      new Platform(Planet.RADIUS + 300, 0.50, 0.25),
+      new Platform(Planet.RADIUS + 400, 0.75, 0.25),
+      new Platform(Planet.RADIUS + 500, 1.00, 0.25),
       // Moving platforms
-      new Platform(this._innerViewStage, Planet.RADIUS + 75, 0, 0.35),
-      new Platform(this._innerViewStage, Planet.RADIUS + 150, 0, 0.5),
+      new Platform(Planet.RADIUS + 75, 0, 0.35),
+      new Platform(Planet.RADIUS + 150, 0, 0.5),
     ];
     this.platforms[5].vel.theta = 0.001;
     this.platforms[6].vel.theta = -0.005;
     this.timeKeeper = new TimeKeeper();
-    this.background = new Background(this._rootStage);
+    this.background = new Background();
     this._gameObjects = [].concat(
       [
         this.planet,
@@ -81,6 +81,14 @@ export class Game {
       ],
       this.platforms
     );
+    // Add game objects to scene
+    this._innerViewStage.addChild(this.planet);
+    this._innerViewStage.addChild(this.player);
+    this.platforms.forEach(platform => {
+      this._innerViewStage.addChild(platform);
+    });
+    this._rootStage.addChildAt(this.background, 0);
+    this._rootStage.addChild(this._debugger);
     // Initialize the player view
     this._playerView = this.player.pos.clone();
     // Start the update/draw loop

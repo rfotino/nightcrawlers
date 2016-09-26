@@ -16,8 +16,7 @@ export class Platform extends GameObject {
     return 10;
   }
 
-  public constructor(container: PIXI.Container,
-                     r: number, theta: number, width: number) {
+  public constructor(r: number, theta: number, width: number) {
     super();
     this.pos.r = r;
     this.pos.theta = theta;
@@ -28,7 +27,7 @@ export class Platform extends GameObject {
     this._sprite.anchor.x = 1 - (0.5 * this.height / this._canvas.width);
     this._sprite.anchor.y = this.height / this._canvas.height;
     this.pos.mirror(this._sprite);
-    container.addChild(this._sprite);
+    this.addChild(this._sprite);
   }
 
   private _draw(): void {

@@ -7,14 +7,13 @@ export class Planet extends GameObject {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
 
-  public constructor(container: PIXI.Container) {
+  public constructor() {
     super();
     this._canvas = document.createElement('canvas');
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
-    this.pos.mirror(this._sprite);
-    container.addChild(this._sprite);
+    this.addChild(this._sprite);
   }
 
   public get radius() {

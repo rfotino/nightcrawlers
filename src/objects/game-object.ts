@@ -2,7 +2,7 @@ import { PolarCoord } from '../math/polar-coord';
 import { KeyState } from '../input/keystate';
 import { Game } from '../game';
 
-export class GameObject {
+export class GameObject extends PIXI.Container {
   private _pos: PolarCoord;
   private _prevPos: PolarCoord;
   private _vel: PolarCoord;
@@ -25,6 +25,7 @@ export class GameObject {
   }
 
   public constructor() {
+    super();
     this._pos = new PolarCoord();
     this._prevPos = new PolarCoord();
     this._vel = new PolarCoord();

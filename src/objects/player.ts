@@ -17,7 +17,7 @@ export class Player extends GameObject {
     return 50;
   }
 
-  public constructor(container: PIXI.Container) {
+  public constructor() {
     super();
     this._canvas = document.createElement('canvas');
     this._draw();
@@ -26,7 +26,7 @@ export class Player extends GameObject {
     this.pos.r = Planet.RADIUS + (this.height / 2);
     this.pos.theta = 0;//Math.random() * Math.PI * 2;
     this.pos.mirror(this._sprite);
-    container.addChild(this._sprite);
+    this.addChild(this._sprite);
   }
 
   public update(game: Game): void {
