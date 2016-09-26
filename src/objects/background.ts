@@ -1,20 +1,17 @@
 import { Game } from '../game';
-import { GameObject } from './game-object';
 import { Color } from '../math/color';
 
-export class Background extends GameObject {
+export class Background {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
 
   public constructor(container: PIXI.Container) {
-    super();
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     container.addChildAt(this._sprite, 0);
   }
 
   public update(game: Game): void {
-    super.update(game);
     this._sprite.scale.set(window.innerWidth, window.innerHeight);
     // Update the background to be the appropriate colors based on time of day
     var bgColor: Color;

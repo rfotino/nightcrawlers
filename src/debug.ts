@@ -1,13 +1,11 @@
-import { GameObject } from './objects/game-object';
 import { Game } from './game';
 
-export class Debugger extends GameObject {
+export class Debugger {
   private _text: PIXI.Text;
   private _lastTime: number;
   private _frameTimes: number[];
 
   public constructor(container: PIXI.Container, visible: boolean = false) {
-    super();
     this._text = new PIXI.Text('', {
       fontFamily: 'Monospace',
       fontSize: '24px',

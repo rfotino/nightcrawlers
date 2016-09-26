@@ -44,7 +44,7 @@ export class Game {
     this._rootStage.addChild(this._outerViewStage);
     this._outerViewStage.addChild(this._innerViewStage);
     // Debugger
-    this._debugger = new Debugger(this._rootStage);
+    this._debugger = new Debugger(this._rootStage, true);
     // Add key listeners
     this.keyState = new KeyState();
     this.keyState.addListeners(this._renderer.view);
@@ -78,8 +78,6 @@ export class Game {
       [
         this.planet,
         this.player,
-        this.background,
-        this._debugger,
       ],
       this.platforms
     );
@@ -114,6 +112,8 @@ export class Game {
   private _update(): void {
     // Update time of day
     this.timeKeeper.update();
+    // Update the background for the time of day
+    this.background.update(this);
     // Call each game object's update function
     this._gameObjects.forEach(obj => {
       obj.update(this);
@@ -139,5 +139,7 @@ export class Game {
       // Weighted average of current view height and current player height
       (this.player.pos.r + (5 * this._playerView.r)) / 6
     );
+    // Update the debug text
+    this._debugger.update(this);
   }
 }
