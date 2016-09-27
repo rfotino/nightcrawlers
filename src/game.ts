@@ -4,6 +4,8 @@ import { GameObject } from './objects/game-object';
 import { Planet } from './objects/planet';
 import { Player } from './objects/player';
 import { Platform } from './objects/platform';
+import { Enemy } from './objects/enemy';
+import { EnemySpawner } from './objects/enemy-spawner';
 import { Background } from './objects/background';
 import { TimeKeeper } from './timekeeper';
 import { KeyState } from './input/keystate';
@@ -17,6 +19,7 @@ export class Game {
   public background: Background;
   public keyState: KeyState;
   public timeKeeper: TimeKeeper;
+  public enemySpawner: EnemySpawner;
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
   private _rootStage: PIXI.Container;
   private _outerViewStage: PIXI.Container;
@@ -73,6 +76,7 @@ export class Game {
     this.platforms[5].vel.theta = 0.001;
     this.platforms[6].vel.theta = -0.005;
     this.timeKeeper = new TimeKeeper();
+    this.enemySpawner = new EnemySpawner();
     this.background = new Background();
     this._gameObjects = [].concat(
       [
@@ -120,12 +124,21 @@ export class Game {
   private _update(): void {
     // Update time of day
     this.timeKeeper.update();
+    // Maybe spawn an enemy
+    this.enemySpawner.update(this);
     // Update the background for the time of day
     this.background.update(this);
     // Call each game object's update function
     this._gameObjects.forEach(obj => {
       obj.update(this);
     });
+    // Remove dead game objects
+    this._gameObjects.forEach(obj => {
+      if (!obj.alive) {
+        this._innerViewStage.removeChild(obj);
+      }
+    });
+    this._gameObjects = this._gameObjects.filter(obj => obj.alive);
     // Roll over previous positions, key states, etc
     this._gameObjects.forEach(obj => {
       obj.rollOver();
@@ -149,5 +162,10 @@ export class Game {
     );
     // Update the debug text
     this._debugger.update(this);
+  }
+
+  public addGameObject(obj: GameObject): void {
+    this._innerViewStage.addChild(obj);
+    this._gameObjects.push(obj);
   }
 }

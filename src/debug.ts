@@ -38,6 +38,7 @@ export class Debugger extends PIXI.Container {
     this._text.text =
       `Theta: ${(game.player.pos.theta / Math.PI).toFixed(2)}π\n` +
       `FPS: ${fps.toFixed(0)}\n` +
-      `${timeType}: ${timePercent.toFixed(0)}%`;
+      `${timeType}: ${timePercent.toFixed(0)}%\n` +
+      `Enemies: ${game.enemySpawner.count}`;
   }
 }

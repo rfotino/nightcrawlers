@@ -7,6 +7,7 @@ export class GameObject extends PIXI.Container {
   private _prevPos: PolarCoord;
   private _vel: PolarCoord;
   private _accel: PolarCoord;
+  private _alive: boolean = true;
 
   public get pos(): PolarCoord {
     return this._pos;
@@ -24,6 +25,10 @@ export class GameObject extends PIXI.Container {
     return this._accel;
   }
 
+  public get alive(): boolean {
+    return this._alive;
+  }
+
   public constructor() {
     super();
     this._pos = new PolarCoord();
@@ -35,6 +40,10 @@ export class GameObject extends PIXI.Container {
   public update(game: Game): void {
     this.vel.add(this.accel);
     this.pos.add(this.vel);
+  }
+
+  public kill(): void {
+    this._alive = false;
   }
 
   public rollOver(): void {
