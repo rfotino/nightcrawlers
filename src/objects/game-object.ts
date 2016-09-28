@@ -9,6 +9,7 @@ export abstract class GameObject extends PIXI.Container {
   private _vel: Polar.Coord;
   private _accel: Polar.Coord;
   private _alive: boolean = true;
+  protected _health: number = Infinity;
 
   public get pos(): Polar.Coord {
     return this._pos;
@@ -30,6 +31,10 @@ export abstract class GameObject extends PIXI.Container {
     return this._alive;
   }
 
+  public get health(): number {
+    return this._health;
+  }
+
   public constructor() {
     super();
     this._pos = new Polar.Coord();
@@ -49,6 +54,13 @@ export abstract class GameObject extends PIXI.Container {
     this._alive = false;
   }
 
+  public damage(amount: number): void {
+    this._health = Math.max(0, this._health - amount);
+    if (this._health === 0) {
+      this.kill();
+    }
+  }
+
   public rollOver(): void {
     this._prevPos = this._pos.clone();
   }
@@ -58,6 +70,12 @@ export abstract class GameObject extends PIXI.Container {
    * identifying subclasses.
    */
   public abstract type(): string;
+
+  /**
+   * Returns a string identifying the team this object is on, used for
+   * determining whether to damage a GameObject.
+   */
+  public team(): string { return 'neutral'; }
 
   /**
    * Respond to collision with another GameObject.

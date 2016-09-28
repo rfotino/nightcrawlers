@@ -2,6 +2,7 @@ import { Game } from '../game';
 import { GameObject } from './game-object';
 import { Planet } from './planet';
 import { Platform } from './platform';
+import { Player } from './player';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 
@@ -9,6 +10,7 @@ export class Enemy extends GameObject {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
+  private _damageAmount: number = 0.25;
 
   public get width() {
     return 30;
@@ -29,6 +31,8 @@ export class Enemy extends GameObject {
   }
 
   public type(): string { return 'enemy'; }
+
+  public team(): string { return 'enemy'; }
 
   public update(game: Game): void {
     super.update(game);
@@ -62,6 +66,9 @@ export class Enemy extends GameObject {
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
+    if (other.team() === 'player') {
+      other.damage(this._damageAmount);
+    }
     switch (other.type()) {
       case 'planet':
         if (result.bottom) {

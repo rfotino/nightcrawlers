@@ -21,17 +21,20 @@ export class Player extends GameObject {
 
   public constructor() {
     super();
+    this._health = 100;
     this._canvas = document.createElement('canvas');
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
     this.pos.r = Planet.RADIUS + (this.height / 2);
-    this.pos.theta = 0;//Math.random() * Math.PI * 2;
+    this.pos.theta = 0;
     this.pos.mirror(this._sprite);
     this.addChild(this._sprite);
   }
 
   public type(): string { return 'player'; }
+
+  public team(): string { return 'player'; }
 
   public update(game: Game): void {
     super.update(game);
