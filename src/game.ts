@@ -9,8 +9,9 @@ import { EnemySpawner } from './objects/enemy-spawner';
 import { Background } from './objects/background';
 import { TimeKeeper } from './timekeeper';
 import { KeyState } from './input/keystate';
-import { PolarCoord } from './math/polar-coord';
+import { Polar } from './math/polar';
 import { Debugger } from './debug';
+import { Collider } from './math/collider';
 
 export class Game {
   public planet: Planet;
@@ -25,7 +26,7 @@ export class Game {
   private _outerViewStage: PIXI.Container;
   private _innerViewStage: PIXI.Container;
   private _gameObjects: GameObject[];
-  private _playerView: PolarCoord;
+  private _playerView: Polar.Coord;
   private _debugger: Debugger;
 
   public get view(): HTMLCanvasElement {
@@ -104,7 +105,7 @@ export class Game {
     window.requestAnimationFrame(() => this._updateDrawLoop());
     // Resize the canvas to fit the screen
     if (this.view.width !== window.innerWidth ||
-      this.view.height !== window.innerHeight) {
+        this.view.height !== window.innerHeight) {
       this.view.width = window.innerWidth;
       this.view.height = window.innerHeight;
       this._renderer.resize(window.innerWidth, window.innerHeight);
@@ -130,8 +131,28 @@ export class Game {
     this.background.update(this);
     // Call each game object's update function
     this._gameObjects.forEach(obj => {
-      obj.update(this);
+      if (obj.alive) {
+        obj.update(this);
+      }
     });
+    // Collide objects
+    for (let i = 0; i < this._gameObjects.length; i++) {
+      let obj1 = this._gameObjects[i];
+      if (!obj1.alive) {
+        continue;
+      }
+      for (let j = i + 1; j < this._gameObjects.length; j++) {
+        let obj2 = this._gameObjects[j];
+        if (!obj2.alive) {
+          continue;
+        }
+        let result = Collider.test(obj1, obj2);
+        if (result.any) {
+          obj1.collide(obj2, result);
+          obj2.collide(obj1, result.reverse());
+        }
+      }
+    }
     // Remove dead game objects
     this._gameObjects.forEach(obj => {
       if (!obj.alive) {
@@ -139,10 +160,10 @@ export class Game {
       }
     });
     this._gameObjects = this._gameObjects.filter(obj => obj.alive);
-    // Roll over previous positions, key states, etc
+    // Roll over previous game object positions key states
     this._gameObjects.forEach(obj => {
       obj.rollOver();
-    })
+    });
     this.keyState.rollOver();
     // Update the view if the player has moved
     let viewableTheta = this.view.width / (this.planet.radius * 2);

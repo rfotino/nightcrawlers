@@ -1,5 +1,7 @@
 import { GameObject } from './game-object';
 import { Game } from '../game';
+import { Polar } from '../math/polar';
+import { Collider } from '../math/collider';
 
 export class Planet extends GameObject {
   public static get RADIUS(): number { return 1500; }
@@ -40,5 +42,24 @@ export class Planet extends GameObject {
     }
     ctx.stroke();
     ctx.restore();
+  }
+
+  public type(): string { return 'planet'; }
+
+  /**
+   * Planet pushes colliding objects out of itself.
+   */
+  public collide(other: GameObject, result: Collider.Result): void {
+    if (result.top) {
+      other.pos.r = this.radius + (other.getPolarBounds().height / 2);
+      other.vel.r = 0;
+    }
+  }
+
+  /**
+   * Planet is just a big circle, which is a polar rectangle.
+   */
+  public getPolarBounds(): Polar.Rect {
+    return new Polar.Rect(this.radius, 0, this.radius, Math.PI * 2);
   }
 }

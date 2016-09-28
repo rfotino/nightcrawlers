@@ -3,12 +3,13 @@ import { Planet } from './planet';
 import { KeyState } from '../input/keystate';
 import { Game } from '../game';
 import { Platform } from './platform';
+import { Polar } from '../math/polar';
+import { Collider } from '../math/collider';
 
 export class Player extends GameObject {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
-  private _ridingPlatform: Platform = null;
 
   public get width(): number {
     return 25;
@@ -30,6 +31,8 @@ export class Player extends GameObject {
     this.addChild(this._sprite);
   }
 
+  public type(): string { return 'player'; }
+
   public update(game: Game): void {
     super.update(game);
     // Handle turning due to user input
@@ -45,45 +48,40 @@ export class Player extends GameObject {
     }
     // Set acceleration due to gravity
     this.accel.r = Planet.GRAVITY;
-    // Handle collision with the planet
-    this._onSolidGround = false;
-    let minR = Planet.RADIUS + (this.height / 2);
-    if (this.pos.r <= minR) {
-      this.pos.r = minR;
-      this._onSolidGround = true;
-      this.vel.r = 0;
-    }
-    // Handle collision with platforms
-    this._ridingPlatform = null;
-    game.platforms.forEach(platform => {
-      let minR = platform.pos.r + (this.height / 2);
-      let minTheta = platform.pos.theta;
-      let maxTheta = platform.pos.theta + platform.width;
-      let playerTheta = this.pos.theta;
-      while (playerTheta > maxTheta) {
-        playerTheta -= Math.PI * 2;
-      }
-      while (playerTheta < minTheta) {
-        playerTheta += Math.PI * 2;
-      }
-      if (this.pos.r < minR && this.prevPos.r >= minR) {
-        if (playerTheta <= maxTheta) {
-          this.pos.r = minR;
-          this._onSolidGround = true;
-          this._ridingPlatform = platform;
-          this.vel.r = 0;
-        }
-      }
-    });
-    if (null !== this._ridingPlatform) {
-      this.pos.theta += this._ridingPlatform.vel.theta;
-    }
     // Handle jumping due to user input
     let jumpSpeed = 15;
     if (game.keyState.isPressed('ArrowUp') && this._onSolidGround) {
       this._onSolidGround = false;
       this.vel.r = jumpSpeed;
     }
+    // Not on solid ground unless we collide with something this frame
+    this._onSolidGround = false;
+  }
+
+  public collide(other: GameObject, result: Collider.Result): void {
+    switch (other.type()) {
+      case 'planet':
+        if (result.bottom) {
+          this._onSolidGround = true;
+        }
+        break;
+      case 'platform':
+        if (result.bottom) {
+          this._onSolidGround = true;
+          this.vel.theta += other.vel.theta;
+        }
+        break;
+    }
+  }
+
+  public getPolarBounds(): Polar.Rect {
+    let widthTheta = this.width / this.pos.r;
+    return new Polar.Rect(
+      this.pos.r + (this.height / 2),
+      this.pos.theta - (widthTheta / 2),
+      this.height,
+      widthTheta
+    );
   }
 
   private _draw(): void {

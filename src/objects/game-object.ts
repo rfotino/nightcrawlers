@@ -1,27 +1,28 @@
-import { PolarCoord } from '../math/polar-coord';
+import { Polar } from '../math/polar';
+import { Collider } from '../math/collider';
 import { KeyState } from '../input/keystate';
 import { Game } from '../game';
 
-export class GameObject extends PIXI.Container {
-  private _pos: PolarCoord;
-  private _prevPos: PolarCoord;
-  private _vel: PolarCoord;
-  private _accel: PolarCoord;
+export abstract class GameObject extends PIXI.Container {
+  private _pos: Polar.Coord;
+  private _prevPos: Polar.Coord;
+  private _vel: Polar.Coord;
+  private _accel: Polar.Coord;
   private _alive: boolean = true;
 
-  public get pos(): PolarCoord {
+  public get pos(): Polar.Coord {
     return this._pos;
   }
 
-  public get prevPos(): PolarCoord {
+  public get prevPos(): Polar.Coord {
     return this._prevPos;
   }
 
-  public get vel(): PolarCoord {
+  public get vel(): Polar.Coord {
     return this._vel;
   }
 
-  public get accel(): PolarCoord {
+  public get accel(): Polar.Coord {
     return this._accel;
   }
 
@@ -31,15 +32,17 @@ export class GameObject extends PIXI.Container {
 
   public constructor() {
     super();
-    this._pos = new PolarCoord();
-    this._prevPos = new PolarCoord();
-    this._vel = new PolarCoord();
-    this._accel = new PolarCoord();
+    this._pos = new Polar.Coord();
+    this._prevPos = new Polar.Coord();
+    this._vel = new Polar.Coord();
+    this._accel = new Polar.Coord();
   }
 
   public update(game: Game): void {
-    this.vel.add(this.accel);
-    this.pos.add(this.vel);
+    this.vel.r += this.accel.r;
+    this.vel.theta += this.accel.theta;
+    this.pos.r += this.vel.r;
+    this.pos.theta += this.vel.theta;
   }
 
   public kill(): void {
@@ -49,4 +52,20 @@ export class GameObject extends PIXI.Container {
   public rollOver(): void {
     this._prevPos = this._pos.clone();
   }
+
+  /**
+   * Returns a string representation of the GameObject type, used for
+   * identifying subclasses.
+   */
+  public abstract type(): string;
+
+  /**
+   * Respond to collision with another GameObject.
+   */
+  public abstract collide(other: GameObject, result: Collider.Result): void;
+
+  /**
+   * Get the bounds of this object as a polar rectangle.
+   */
+  public abstract getPolarBounds(): Polar.Rect;
 }
