@@ -11,6 +11,7 @@ export class Enemy extends GameObject {
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
   private _damageAmount: number = 0.25;
+  private _maxHealth: number = 20;
 
   public get width() {
     return 30;
@@ -22,6 +23,7 @@ export class Enemy extends GameObject {
 
   public constructor(r: number, theta: number) {
     super();
+    this._health = this._maxHealth;
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     this._sprite.anchor.set(0.5, 0.5);
@@ -36,6 +38,8 @@ export class Enemy extends GameObject {
 
   public update(game: Game): void {
     super.update(game);
+    // Make transparent if damaged
+    this.alpha = this._health / this._maxHealth;
     // Handle turning
     let speed = 3 / this.pos.r;
     let diffTheta = (game.player.pos.theta - this.pos.theta) % (Math.PI * 2);

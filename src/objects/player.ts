@@ -3,6 +3,7 @@ import { Planet } from './planet';
 import { KeyState } from '../input/keystate';
 import { Game } from '../game';
 import { Platform } from './platform';
+import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 
@@ -10,6 +11,7 @@ export class Player extends GameObject {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
+  private _dirLeft: boolean = true;
 
   public get width(): number {
     return 25;
@@ -44,8 +46,10 @@ export class Player extends GameObject {
     let rightArrow = game.keyState.isDown('ArrowRight');
     if (leftArrow && !rightArrow) {
       this.vel.theta = -speed;
+      this._dirLeft = true;
     } else if (rightArrow && !leftArrow) {
       this.vel.theta = speed;
+      this._dirLeft = false;
     } else {
       this.vel.theta = 0;
     }
@@ -56,6 +60,11 @@ export class Player extends GameObject {
     if (game.keyState.isPressed('ArrowUp') && this._onSolidGround) {
       this._onSolidGround = false;
       this.vel.r = jumpSpeed;
+    }
+    // Handle firing bullets due to user input
+    if (game.keyState.isPressed(' ')) {
+      let bullet = new Bullet(this, this._dirLeft);
+      game.addGameObject(bullet);
     }
     // Not on solid ground unless we collide with something this frame
     this._onSolidGround = false;
