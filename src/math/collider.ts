@@ -47,10 +47,60 @@ export module Collider {
   }
 
   /**
+   * Module-private helper class used for Collider.Previous.
+   */
+  class PreviousResult {
+    public obj1: GameObject;
+    public obj2: GameObject;
+    public result: Result;
+
+    public constructor(obj1: GameObject, obj2: GameObject, result: Result) {
+      this.obj1 = obj1;
+      this.obj2 = obj2;
+      this.result = result;
+    }
+  }
+
+  /**
+   * A class used to store collisions from the previous frame.
+   */
+  export class Previous {
+    private _results: PreviousResult[];
+
+    public constructor() {
+      this._results = [];
+    }
+
+    public get(obj1: GameObject, obj2: GameObject) {
+      for (let i = 0; i < this._results.length; i++) {
+        let prevResult = this._results[i];
+        if (prevResult.obj1 === obj1 && prevResult.obj2 === obj2) {
+          return prevResult.result;
+        }
+      }
+      return new Result();
+    }
+
+    public set(obj1: GameObject, obj2: GameObject, result: Result) {
+      let found = false;
+      this._results.forEach(prevResult => {
+        if (prevResult.obj1 === obj1 && prevResult.obj2 === obj2) {
+          prevResult.result = result;
+          found = true;
+        }
+      });
+      if (!found) {
+        this._results.push(new PreviousResult(obj1, obj2, result));
+      }
+    }
+  }
+
+  /**
    * Test two objects for collision, and return the result of the collision
    * in terms of a Collider.Result object.
    */
-  export function test(obj1: GameObject, obj2: GameObject): Result {
+  export function test(obj1: GameObject, obj2: GameObject,
+                       previous: Result): Result {
     let bounds1 = obj1.getPolarBounds();
     let bounds2 = obj2.getPolarBounds();
     let topLeft1 = bounds1.topLeft;
@@ -86,11 +136,17 @@ export module Collider {
           top = true;
         } else if (relativeVel.r > 0) {
           bottom = true;
+        } else {
+          top = previous.top;
+          bottom = previous.bottom;
         }
         if (relativeVel.theta < 0) {
           right = true;
         } else if (relativeVel.theta > 0) {
           left = true;
+        } else {
+          left = previous.left;
+          right = previous.right;
         }
       }
     }

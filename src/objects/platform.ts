@@ -54,8 +54,11 @@ export class Platform extends GameObject {
 
   public collide(other: GameObject, result: Collider.Result): void {
     if (result.top) {
-      other.pos.r = this.pos.r + (other.getPolarBounds().height / 2);
-      other.vel.r = 0;
+      let prevMin = this.pos.r + (other.getPolarBounds().height / 2);
+      if (other.prevPos.r >= prevMin) {
+        other.pos.r = prevMin;
+        other.vel.r = 0;
+      }
     }
   }
 

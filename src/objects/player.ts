@@ -70,8 +70,11 @@ export class Player extends GameObject {
         break;
       case 'platform':
         if (result.bottom) {
-          this._onSolidGround = true;
-          this.vel.theta += other.vel.theta;
+          let prevMin = other.pos.r + (this.height / 2);
+          if (this.prevPos.r >= prevMin) {
+            this._onSolidGround = true;
+            this.vel.theta += other.vel.theta;
+          }
         }
         break;
     }

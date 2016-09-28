@@ -28,6 +28,7 @@ export class Game {
   private _gameObjects: GameObject[];
   private _playerView: Polar.Coord;
   private _debugger: Debugger;
+  private _previousCollisions: Collider.Previous;
 
   public get view(): HTMLCanvasElement {
     return this._renderer.view;
@@ -49,6 +50,8 @@ export class Game {
     this._outerViewStage.addChild(this._innerViewStage);
     // Debugger
     this._debugger = new Debugger(true);
+    // Empty previous collisions tracker
+    this._previousCollisions = new Collider.Previous();
     // Add key listeners
     this.keyState = new KeyState();
     this.keyState.addListeners(this._renderer.view);
@@ -136,6 +139,7 @@ export class Game {
       }
     });
     // Collide objects
+    let currentCollisions = new Collider.Previous();
     for (let i = 0; i < this._gameObjects.length; i++) {
       let obj1 = this._gameObjects[i];
       if (!obj1.alive) {
@@ -146,13 +150,18 @@ export class Game {
         if (!obj2.alive) {
           continue;
         }
-        let result = Collider.test(obj1, obj2);
+        let previous = this._previousCollisions.get(obj1, obj2);
+        let result = Collider.test(obj1, obj2, previous);
+        let reverse = result.reverse();
         if (result.any) {
           obj1.collide(obj2, result);
-          obj2.collide(obj1, result.reverse());
+          obj2.collide(obj1, reverse);
         }
+        currentCollisions.set(obj1, obj2, result);
+        currentCollisions.set(obj2, obj1, reverse);
       }
     }
+    this._previousCollisions = currentCollisions;
     // Remove dead game objects
     this._gameObjects.forEach(obj => {
       if (!obj.alive) {
