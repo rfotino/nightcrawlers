@@ -40,6 +40,7 @@ export class Debugger extends PIXI.Container {
       `r:       ${game.player.pos.r.toFixed(0)}\n` +
       `θ:       ${(game.player.pos.theta / Math.PI).toFixed(2)}π\n` +
       `health:  ${game.player.health.toFixed(0)}\n` +
+      `score:   ${game.score}\n` +
       `${timeType} ${timePercent.toFixed(0)}%\n` +
       `enemies: ${game.enemySpawner.count}`;
   }

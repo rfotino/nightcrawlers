@@ -12,6 +12,7 @@ export class Player extends GameObject {
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
   private _dirLeft: boolean = true;
+  public score: number = 0;
 
   public get width(): number {
     return 25;

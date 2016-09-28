@@ -30,6 +30,10 @@ export class Game {
   private _debugger: Debugger;
   private _previousCollisions: Collider.Previous;
 
+  public get score(): number {
+    return this.player.score;
+  }
+
   public get view(): HTMLCanvasElement {
     return this._renderer.view;
   }

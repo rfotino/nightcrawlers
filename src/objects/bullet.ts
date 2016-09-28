@@ -21,6 +21,7 @@ export class Bullet extends GameObject {
 
   public constructor(owner: Player, left: boolean) {
     super();
+    this._owner = owner;
     this.pos.set(owner.pos.r, owner.pos.theta);
     let speed = 10 / owner.pos.r;
     if (left) {
@@ -46,6 +47,9 @@ export class Bullet extends GameObject {
   public collide(other: GameObject, result: Collider.Result): void {
     if (other.team() === 'enemy') {
       other.damage(this._damageAmount);
+      if (!other.alive) {
+        this._owner.score++;
+      }
       this.kill();
     }
   }
