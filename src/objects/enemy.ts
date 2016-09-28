@@ -40,7 +40,8 @@ export class Enemy extends GameObject {
     let speed = 3 / this.pos.r;
     let diffTheta = (game.player.pos.theta - this.pos.theta) % (Math.PI * 2);
     let minDiffTheta = (
-      ((game.player.width + this.width) / 2) / 
+      0.3 *
+      (game.player.width + this.width) /
       game.player.pos.r
     );
     let goLeft = diffTheta < -minDiffTheta;
