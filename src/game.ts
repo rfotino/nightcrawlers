@@ -128,21 +128,10 @@ export class Game {
     this._renderer.render(this._rootStage);
   }
 
-  // The main update function for the game
-  private _update(): void {
-    // Update time of day
-    this.timeKeeper.update();
-    // Maybe spawn an enemy
-    this.enemySpawner.update(this);
-    // Update the background for the time of day
-    this.background.update(this);
-    // Call each game object's update function
-    this._gameObjects.forEach(obj => {
-      if (obj.alive) {
-        obj.update(this);
-      }
-    });
-    // Collide objects
+  /**
+   * Do collision between objects after updating them.
+   */
+  private _collide(): void {
     let currentCollisions = new Collider.Previous();
     for (let i = 0; i < this._gameObjects.length; i++) {
       let obj1 = this._gameObjects[i];
@@ -154,31 +143,38 @@ export class Game {
         if (!obj2.alive) {
           continue;
         }
-        let previous = this._previousCollisions.get(obj1, obj2);
-        let result = Collider.test(obj1, obj2, previous);
+        let bounds1 = obj1.getPolarBounds();
+        let bounds2 = obj2.getPolarBounds();
+        let prevBounds1 = this._previousCollisions.getBounds(obj1) || bounds1;
+        let prevBounds2 = this._previousCollisions.getBounds(obj2) || bounds2;
+        let prevResult = this._previousCollisions.getResult(obj1, obj2);
+        let relativeVel = obj2.vel.add(obj1.vel.mul(-1));
+        let result = Collider.test(
+          bounds1,
+          bounds2,
+          prevBounds1,
+          prevBounds2,
+          prevResult,
+          relativeVel
+        );
         let reverse = result.reverse();
         if (result.any) {
           obj1.collide(obj2, result);
           obj2.collide(obj1, reverse);
         }
-        currentCollisions.set(obj1, obj2, result);
-        currentCollisions.set(obj2, obj1, reverse);
+        currentCollisions.setBounds(obj1, bounds1);
+        currentCollisions.setBounds(obj2, bounds2);
+        currentCollisions.setResult(obj1, obj2, result);
+        currentCollisions.setResult(obj2, obj1, reverse);
       }
     }
     this._previousCollisions = currentCollisions;
-    // Remove dead game objects
-    this._gameObjects.forEach(obj => {
-      if (!obj.alive) {
-        this._innerViewStage.removeChild(obj);
-      }
-    });
-    this._gameObjects = this._gameObjects.filter(obj => obj.alive);
-    // Roll over previous game object positions key states
-    this._gameObjects.forEach(obj => {
-      obj.rollOver();
-    });
-    this.keyState.rollOver();
-    // Update the view if the player has moved
+  }
+
+  /**
+   * Update the view to be centered on the player.
+   */
+  private _updateView(): void {
     let viewableTheta = this.view.width / (this.planet.radius * 2);
     let diffTheta = viewableTheta / 3;
     let minTheta = this.player.pos.theta - diffTheta;
@@ -194,6 +190,34 @@ export class Game {
       // Weighted average of current view height and current player height
       (this.player.pos.r + (5 * this._playerView.r)) / 6
     );
+  }
+
+  /**
+   * The main update function for the game.
+   */
+  private _update(): void {
+    // Update time of day
+    this.timeKeeper.update();
+    // Maybe spawn an enemy
+    this.enemySpawner.update(this);
+    // Update the background for the time of day
+    this.background.update(this);
+    // Call each game object's update function
+    this._gameObjects.forEach(obj => obj.update(this));
+    // Collide objects
+    this._collide();
+    // Remove dead game objects
+    this._gameObjects.forEach(obj => {
+      if (!obj.alive) {
+        this._innerViewStage.removeChild(obj);
+      }
+    });
+    this._gameObjects = this._gameObjects.filter(obj => obj.alive);
+    // Roll over previous game object positions key states
+    this._gameObjects.forEach(obj => obj.rollOver());
+    this.keyState.rollOver();
+    // Update the view if the player has moved
+    this._updateView();
     // Update the debug text
     this._debugger.update(this);
   }

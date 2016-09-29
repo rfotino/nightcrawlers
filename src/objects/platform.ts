@@ -57,7 +57,7 @@ export class Platform extends GameObject {
       let prevMin = this.pos.r + (other.getPolarBounds().height / 2);
       if (other.prevPos.r >= prevMin) {
         other.pos.r = prevMin;
-        other.vel.r = 0;
+        other.vel.r = Math.max(0, other.vel.r);
       }
     }
   }

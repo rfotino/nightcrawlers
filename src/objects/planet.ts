@@ -52,7 +52,7 @@ export class Planet extends GameObject {
   public collide(other: GameObject, result: Collider.Result): void {
     if (result.top) {
       other.pos.r = this.radius + (other.getPolarBounds().height / 2);
-      other.vel.r = 0;
+      other.vel.r = Math.max(0, other.vel.r);
     }
   }
 
