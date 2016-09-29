@@ -1,6 +1,6 @@
 import { GameObject } from './game-object';
 import { Player } from './player';
-import { Game } from '../game';
+import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 
@@ -64,7 +64,7 @@ export class Bullet extends GameObject {
     );
   }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     super.update(game);
     this._lifespan--;
     if (this._lifespan <= 0) {

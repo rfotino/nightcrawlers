@@ -1,4 +1,4 @@
-import { Game } from '../game';
+import { GameInstance } from '../game-instance';
 import { GameObject } from './game-object';
 import { Planet } from './planet';
 import { Platform } from './platform';
@@ -36,7 +36,7 @@ export class Enemy extends GameObject {
 
   public team(): string { return 'enemy'; }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     super.update(game);
     // Make transparent if damaged
     this.alpha = this._health / this._maxHealth;

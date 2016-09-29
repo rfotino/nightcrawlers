@@ -1,4 +1,4 @@
-import { Game } from '../game';
+import { GameInstance } from '../game-instance';
 import { Color } from '../math/color';
 
 export class Background extends PIXI.Container {
@@ -12,7 +12,7 @@ export class Background extends PIXI.Container {
     this.addChild(this._sprite);
   }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     this._sprite.scale.set(window.innerWidth, window.innerHeight);
     // Update the background to be the appropriate colors based on time of day
     var bgColor: Color;

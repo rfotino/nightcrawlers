@@ -1,6 +1,6 @@
 import { GameObject } from './game-object';
 import { Planet } from './planet';
-import { Game } from '../game';
+import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 
@@ -47,7 +47,7 @@ export class Platform extends GameObject {
 
   public type(): string { return 'platform'; }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     super.update(game);
     this._sprite.rotation = this.pos.theta;
   }

@@ -1,6 +1,6 @@
 import { Enemy } from './enemy';
 import { Planet } from './planet';
-import { Game } from '../game';
+import { GameInstance } from '../game-instance';
 
 export class EnemySpawner {
   private _enemies: Enemy[];
@@ -15,7 +15,7 @@ export class EnemySpawner {
     this._enemies = [];
   }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     if (game.timeKeeper.isDay) {
       this._enemies.forEach(enemy => {
         enemy.kill();

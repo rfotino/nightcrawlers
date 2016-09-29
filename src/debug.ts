@@ -1,4 +1,4 @@
-import { Game } from './game';
+import { GameInstance } from './game-instance';
 
 export class Debugger extends PIXI.Container {
   private _text: PIXI.Text;
@@ -20,7 +20,7 @@ export class Debugger extends PIXI.Container {
     this._frameTimes = [];
   }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     // Get time taken between frames
     let curTime = Date.now();
     this._frameTimes.push(curTime - this._lastTime);

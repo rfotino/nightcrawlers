@@ -1,7 +1,7 @@
 import { GameObject } from './game-object';
 import { Planet } from './planet';
 import { KeyState } from '../input/keystate';
-import { Game } from '../game';
+import { GameInstance } from '../game-instance';
 import { Platform } from './platform';
 import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
@@ -39,7 +39,7 @@ export class Player extends GameObject {
 
   public team(): string { return 'player'; }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     super.update(game);
     // Handle turning due to user input
     let speed = 5 / this.pos.r;

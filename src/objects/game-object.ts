@@ -1,7 +1,7 @@
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { KeyState } from '../input/keystate';
-import { Game } from '../game';
+import { GameInstance } from '../game-instance';
 
 export abstract class GameObject extends PIXI.Container {
   private _pos: Polar.Coord;
@@ -43,7 +43,7 @@ export abstract class GameObject extends PIXI.Container {
     this._accel = new Polar.Coord();
   }
 
-  public update(game: Game): void {
+  public update(game: GameInstance): void {
     this.vel.r += this.accel.r;
     this.vel.theta += this.accel.theta;
     this.pos.r += this.vel.r;

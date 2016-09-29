@@ -1,4 +1,4 @@
-import { Game } from "./game";
+import { Game } from './game';
 let game = new Game();
 // Make fullscreen on click/tap
 function goFullscreen(): void {
