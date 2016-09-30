@@ -61,14 +61,42 @@ export class Menu extends Screen {
 }
 
 export class MainMenu extends Menu {
-  public constructor (game: Game) {
+  public constructor(game: Game) {
     super(game);
     this.addItem('Play Game', () => {
-      let gameInstance = new GameInstance(game);
-      gameInstance.update();
-      game.activeScreen = gameInstance;
+      game.activeScreen = new GameInstance(game);
     });
-    this.addItem('Options', () => alert('options coming soon'));
-    this.addItem('Credits', () => alert('credits coming soon'));
+    let optionsMenu = new OptionsMenu(game, this);
+    this.addItem('Options', () => {
+      game.activeScreen = optionsMenu;
+    });
+    let creditsMenu = new CreditsMenu(game, this);
+    this.addItem('Credits', () => {
+      game.activeScreen = creditsMenu;
+    });
+  }
+}
+
+export class OptionsMenu extends Menu {
+  public constructor(game: Game, previous: Menu) {
+    super(game);
+    this.addItem('Option 1', () => {});
+    this.addItem('Option 2', () => {});
+    this.addItem('Option 3', () => {});
+    this.addItem('Back', () => {
+      game.activeScreen = previous;
+    });
+  }
+}
+
+export class CreditsMenu extends Menu {
+  public constructor(game: Game, previous: Menu) {
+    super(game);
+    this.addItem('Robert Fotino', () => {});
+    this.addItem('Joe Calvi', () => {});
+    this.addItem('Chris Sweeney', () => {});
+    this.addItem('Back', () => {
+      game.activeScreen = previous;
+    });
   }
 }
