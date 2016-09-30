@@ -2,12 +2,15 @@
 
 import { GameInstance } from './game-instance';
 import { KeyState } from './input/keystate';
-import { Screen } from './ui/screen.ts';
+import { MouseState } from './input/mousestate';
+import { Screen } from './ui/screen';
+import { Menu, MainMenu } from './ui/menu';
 
 export class Game {
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
   private _activeScreen: Screen;
   public keyState: KeyState;
+  public mouseState: MouseState;
 
   public get view(): HTMLCanvasElement {
     return this._renderer.view;
@@ -26,12 +29,14 @@ export class Game {
         backgroundColor: 0x000000,
       }
     );
-    // Add key listeners
+    // Add mouse/key listeners
     this.keyState = new KeyState();
+    this.mouseState = new MouseState();
     this.keyState.addListeners(this._renderer.view);
+    this.mouseState.addListeners(this._renderer.view);
     this._renderer.view.tabIndex = -1;
     // Set the active view to be a game instance
-    this._activeScreen = new GameInstance(this.keyState);
+    this._activeScreen = new MainMenu(this);
     // Preload assets
     PIXI.loader.add('planet', 'assets/planet.png');
     PIXI.loader.add('player', 'assets/player.png');
@@ -49,7 +54,10 @@ export class Game {
       this._renderer.resize(window.innerWidth, window.innerHeight);
     }
     // Update all of the game objects
-    this._activeScreen.update(this.view.width, this.view.height);
+    this._activeScreen.update();
+    // Roll over input states
+    this.keyState.rollOver();
+    this.mouseState.rollOver();
     // Draw everything
     this._renderer.render(this._activeScreen);
   }

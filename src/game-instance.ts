@@ -31,8 +31,8 @@ export class GameInstance extends Screen {
     return this.player.score;
   }
 
-  public constructor(keyState: KeyState) {
-    super(keyState);
+  public constructor(game: Game) {
+    super(game);
     this._outerViewStage = new PIXI.Container();
     this._innerViewStage = new PIXI.Container();
     this.addChild(this._outerViewStage);
@@ -125,8 +125,8 @@ export class GameInstance extends Screen {
   /**
    * Update the view to be centered on the player.
    */
-  private _updateView(width: number, height: number): void {
-    let viewableTheta = width / (this.planet.radius * 2);
+  private _updateView(): void {
+    let viewableTheta = this.view.width / (this.planet.radius * 2);
     let diffTheta = viewableTheta / 3;
     let minTheta = this.player.pos.theta - diffTheta;
     let maxTheta = this.player.pos.theta + diffTheta;
@@ -137,13 +137,13 @@ export class GameInstance extends Screen {
     }
     this._playerView.r = Math.max(
       // Minimum view height
-      Planet.RADIUS + (height / 4),
+      Planet.RADIUS + (this.view.height / 4),
       // Weighted average of current view height and current player height
       (this.player.pos.r + (5 * this._playerView.r)) / 6
     );
     // Center the view on the player
-    this._outerViewStage.x = width / 2;
-    this._outerViewStage.y = height / 2;
+    this._outerViewStage.x = this.view.width / 2;
+    this._outerViewStage.y = this.view.height / 2;
     this._innerViewStage.rotation = -(Math.PI / 2) - this._playerView.theta;
     this._innerViewStage.y = this._playerView.r;
   }
@@ -151,7 +151,7 @@ export class GameInstance extends Screen {
   /**
    * The main update function for the game.
    */
-  public update(width: number, height: number): void {
+  public update(): void {
     // Update time of day
     this.timeKeeper.update();
     // Maybe spawn an enemy
@@ -169,11 +169,10 @@ export class GameInstance extends Screen {
       }
     });
     this._gameObjects = this._gameObjects.filter(obj => obj.alive);
-    // Roll over previous game object positions key states
+    // Roll over previous game object positions
     this._gameObjects.forEach(obj => obj.rollOver());
-    this.keyState.rollOver();
     // Update the view if the player has moved
-    this._updateView(width, height);
+    this._updateView();
     // Update the debug text
     this._debugger.update(this);
   }
