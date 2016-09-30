@@ -35,6 +35,7 @@ export class Game {
     this.keyState.addListeners(this._renderer.view);
     this.mouseState.addListeners(this._renderer.view);
     this._renderer.view.tabIndex = -1;
+    this._renderer.view.oncontextmenu = () => false;
     // Set the active view to be a game instance
     this._activeScreen = new MainMenu(this);
     // Preload assets

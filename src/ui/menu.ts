@@ -64,8 +64,9 @@ export class MainMenu extends Menu {
   public constructor (game: Game) {
     super(game);
     this.addItem('Play Game', () => {
-      game.activeScreen = new GameInstance(game);
-      game.activeScreen.update();
+      let gameInstance = new GameInstance(game);
+      gameInstance.update();
+      game.activeScreen = gameInstance;
     });
     this.addItem('Options', () => alert('options coming soon'));
     this.addItem('Credits', () => alert('credits coming soon'));
