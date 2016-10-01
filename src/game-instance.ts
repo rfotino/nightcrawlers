@@ -11,9 +11,9 @@ import { KeyState } from './input/keystate';
 import { Polar } from './math/polar';
 import { Debugger } from './debug';
 import { Collider } from './math/collider';
-import { Screen } from './ui/screen';
+import { UIContainer } from './ui/container';
 
-export class GameInstance extends Screen {
+export class GameInstance extends UIContainer {
   public planet: Planet;
   public player: Player;
   public platforms: Platform[];
@@ -125,7 +125,7 @@ export class GameInstance extends Screen {
   /**
    * Update the view to be centered on the player.
    */
-  private _updateView(): void {
+  public doLayout(): void {
     let viewableTheta = this.view.width / (this.planet.radius * 2);
     let diffTheta = viewableTheta / 3;
     let minTheta = this.player.pos.theta - diffTheta;
@@ -171,8 +171,6 @@ export class GameInstance extends Screen {
     this._gameObjects = this._gameObjects.filter(obj => obj.alive);
     // Roll over previous game object positions
     this._gameObjects.forEach(obj => obj.rollOver());
-    // Update the view if the player has moved
-    this._updateView();
     // Update the debug text
     this._debugger.update(this);
   }

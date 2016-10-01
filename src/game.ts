@@ -3,12 +3,12 @@
 import { GameInstance } from './game-instance';
 import { KeyState } from './input/keystate';
 import { MouseState } from './input/mousestate';
-import { Screen } from './ui/screen';
-import { Menu, MainMenu } from './ui/menu';
+import { UIContainer } from './ui/container';
+import { MainMenu } from './ui/menu';
 
 export class Game {
   private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
-  private _activeScreen: Screen;
+  private _activeScreen: UIContainer;
   public keyState: KeyState;
   public mouseState: MouseState;
 
@@ -16,7 +16,8 @@ export class Game {
     return this._renderer.view;
   }
 
-  public set activeScreen(screen: Screen) {
+  public set activeScreen(screen: UIContainer) {
+    screen.doLayout();
     this._activeScreen = screen;
   }
 
@@ -54,7 +55,9 @@ export class Game {
       this.view.height = window.innerHeight;
       this._renderer.resize(window.innerWidth, window.innerHeight);
     }
-    // Update all of the game objects
+    // Update the layout of the active screen and then update whatever is
+    // happening on that screen
+    this._activeScreen.doLayout();
     this._activeScreen.update();
     // Roll over input states
     this.keyState.rollOver();

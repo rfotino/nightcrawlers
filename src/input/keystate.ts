@@ -21,7 +21,7 @@ export class KeyState {
   }
 
   public isPressed(key: string): boolean {
-    return !!this._states[key] && !this._prevStates[key];
+    return !this._states[key] && !!this._prevStates[key];
   }
 
   public rollOver(): void {

@@ -44,7 +44,7 @@ export class MouseState {
   }
 
   public isClicked(button: number): boolean {
-    return !!this._states[button] && !this._prevStates[button];
+    return !this._states[button] && !!this._prevStates[button];
   }
 
   public rollOver(): void {

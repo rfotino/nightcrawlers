@@ -1,102 +1,66 @@
-import { Screen } from './screen';
+import { UIContainer } from './container';
+import { UIButton } from './button';
+import { UILabel } from './label';
 import { Game } from '../game';
 import { GameInstance } from '../game-instance';
 import { MouseState } from '../input/mousestate';
 
-class MenuItem extends PIXI.Container {
-  public title: string;
-  public action: () => void;
-  public text: PIXI.Text;
-
-  public constructor(title: string, action: () => void) {
-    super();
-    this.title = title;
-    this.action = action;
-    this.text = new PIXI.Text(this.title, {
-      align: 'center',
-      fontFamily: 'sans-serif',
-    });
-    this.text.anchor.x = 0.5;
-    this.addChild(this.text);
-  }
-}
-
-export class Menu extends Screen {
-  private _items: MenuItem[];
-
+export class UIMenu extends UIContainer {
   public constructor(game: Game) {
     super(game);
-    this._items = [];
   }
 
-  public addItem(title: string, action: () => void) {
-    let item = new MenuItem(title, action);
-    this.addChild(item);
-    this._items.push(item);
-  }
-
-  public update(): void {
-    let lineHeight = this.view.height / (this._items.length + 2);
-    let fontSize = lineHeight * 0.8;
+  public doLayout(): void {
+    super.doLayout();
+    let lineHeight = this.view.height / (this._childComponents.length + 2);
     let marginTop = lineHeight;
-    this._items.forEach((item, index) => {
-      item.text.style.fontSize = `${fontSize}px`;
-      item.text.style.lineHeight = lineHeight;
+    this._childComponents.forEach((item, index) => {
+      item.height = lineHeight;
       item.position.y = marginTop + (index * item.height);
-      item.text.position.x = this.width / 2;
-      if (this.mouseState.y >= item.position.y &&
-          this.mouseState.y <= item.position.y + item.height) {
-        // Hovering over this item
-        item.text.style.fill = 'gray';
-        if (this.mouseState.isClicked(MouseState.LEFT)) {
-          // Clicked on this item
-          item.action();
-        }
-      } else {
-        item.text.style.fill = 'white';
-      }
+      item.position.x = (this.width - item.width) / 2;
     });
     this.position.x = (this.view.width - this.width) / 2;
   }
 }
 
-export class MainMenu extends Menu {
+export class MainMenu extends UIMenu {
   public constructor(game: Game) {
     super(game);
-    this.addItem('Play Game', () => {
+    this.addComponent(new UIButton(game, 'Play Game').addActionListener(() => {
       game.activeScreen = new GameInstance(game);
-    });
+    }));
     let optionsMenu = new OptionsMenu(game, this);
-    this.addItem('Options', () => {
+    this.addComponent(new UIButton(game, 'Options').addActionListener(() => {
       game.activeScreen = optionsMenu;
-    });
+    }));
     let creditsMenu = new CreditsMenu(game, this);
-    this.addItem('Credits', () => {
+    this.addComponent(new UIButton(game, 'Credits').addActionListener(() => {
       game.activeScreen = creditsMenu;
-    });
+    }));
   }
 }
 
-export class OptionsMenu extends Menu {
-  public constructor(game: Game, previous: Menu) {
+class OptionsMenu extends UIMenu {
+  public constructor(game: Game, previous: UIMenu) {
     super(game);
-    this.addItem('Option 1', () => {});
-    this.addItem('Option 2', () => {});
-    this.addItem('Option 3', () => {});
-    this.addItem('Back', () => {
+    this.addComponent(new UIButton(game, 'Option 1'));
+    this.addComponent(new UIButton(game, 'Option 2'));
+    this.addComponent(new UIButton(game, 'Option 3'));
+    this.addComponent(new UIButton(game, 'Back').addActionListener(() => {
       game.activeScreen = previous;
-    });
+    }));
   }
 }
 
-export class CreditsMenu extends Menu {
-  public constructor(game: Game, previous: Menu) {
+class CreditsMenu extends UIMenu {
+  public constructor(game: Game, previous: UIMenu) {
     super(game);
-    this.addItem('Robert Fotino', () => {});
-    this.addItem('Joe Calvi', () => {});
-    this.addItem('Chris Sweeney', () => {});
-    this.addItem('Back', () => {
-      game.activeScreen = previous;
+    let contributors = ['Robert Fotino', 'Joe Calvi', 'Chris Sweeney'].sort();
+    contributors.forEach(name => {
+      this.addComponent(new UILabel(game, name));
     });
+    this.addComponent(new UIButton(game, 'Back').addActionListener(() => {
+      game.activeScreen = previous;
+    }));
   }
 }
