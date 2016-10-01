@@ -44,7 +44,7 @@ export module Polar {
     public mirror(obj: PIXI.DisplayObject): void {
       obj.position.x = this._x;
       obj.position.y = this._y;
-      obj.rotation = (Math.PI / 2) + this.theta;
+      obj.rotation = (Math.PI / 2) + this._theta;
       this._mirrorList.push(obj);
     }
 

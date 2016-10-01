@@ -1,6 +1,5 @@
 import { GameObject } from './game-object';
 import { Player } from './player';
-import { Planet } from './planet';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';

@@ -35,6 +35,10 @@ export abstract class GameObject extends PIXI.Container {
     return this._health;
   }
 
+  public get movable(): boolean {
+    return true;
+  }
+
   public constructor() {
     super();
     this._pos = new Polar.Coord();

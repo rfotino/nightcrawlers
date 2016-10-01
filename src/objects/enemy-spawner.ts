@@ -1,5 +1,4 @@
 import { Enemy } from './enemy';
-import { Planet } from './planet';
 import { GameInstance } from '../game-instance';
 
 export class EnemySpawner {

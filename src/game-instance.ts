@@ -1,8 +1,7 @@
 import { Game } from './game';
 import { GameObject } from './objects/game-object';
-import { Planet } from './objects/planet';
 import { Player } from './objects/player';
-import { Platform } from './objects/platform';
+import * as Terrain from './objects/terrain';
 import { Enemy } from './objects/enemy';
 import { EnemySpawner } from './objects/enemy-spawner';
 import { Background } from './objects/background';
@@ -15,9 +14,10 @@ import { UIContainer } from './ui/container';
 import { PauseMenu } from './ui/menu';
 
 export class GameInstance extends UIContainer {
-  public planet: Planet;
+  public planet: Terrain.Planet;
   public player: Player;
-  public platforms: Platform[];
+  public platforms: Terrain.Platform[];
+  public blocks: Terrain.Block[];
   public background: Background;
   public timeKeeper: TimeKeeper;
   public enemySpawner: EnemySpawner;
@@ -41,18 +41,23 @@ export class GameInstance extends UIContainer {
     this.addChild(this._outerViewStage);
     this._outerViewStage.addChild(this._innerViewStage);
     // Construct game objects
-    this.planet = new Planet();
+    this.planet = new Terrain.Planet();
     this.player = new Player();
     this.platforms = [
       // Stairs
-      new Platform(Planet.RADIUS + 100, 0.00, 0.25),
-      new Platform(Planet.RADIUS + 200, 0.25, 0.25),
-      new Platform(Planet.RADIUS + 300, 0.50, 0.25),
-      new Platform(Planet.RADIUS + 400, 0.75, 0.25),
-      new Platform(Planet.RADIUS + 500, 1.00, 0.25),
+      new Terrain.Platform(100, 0.00, 0.25),
+      new Terrain.Platform(200, 0.25, 0.25),
+      new Terrain.Platform(300, 0.50, 0.25),
+      new Terrain.Platform(400, 0.75, 0.25),
+      new Terrain.Platform(500, 1.00, 0.25),
       // Moving platforms
-      new Platform(Planet.RADIUS + 75, 0, 0.35),
-      new Platform(Planet.RADIUS + 150, 0, 0.5),
+      new Terrain.Platform(250, 0, 0.35),
+      new Terrain.Platform(175, 0, 0.5),
+    ];
+    this.blocks = [
+      new Terrain.Block(50, -1.5, 1.25),
+      new Terrain.Block(100, -1, 0.5),
+      new Terrain.Block(150, -1, 0.25),
     ];
     this.platforms[5].vel.theta = 0.001;
     this.platforms[6].vel.theta = -0.005;
@@ -64,7 +69,8 @@ export class GameInstance extends UIContainer {
         this.planet,
         this.player,
       ],
-      this.platforms
+      this.platforms,
+      this.blocks
     );
     // Debugger
     this._debugger = new Debugger(true);
@@ -75,6 +81,9 @@ export class GameInstance extends UIContainer {
     this._innerViewStage.addChild(this.player);
     this.platforms.forEach(platform => {
       this._innerViewStage.addChild(platform);
+    });
+    this.blocks.forEach(block => {
+      this._innerViewStage.addChild(block);
     });
     this.addChildAt(this.background, 0);
     this.addChild(this._debugger);
@@ -144,7 +153,7 @@ export class GameInstance extends UIContainer {
     }
     this._playerView.r = Math.max(
       // Minimum view height
-      Planet.RADIUS + (this.view.height / 4),
+      Terrain.Planet.RADIUS + (this.view.height / 4),
       // Weighted average of current view height and current player height
       (this.player.pos.r + (5 * this._playerView.r)) / 6
     );

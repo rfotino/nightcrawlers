@@ -1,8 +1,7 @@
 import { GameObject } from './game-object';
-import { Planet } from './planet';
 import { KeyState } from '../input/keystate';
 import { GameInstance } from '../game-instance';
-import { Platform } from './platform';
+import * as Terrain from './terrain';
 import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
@@ -30,7 +29,7 @@ export class Player extends GameObject {
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
-    this.pos.r = Planet.RADIUS + (this.height / 2);
+    this.pos.r = Terrain.Planet.RADIUS + (this.height / 2);
     this.pos.theta = 0;
     this.pos.mirror(this._sprite);
     this.addChild(this._sprite);
@@ -56,7 +55,7 @@ export class Player extends GameObject {
       this._dirLeft = false;
     }
     // Set acceleration due to gravity
-    this.accel.r = Planet.GRAVITY;
+    this.accel.r = Terrain.Planet.GRAVITY;
     // Handle jumping due to user input
     let jumpSpeed = 17;
     if (game.keyState.isPressed('ArrowUp') && this._onSolidGround) {
@@ -76,11 +75,8 @@ export class Player extends GameObject {
   public collide(other: GameObject, result: Collider.Result): void {
     switch (other.type()) {
       case 'planet':
-        if (result.bottom) {
-          this._onSolidGround = true;
-        }
-        break;
       case 'platform':
+      case 'block':
         if (result.bottom) {
           this._onSolidGround = true;
           this._ground = other;

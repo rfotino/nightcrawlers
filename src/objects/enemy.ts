@@ -1,7 +1,6 @@
 import { GameInstance } from '../game-instance';
 import { GameObject } from './game-object';
-import { Planet } from './planet';
-import { Platform } from './platform';
+import * as Terrain from './terrain';
 import { Player } from './player';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
@@ -58,7 +57,7 @@ export class Enemy extends GameObject {
       this.vel.theta = 0;
     }
     // Set acceleration due to gravity
-    this.accel.r = Planet.GRAVITY;
+    this.accel.r = Terrain.Planet.GRAVITY;
     // Handle jumping if player is above this enemy
     let jumpSpeed = 15;
     let shouldJump = game.player.pos.r > this.pos.r;
@@ -76,11 +75,8 @@ export class Enemy extends GameObject {
     }
     switch (other.type()) {
       case 'planet':
-        if (result.bottom) {
-          this._onSolidGround = true;
-        }
-        break;
       case 'platform':
+      case 'block':
         if (result.bottom) {
           this._onSolidGround = true;
           this.vel.theta += other.vel.theta;
