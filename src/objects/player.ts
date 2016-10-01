@@ -12,6 +12,7 @@ export class Player extends GameObject {
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
   private _dirLeft: boolean = true;
+  private _ground: GameObject = null;
   public score: number = 0;
 
   public get width(): number {
@@ -41,23 +42,23 @@ export class Player extends GameObject {
 
   public update(game: GameInstance): void {
     super.update(game);
+    // Add relative velocity from the ground
+    this.vel.theta = this._ground ? this._ground.vel.theta : 0;
     // Handle turning due to user input
-    let speed = 5 / this.pos.r;
+    let speed = 7 / this.pos.r;
     let leftArrow = game.keyState.isDown('ArrowLeft');
     let rightArrow = game.keyState.isDown('ArrowRight');
     if (leftArrow && !rightArrow) {
-      this.vel.theta = -speed;
+      this.vel.theta -= speed;
       this._dirLeft = true;
     } else if (rightArrow && !leftArrow) {
-      this.vel.theta = speed;
+      this.vel.theta += speed;
       this._dirLeft = false;
-    } else {
-      this.vel.theta = 0;
     }
     // Set acceleration due to gravity
     this.accel.r = Planet.GRAVITY;
     // Handle jumping due to user input
-    let jumpSpeed = 15;
+    let jumpSpeed = 17;
     if (game.keyState.isPressed('ArrowUp') && this._onSolidGround) {
       this._onSolidGround = false;
       this.vel.r = jumpSpeed;
@@ -69,6 +70,7 @@ export class Player extends GameObject {
     }
     // Not on solid ground unless we collide with something this frame
     this._onSolidGround = false;
+    this._ground = null;
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
@@ -81,7 +83,7 @@ export class Player extends GameObject {
       case 'platform':
         if (result.bottom) {
           this._onSolidGround = true;
-          this.vel.theta += other.vel.theta;
+          this._ground = other;
         }
         break;
     }

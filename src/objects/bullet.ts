@@ -1,5 +1,6 @@
 import { GameObject } from './game-object';
 import { Player } from './player';
+import { Planet } from './planet';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
@@ -23,7 +24,7 @@ export class Bullet extends GameObject {
     super();
     this._owner = owner;
     this.pos.set(owner.pos.r, owner.pos.theta);
-    let speed = 10 / owner.pos.r;
+    let speed = 20 / owner.pos.r;
     if (left) {
       this.vel.theta = -speed;
     } else {
