@@ -13,6 +13,7 @@ export class Color {
   private _r: number;
   private _g: number;
   private _b: number;
+  private _a: number;
 
   public get r(): number {
     return this._r;
@@ -24,6 +25,10 @@ export class Color {
 
   public get b(): number {
     return this._b;
+  }
+
+  public get a(): number {
+    return this._a;
   }
 
   public set r(r: number) {
@@ -38,10 +43,18 @@ export class Color {
     this._b = clamp(b, 0, 255);
   }
 
-  public constructor(r: number = 0, g: number = 0, b: number = 0) {
+  public set a(a: number) {
+    this._a = clamp(a, 0, 1);
+  }
+
+  public constructor(r: number = 0,
+                     g: number = 0,
+                     b: number = 0,
+                     a: number = 1) {
     this._r = r;
     this._g = g;
     this._b = b;
+    this._a = a;
   }
 
   /**
@@ -59,10 +72,13 @@ export class Color {
   /**
    * Sets the RGB components of a color.
    */
-  public set(r: number, g: number, b: number): void {
+  public set(r: number, g: number, b: number, a?: number): void {
     this.r = r;
     this.g = g;
     this.b = b;
+    if (typeof a !== 'undefined') {
+      this.a = a;
+    }
   }
 
   /**
@@ -79,6 +95,6 @@ export class Color {
   }
 
   public clone(): Color {
-    return new Color(this._r, this._g, this._b);
+    return new Color(this._r, this._g, this._b, this._a);
   }
 }

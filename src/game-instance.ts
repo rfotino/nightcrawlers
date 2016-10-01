@@ -12,6 +12,7 @@ import { Polar } from './math/polar';
 import { Debugger } from './debug';
 import { Collider } from './math/collider';
 import { UIContainer } from './ui/container';
+import { PauseMenu } from './ui/menu';
 
 export class GameInstance extends UIContainer {
   public planet: Planet;
@@ -26,6 +27,8 @@ export class GameInstance extends UIContainer {
   private _playerView: Polar.Coord;
   private _debugger: Debugger;
   private _previousCollisions: Collider.Previous;
+  private _pauseMenu: PauseMenu;
+  private _paused: boolean;
 
   public get score(): number {
     return this.player.score;
@@ -77,6 +80,9 @@ export class GameInstance extends UIContainer {
     this.addChild(this._debugger);
     // Initialize the player view
     this._playerView = this.player.pos.clone();
+    // Create the pause menu for later
+    this._pauseMenu = new PauseMenu(game, this);
+    this._paused = false;
   }
 
   /**
@@ -126,6 +132,7 @@ export class GameInstance extends UIContainer {
    * Update the view to be centered on the player.
    */
   public doLayout(): void {
+    super.doLayout();
     let viewableTheta = this.view.width / (this.planet.radius * 2);
     let diffTheta = viewableTheta / 3;
     let minTheta = this.player.pos.theta - diffTheta;
@@ -152,6 +159,15 @@ export class GameInstance extends UIContainer {
    * The main update function for the game.
    */
   public update(): void {
+    super.update();
+    // Pause if the player hit escape
+    if (this.keyState.isPressed('Escape')) {
+      this.pause();
+    }
+    // Do not update anything if paused
+    if (this._paused) {
+      return;
+    }
     // Update time of day
     this.timeKeeper.update();
     // Maybe spawn an enemy
@@ -178,5 +194,19 @@ export class GameInstance extends UIContainer {
   public addGameObject(obj: GameObject): void {
     this._innerViewStage.addChild(obj);
     this._gameObjects.push(obj);
+  }
+
+  public pause(): void {
+    if (!this._paused) {
+      this._paused = true;
+      this.addComponent(this._pauseMenu);
+    }
+  }
+
+  public resume(): void {
+    if (this._paused) {
+      this._paused = false;
+      this.removeComponent(this._pauseMenu);
+    }
   }
 }

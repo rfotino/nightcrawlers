@@ -4,6 +4,7 @@ import { UILabel } from './label';
 import { Game } from '../game';
 import { GameInstance } from '../game-instance';
 import { MouseState } from '../input/mousestate';
+import { Color } from '../math/color';
 
 export class UIMenu extends UIContainer {
   protected _menuTitle: UIContainer;
@@ -17,20 +18,27 @@ export class UIMenu extends UIContainer {
   }
 
   public doLayout(): void {
-    super.doLayout();
-    let marginTop = this.view.height * 0.1;
-    let innerHeight = this.view.height - (marginTop * 2);
-    let titleHeight = innerHeight / (this._menuItems.length - 0.5);
+    // Resize self to fit whole view
+    this.width = this.view.width;
+    this.height = this.view.height;
+    // First set heights of menu components
+    let marginTop = this.height * 0.1;
+    let innerHeight = this.height - (marginTop * 2);
+    let titleHeight = 1.1 * innerHeight / this._menuItems.length;
     let itemHeight = (innerHeight - titleHeight) / this._menuItems.length;
     this._menuTitle.height = titleHeight;
-    this._menuTitle.x = (this.width - this._menuTitle.width) / 2;
     this._menuTitle.y = marginTop;
     this._menuItems.forEach((item, index) => {
       item.height = itemHeight;
-      item.x = (this.width - item.width) / 2;
       item.y = marginTop + titleHeight + (index * item.height);
     });
-    this.x = (this.view.width - this.width) / 2;
+    // Then update the inner components
+    super.doLayout();
+    // Then center them
+    this._menuTitle.x = (this.width - this._menuTitle.width) / 2;
+    this._menuItems.forEach(item => {
+      item.x = (this.width - item.width) / 2;
+    });
   }
 
   public addMenuItem(component: UIContainer) {
@@ -78,5 +86,18 @@ class CreditsMenu extends UIMenu {
     this.addMenuItem(new UIButton(game, 'Back').addActionListener(() => {
       game.activeScreen = previous;
     }));
+  }
+}
+
+export class PauseMenu extends UIMenu {
+  public constructor(game: Game, gameInstance: GameInstance) {
+    super(game, 'Paused');
+    this.addMenuItem(new UIButton(game, 'Resume').addActionListener(() => {
+      gameInstance.resume();
+    }));
+    this.addMenuItem(new UIButton(game, 'Quit').addActionListener(() => {
+      game.activeScreen = new MainMenu(game);
+    }));
+    this.bgcolor = new Color(0, 0, 0, 0.8);
   }
 }
