@@ -112,4 +112,18 @@ export module Polar {
       this._width = width;
     }
   }
+
+  /**
+   * Returns theta + 2*n*PI for some integer value of n to minimize
+   * the distance between theta and the reference angle ref.
+   */
+  export function closestTheta(theta: number, ref: number): number {
+    theta = (theta - ref) % (Math.PI * 2);
+    if (theta < -Math.PI) {
+      theta += Math.PI * 2;
+    } else if (theta > Math.PI) {
+      theta -= Math.PI * 2;
+    }
+    return theta + ref;
+  }
 }

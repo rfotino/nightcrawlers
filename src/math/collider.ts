@@ -12,6 +12,7 @@ export module Collider {
     private _right: boolean;
     private _top: boolean;
     private _bottom: boolean;
+    private _middle: boolean;
 
     public get left(): boolean {
       return this._left;
@@ -30,19 +31,29 @@ export module Collider {
     }
 
     public get any(): boolean {
-      return this._left || this._right || this._top || this._bottom;
+      return (
+        this._left || this._right || this._top || this._bottom || this._middle
+      );
     }
 
     public constructor(left: boolean = false, right: boolean = false,
-                       top: boolean = false, bottom: boolean = false) {
+                       top: boolean = false, bottom: boolean = false,
+                       middle: boolean = false) {
       this._left = left;
       this._right = right;
       this._top = top;
       this._bottom = bottom;
+      this._middle = middle;
     }
 
     public reverse(): Result {
-      return new Result(this._right, this._left, this._bottom, this._top);
+      return new Result(
+        this._right,
+        this._left,
+        this._bottom,
+        this._top,
+        this._middle
+      );
     }
   }
 
@@ -146,23 +157,15 @@ export module Collider {
       relVel: Polar.Coord
   ): Result {
     // Default to false
-    let left = false, right = false, top = false, bottom = false;
-    // Normalize theta in terms of min and max. Returned value is equal to
-    // theta + n*2*PI for some integer value of n. In addition, the returned
-    // value is greater or equal to min but not greater by more than 2*PI.
-    function thetaNormalize(theta: number, min: number, max: number): number {
-      while (theta > max) {
-        theta -= Math.PI * 2;
-      }
-      while (theta < min) {
-        theta += Math.PI * 2;
-      }
-      return theta;
-    }
+    let left = false,
+        right = false,
+        top = false,
+        bottom = false,
+        middle = false;
     // Returns true if a normalized value of theta in terms of min and max is
     // between min and max.
     function thetaBetween(theta: number, min: number, max: number): boolean {
-      theta = thetaNormalize(theta, min, max);
+      theta = Polar.closestTheta(theta, (min + max) / 2);
       return theta >= min && theta <= max;
     }
     // Returns true if the given value of r is between min and max.
@@ -199,10 +202,11 @@ export module Collider {
       let tl1 = r1.topLeft;
       let tl2 = r2.topLeft;
       let br2 = r2.bottomRight;
-      return thetaNormalize(tl1.theta, tl2.theta, br2.theta) >= br2.theta;
+      return Polar.closestTheta(tl1.theta, tl2.theta) > br2.theta;
     }
     // Intersection is a prerequisite for collision
     if (intersect(bounds1, bounds2)) {
+      middle = true;
       // If prevBounds2 is above bounds1 or bounds2 is above prevBounds1,
       // bounds2 hit bounds1 on the top. If bounds2 previously hit bounds1 on
       // the top and bounds2 is moving down relative to bounds1, keep top
@@ -228,6 +232,6 @@ export module Collider {
         (prevResult.left && relVel.theta >= 0)
       );
     }
-    return new Result(left, right, top, bottom);
+    return new Result(left, right, top, bottom, middle);
   }
 }
