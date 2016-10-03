@@ -7,12 +7,29 @@ export class Level {
 
   public constructor(objects: Object) {
     this._blocks = [];
-    objects['blocks'].forEach((rect: Object) => {
+    objects['blocks'].forEach((rectProps: Object) => {
+      let rect = new Polar.Rect(
+        rectProps['r'], rectProps['theta'],
+        rectProps['height'], rectProps['width']
+      );
+      // If more than max width, add in pieces
+      let maxWidth = Math.PI / 2;
+      while (rect.width > maxWidth) {
+        this._blocks.push(new Terrain.Block(
+          rect.r,
+          rect.theta,
+          rect.height,
+          maxWidth
+        ));
+        rect.theta += maxWidth;
+        rect.width -= maxWidth;
+      }
+      // Add leftover piece
       this._blocks.push(new Terrain.Block(
-        rect['r'],
-        rect['theta'],
-        rect['height'],
-        rect['width']
+        rect.r,
+        rect.theta,
+        rect.height,
+        rect.width
       ));
     });
   }
