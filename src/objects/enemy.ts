@@ -57,7 +57,7 @@ export class Enemy extends GameObject {
       this.vel.theta = 0;
     }
     // Set acceleration due to gravity
-    this.accel.r = Terrain.Planet.GRAVITY;
+    this.accel.r = Terrain.GRAVITY;
     // Handle jumping if player is above this enemy
     let jumpSpeed = 15;
     let shouldJump = game.player.pos.r > this.pos.r;

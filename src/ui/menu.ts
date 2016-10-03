@@ -3,8 +3,10 @@ import { UIButton } from './button';
 import { UILabel } from './label';
 import { Game } from '../game';
 import { GameInstance } from '../game-instance';
+import { Level } from '../level';
 import { MouseState } from '../input/mousestate';
 import { Color } from '../math/color';
+import { Options } from '../options';
 
 export class UIMenu extends UIContainer {
   protected _menuTitle: UIContainer;
@@ -48,29 +50,65 @@ export class UIMenu extends UIContainer {
 }
 
 export class MainMenu extends UIMenu {
+  protected _optionsMenu: OptionsMenu;
+
   public constructor(game: Game) {
     super(game, 'Nightcrawlers');
-    this.addMenuItem(new UIButton(game, 'Play Game').addActionListener(() => {
-      game.activeScreen = new GameInstance(game);
+    this.addMenuItem(new UIButton(game, 'Play Game').addListener('action', () => {
+      game.activeScreen = new GameInstance(
+        game,
+        this._optionsMenu.options
+      );
     }));
-    let optionsMenu = new OptionsMenu(game, this);
-    this.addMenuItem(new UIButton(game, 'Options').addActionListener(() => {
-      game.activeScreen = optionsMenu;
+    this._optionsMenu = new OptionsMenu(game, this);
+    this.addMenuItem(new UIButton(game, 'Options').addListener('action', () => {
+      game.activeScreen = this._optionsMenu;
     }));
     let creditsMenu = new CreditsMenu(game, this);
-    this.addMenuItem(new UIButton(game, 'Credits').addActionListener(() => {
+    this.addMenuItem(new UIButton(game, 'Credits').addListener('action', () => {
       game.activeScreen = creditsMenu;
     }));
   }
 }
 
 class OptionsMenu extends UIMenu {
+  protected _options: Options;
+
+  public get options(): Options { return this._options; }
+
   public constructor(game: Game, previous: UIMenu) {
     super(game, 'Options');
-    this.addMenuItem(new UIButton(game, 'Option 1'));
-    this.addMenuItem(new UIButton(game, 'Option 2'));
-    this.addMenuItem(new UIButton(game, 'Option 3'));
-    this.addMenuItem(new UIButton(game, 'Back').addActionListener(() => {
+    this._options = new Options();
+    // Add debug on/off button
+    let debugButton = new UIButton(
+      game,
+      `Debug ${this._options.debug ? 'On' : 'Off'}`
+    );
+    debugButton.addListener('action', () => {
+      this._options.debug = !this._options.debug;
+      debugButton.title = `Debug ${this._options.debug ? 'On' : 'Off'}`;
+    });
+    this.addMenuItem(debugButton);
+    // Add load level from file option
+    let loadLevelButton = new UIButton(game, 'Load Level');
+    loadLevelButton.addListener('action', () => {
+      let fileChooser = document.createElement('input');
+      fileChooser.type = 'file';
+      fileChooser.addEventListener('change', () => {
+        if (fileChooser.files.length <= 0) {
+          return;
+        }
+        let reader = new FileReader();
+        reader.onload = () => {
+          this._options.levelData = JSON.parse(reader.result);
+        };
+        reader.readAsText(fileChooser.files[0]);
+      });
+      fileChooser.click();
+    });
+    this.addMenuItem(loadLevelButton);
+    // Add back button to return to previous menu
+    this.addMenuItem(new UIButton(game, 'Back').addListener('action', () => {
       game.activeScreen = previous;
     }));
   }
@@ -83,7 +121,7 @@ class CreditsMenu extends UIMenu {
     contributors.forEach(name => {
       this.addMenuItem(new UILabel(game, name));
     });
-    this.addMenuItem(new UIButton(game, 'Back').addActionListener(() => {
+    this.addMenuItem(new UIButton(game, 'Back').addListener('action', () => {
       game.activeScreen = previous;
     }));
   }
@@ -92,11 +130,11 @@ class CreditsMenu extends UIMenu {
 export class PauseMenu extends UIMenu {
   public constructor(game: Game, gameInstance: GameInstance) {
     super(game, 'Paused');
-    this.addMenuItem(new UIButton(game, 'Resume').addActionListener(() => {
+    this.addMenuItem(new UIButton(game, 'Resume').addListener('action', () => {
       gameInstance.resume();
     }));
-    this.addMenuItem(new UIButton(game, 'Quit').addActionListener(() => {
-      game.activeScreen = new MainMenu(game);
+    this.addMenuItem(new UIButton(game, 'Quit').addListener('action', () => {
+      game.activeScreen = game.mainMenu;
     }));
     this.bgcolor = new Color(0, 0, 0, 0.8);
   }

@@ -16,11 +16,16 @@ export class UILabel extends UIContainer {
     return Math.max(this._sizer.height, this._text.height);
   }
 
-  public set width(width) {
+  public set title(title: string) {
+    this._title = title;
+    this._text.text = title;
+  }
+
+  public set width(width: number) {
     this._sizer.width = width;
   }
 
-  public set height(height) {
+  public set height(height: number) {
     this._sizer.height = height;
   }
 

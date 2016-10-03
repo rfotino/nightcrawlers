@@ -62,7 +62,7 @@ export class Platform extends Terrain {
 
   public constructor(r: number, theta: number, width: number) {
     super();
-    this.pos.r = Planet.RADIUS + r;
+    this.pos.r = r;
     this.pos.theta = theta;
     this._size = new Polar.Coord(10, width);
     this._canvas = document.createElement('canvas');
@@ -111,11 +111,11 @@ export class Block extends Terrain {
   protected _sprite: PIXI.Sprite;
   protected _canvas: HTMLCanvasElement;
 
-  public constructor(r: number, theta: number, width: number) {
+  public constructor(r: number, theta: number, height: number, width: number) {
     super();
-    this.pos.r = Planet.RADIUS + r;
+    this.pos.r = r;
     this.pos.theta = theta;
-    this._size = new Polar.Coord(52, width);
+    this._size = new Polar.Coord(height, width);
     this._canvas = document.createElement('canvas');
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
@@ -160,49 +160,4 @@ export class Block extends Terrain {
   }
 }
 
-export class Planet extends Terrain {
-  public static get RADIUS(): number { return 2500; }
-  public static get GRAVITY(): number { return -1; }
-  private _sprite: PIXI.Sprite;
-  private _canvas: HTMLCanvasElement;
-
-  public get radius() { return this._size.r; }
-
-  public constructor() {
-    super();
-    this.pos.r = Planet.RADIUS;
-    this._size = new Polar.Coord(Planet.RADIUS, Math.PI * 2);
-    this._canvas = document.createElement('canvas');
-    this._draw();
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
-    this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
-    this.addChild(this._sprite);
-    // Only makes sense to impact the top of the planet
-    this._solidLeft = this._solidRight = this._solidBottom = false;
-    this._solidTop = true;
-  }
-
-  private _draw(): void {
-    // Resize canvas
-    this._canvas.width = this._canvas.height = this.radius * 2;
-    // Draw circle with spokes
-    let ctx = this._canvas.getContext('2d');
-    ctx.save();
-    ctx.translate(this.radius, this.radius);
-    ctx.fillStyle = 'white';
-    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = 'blue';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    for (var i = 0; i < 20; i++) {
-      let theta = (i / 20) * Math.PI * 2;
-      ctx.moveTo(0, 0);
-      ctx.lineTo(this.radius * Math.cos(theta), this.radius * Math.sin(theta));
-    }
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  public type(): string { return 'planet'; }
-}
+export const GRAVITY: number = -1;

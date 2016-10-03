@@ -7,6 +7,7 @@ export abstract class UIContainer extends PIXI.Container {
   protected _game: Game;
   protected _sizer: PIXI.Sprite;
   protected _childComponents: UIContainer[];
+  protected _listeners: {[key: string]: Function[]} = {};
   private _background: PIXI.Graphics;
   private _bgcolor: Color;
 
@@ -43,6 +44,27 @@ export abstract class UIContainer extends PIXI.Container {
     this._bgcolor = new Color(0, 0, 0, 0);
     this.addChild(this._background);
     this.addChild(this._sizer);
+  }
+
+  public addListener(event: string, fn: Function, context?: any): UIContainer {
+    if (!this._listeners[event]) {
+      this._listeners[event] = [];
+    }
+    this._listeners[event].push(fn);
+    return this;
+  }
+
+  public trigger(event: string, mouseX: number, mouseY: number) {
+    if (this._listeners[event]) {
+      this._listeners[event].forEach(fn => fn(mouseX, mouseY));
+    }
+    this._childComponents.forEach(child => {
+      let bounds = child.getBounds();
+      if (mouseX >= bounds.x && mouseY >= bounds.y &&
+          mouseX <= bounds.x + bounds.width && mouseY <= bounds.y + bounds.height) {
+        child.trigger(event, mouseX, mouseY);
+      }
+    });
   }
 
   public set width(width: number) {

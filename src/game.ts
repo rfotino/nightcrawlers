@@ -7,10 +7,15 @@ import { UIContainer } from './ui/container';
 import { MainMenu } from './ui/menu';
 
 export class Game {
-  private _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
-  private _activeScreen: UIContainer;
-  public keyState: KeyState;
-  public mouseState: MouseState;
+  protected _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
+  protected _activeScreen: UIContainer;
+  protected _mainMenu: MainMenu;
+  protected _keyState: KeyState;
+  protected _mouseState: MouseState;
+
+  public get mainMenu(): MainMenu { return this._mainMenu; }
+  public get keyState(): KeyState { return this._keyState; }
+  public get mouseState(): MouseState { return this._mouseState; }
 
   public get view(): HTMLCanvasElement {
     return this._renderer.view;
@@ -31,14 +36,25 @@ export class Game {
       }
     );
     // Add mouse/key listeners
-    this.keyState = new KeyState();
-    this.mouseState = new MouseState();
-    this.keyState.addListeners(this._renderer.view);
-    this.mouseState.addListeners(this._renderer.view);
+    this._keyState = new KeyState();
+    this._mouseState = new MouseState();
+    this._keyState.addListeners(
+      this._renderer.view,
+      (event: string, mouseX: number, mouseY: number) => {
+        this._activeScreen.trigger(event, mouseX, mouseY);
+      }
+    );
+    this._mouseState.addListeners(
+      this._renderer.view,
+      (event: string, mouseX: number, mouseY: number) => {
+        this._activeScreen.trigger(event, mouseX, mouseY);
+      }
+    );
     this._renderer.view.tabIndex = -1;
     this._renderer.view.oncontextmenu = () => false;
     // Set the active view to be a game instance
-    this._activeScreen = new MainMenu(this);
+    this._mainMenu = new MainMenu(this);
+    this._activeScreen = this._mainMenu;
     // Preload assets
     PIXI.loader.add('planet', 'assets/planet.png');
     PIXI.loader.add('player', 'assets/player.png');
@@ -60,8 +76,8 @@ export class Game {
     this._activeScreen.doLayout();
     this._activeScreen.update();
     // Roll over input states
-    this.keyState.rollOver();
-    this.mouseState.rollOver();
+    this._keyState.rollOver();
+    this._mouseState.rollOver();
     // Draw everything
     this._renderer.render(this._activeScreen);
   }

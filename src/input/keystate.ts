@@ -1,3 +1,5 @@
+import { Game } from '../game';
+
 /**
  * Keeps track of the state of all keys. After adding event listeners,
  * you can use the isDown() or isPressed() functions to tell if a key is
@@ -7,12 +9,19 @@ export class KeyState {
   private _prevStates: {[key: string]: boolean} = {};
   private _states: {[key: string]: boolean} = {};
 
-  public addListeners(elem: HTMLElement) {
+  public addListeners(elem: HTMLElement,
+                      trigger?: (string, x: number, y: number) => void): void {
     elem.addEventListener('keydown', (e: KeyboardEvent) => {
       this._states[e.key] = true;
+      if (trigger) {
+        trigger('keydown', -1, -1);
+      }
     });
     elem.addEventListener('keyup', (e: KeyboardEvent) => {
       this._states[e.key] = false;
+      if (trigger) {
+        trigger('keyup', -1, -1);
+      }
     });
   }
 

@@ -1,4 +1,6 @@
 import { Game } from './game';
+import { Level } from './level';
+import { Options } from './options';
 import { GameObject } from './objects/game-object';
 import { Player } from './objects/player';
 import * as Terrain from './objects/terrain';
@@ -14,76 +16,52 @@ import { UIContainer } from './ui/container';
 import { PauseMenu } from './ui/menu';
 
 export class GameInstance extends UIContainer {
-  public planet: Terrain.Planet;
   public player: Player;
-  public platforms: Terrain.Platform[];
-  public blocks: Terrain.Block[];
   public background: Background;
   public timeKeeper: TimeKeeper;
   public enemySpawner: EnemySpawner;
-  private _outerViewStage: PIXI.Container;
-  private _innerViewStage: PIXI.Container;
-  private _gameObjects: GameObject[];
-  private _playerView: Polar.Coord;
-  private _debugger: Debugger;
-  private _previousCollisions: Collider.Previous;
-  private _pauseMenu: PauseMenu;
-  private _paused: boolean;
+  protected _level: Level;
+  protected _options: Options;
+  protected _outerViewStage: PIXI.Container;
+  protected _innerViewStage: PIXI.Container;
+  protected _gameObjects: GameObject[];
+  protected _playerView: Polar.Coord;
+  protected _debugger: Debugger;
+  protected _previousCollisions: Collider.Previous;
+  protected _pauseMenu: PauseMenu;
+  protected _paused: boolean;
 
   public get score(): number {
     return this.player.score;
   }
 
-  public constructor(game: Game) {
+  public constructor(game: Game, options: Options) {
     super(game);
+    this._options = options;
+    this._level = this._options.level;
     this._outerViewStage = new PIXI.Container();
     this._innerViewStage = new PIXI.Container();
     this.addChild(this._outerViewStage);
     this._outerViewStage.addChild(this._innerViewStage);
     // Construct game objects
-    this.planet = new Terrain.Planet();
-    this.player = new Player();
-    this.platforms = [
-      // Stairs
-      new Terrain.Platform(100, 0.00, 0.25),
-      new Terrain.Platform(200, 0.25, 0.25),
-      new Terrain.Platform(300, 0.50, 0.25),
-      new Terrain.Platform(400, 0.75, 0.25),
-      new Terrain.Platform(500, 1.00, 0.25),
-      // Moving platforms
-      new Terrain.Platform(250, 0, 0.35),
-      new Terrain.Platform(175, 0, 0.5),
-    ];
-    this.blocks = [
-      new Terrain.Block(50, -1.5, 1.25),
-      new Terrain.Block(100, -1, 0.5),
-      new Terrain.Block(150, -1, 0.25),
-    ];
-    this.platforms[5].vel.theta = 0.001;
-    this.platforms[6].vel.theta = -0.005;
+    this.player = new Player(this._level);
     this.timeKeeper = new TimeKeeper();
     this.enemySpawner = new EnemySpawner();
     this.background = new Background();
     this._gameObjects = [].concat(
       [
-        this.planet,
         this.player,
       ],
-      this.platforms,
-      this.blocks
+      this._level.getObjects()
     );
     // Debugger
-    this._debugger = new Debugger(true);
+    this._debugger = new Debugger(this._options.debug);
     // Empty previous collisions tracker
     this._previousCollisions = new Collider.Previous();
     // Add game objects to scene
-    this._innerViewStage.addChild(this.planet);
     this._innerViewStage.addChild(this.player);
-    this.platforms.forEach(platform => {
-      this._innerViewStage.addChild(platform);
-    });
-    this.blocks.forEach(block => {
-      this._innerViewStage.addChild(block);
+    this._level.getObjects().forEach(obj => {
+      this._innerViewStage.addChild(obj);
     });
     this.addChildAt(this.background, 0);
     this.addChild(this._debugger);
@@ -107,6 +85,9 @@ export class GameInstance extends UIContainer {
       for (let j = i + 1; j < this._gameObjects.length; j++) {
         let obj2 = this._gameObjects[j];
         if (!obj2.alive) {
+          continue;
+        }
+        if (!obj1.movable && !obj2.movable) {
           continue;
         }
         let bounds1 = obj1.getPolarBounds();
@@ -142,7 +123,7 @@ export class GameInstance extends UIContainer {
    */
   public doLayout(): void {
     super.doLayout();
-    let viewableTheta = this.view.width / (this.planet.radius * 2);
+    let viewableTheta = this.view.width / (this.player.pos.r * 2);
     let diffTheta = viewableTheta / 3;
     let minTheta = this.player.pos.theta - diffTheta;
     let maxTheta = this.player.pos.theta + diffTheta;
@@ -153,7 +134,7 @@ export class GameInstance extends UIContainer {
     }
     this._playerView.r = Math.max(
       // Minimum view height
-      Terrain.Planet.RADIUS + (this.view.height / 4),
+      this._level.getCoreRadius() + (this.view.height / 4),
       // Weighted average of current view height and current player height
       (this.player.pos.r + (5 * this._playerView.r)) / 6
     );

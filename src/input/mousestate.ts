@@ -1,3 +1,5 @@
+import { Game } from '../game';
+
 /**
  * Keeps track of the state of the mouse. After adding event listeners,
  * you can use the isDown() or isPressed() functions to tell if a button is
@@ -17,7 +19,8 @@ export class MouseState {
   public static get RIGHT(): number { return 2; }
   public static get MIDDLE(): number { return 4; }
 
-  public addListeners(elem: HTMLElement) {
+  public addListeners(elem: HTMLElement,
+                      trigger?: (string, x: number, y: number) => void): void {
     [
       'mousedown',
       'mouseup',
@@ -32,9 +35,12 @@ export class MouseState {
           MouseState.MIDDLE,
         ].forEach(button => {
           this._states[button] = !!(e.buttons & button);
-        })
+        });
         this._x = e.offsetX;
         this._y = e.offsetY;
+        if (trigger) {
+          trigger(eventType, this._x, this._y);
+        }
       });
     });
   }

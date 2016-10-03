@@ -4,13 +4,11 @@ import { UIContainer } from './container';
 import { MouseState } from '../input/mousestate';
 
 export class UIButton extends UILabel {
-  private _actions: (() => void)[] = [];
-
-  public get title(): string { return this._title; }
-
-  public addActionListener(action: () => void): UIButton {
-    this._actions.push(action);
-    return this;
+  public constructor(game: Game, title: string) {
+    super(game, title);
+    this.addListener('mouseup', (x: number, y: number) => {
+      this.trigger('action', x, y);
+    });
   }
 
   public update(): void {
@@ -25,10 +23,6 @@ export class UIButton extends UILabel {
       if (this.mouseState.isDown(MouseState.LEFT)) {
         // Mouse pressed
         this._text.y += this.height * 0.05;
-      }
-      if (this.mouseState.isClicked(MouseState.LEFT)) {
-        // Mouse clicked
-        this._actions.forEach(action => action());
       }
     } else {
       this._text.style.fill = 'white';
