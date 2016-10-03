@@ -58,89 +58,31 @@ export module Collider {
   }
 
   /**
-   * Module-private helper class used for Collider.Previous.
-   */
-  class PreviousResult {
-    public obj1: GameObject;
-    public obj2: GameObject;
-    public result: Result;
-
-    public constructor(obj1: GameObject, obj2: GameObject, result: Result) {
-      this.obj1 = obj1;
-      this.obj2 = obj2;
-      this.result = result;
-    }
-  }
-
-  /**
-   * Module-private helper class used for Collider.Previous
-   */
-  class PreviousBounds {
-    public obj: GameObject;
-    public bounds: Polar.Rect;
-
-    public constructor(obj: GameObject, bounds: Polar.Rect) {
-      this.obj = obj;
-      this.bounds = bounds;
-    }
-  }
-
-  /**
    * A class used to store collisions from the previous frame.
    */
   export class Previous {
-    private _results: PreviousResult[];
-    private _bounds: PreviousBounds[];
+    private _results: {[key: string]: Result};
+    private _bounds: {[key: number]: Polar.Rect};
 
     public constructor() {
-      this._results = [];
-      this._bounds = [];
+      this._results = {};
+      this._bounds = {};
     }
 
     public getBounds(obj: GameObject): Polar.Rect {
-      for (let i = 0; i < this._bounds.length; i++) {
-        let prevBounds = this._bounds[i];
-        if (prevBounds.obj === obj) {
-          return prevBounds.bounds;
-        }
-      }
-      return null;
+      return this._bounds[obj.id] || null;
     }
 
     public getResult(obj1: GameObject, obj2: GameObject): Result {
-      for (let i = 0; i < this._results.length; i++) {
-        let prevResult = this._results[i];
-        if (prevResult.obj1 === obj1 && prevResult.obj2 === obj2) {
-          return prevResult.result;
-        }
-      }
-      return new Result();
+      return this._results[`${obj1.id}+${obj2.id}`] || new Result();
     }
 
     public setBounds(obj: GameObject, bounds: Polar.Rect): void {
-      let found = false;
-      this._bounds.forEach(prevBounds => {
-        if (prevBounds.obj === obj) {
-          prevBounds.bounds = bounds;
-          found = true;
-        }
-      });
-      if (!found) {
-        this._bounds.push(new PreviousBounds(obj, bounds));
-      }
+      this._bounds[obj.id] = bounds;
     }
 
     public setResult(obj1: GameObject, obj2: GameObject, result: Result): void {
-      let found = false;
-      this._results.forEach(prevResult => {
-        if (prevResult.obj1 === obj1 && prevResult.obj2 === obj2) {
-          prevResult.result = result;
-          found = true;
-        }
-      });
-      if (!found) {
-        this._results.push(new PreviousResult(obj1, obj2, result));
-      }
+      this._results[`${obj1.id}+${obj2.id}`] = result;
     }
   }
 

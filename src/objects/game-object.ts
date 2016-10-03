@@ -3,13 +3,20 @@ import { Collider } from '../math/collider';
 import { KeyState } from '../input/keystate';
 import { GameInstance } from '../game-instance';
 
+let idCounter = 0;
+
 export abstract class GameObject extends PIXI.Container {
+  private _id: number;
   private _pos: Polar.Coord;
   private _prevPos: Polar.Coord;
   private _vel: Polar.Coord;
   private _accel: Polar.Coord;
   private _alive: boolean = true;
   protected _health: number = Infinity;
+
+  public get id(): number {
+    return this._id;
+  }
 
   public get pos(): Polar.Coord {
     return this._pos;
@@ -41,6 +48,8 @@ export abstract class GameObject extends PIXI.Container {
 
   public constructor() {
     super();
+    idCounter++;
+    this._id = idCounter;
     this._pos = new Polar.Coord();
     this._prevPos = new Polar.Coord();
     this._vel = new Polar.Coord();
