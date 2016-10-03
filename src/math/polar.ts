@@ -41,6 +41,10 @@ export module Polar {
       this._updateCartesian();
     }
 
+    public static fromCartesian(x: number, y: number): Polar.Coord {
+      return new Polar.Coord(Math.sqrt(x**2 + y**2), Math.atan2(y, x));
+    }
+
     public mirror(obj: PIXI.DisplayObject): void {
       obj.position.x = this._x;
       obj.position.y = this._y;
@@ -110,6 +114,16 @@ export module Polar {
       this._theta = theta;
       this._height = height;
       this._width = width;
+    }
+
+    public contains(p: Polar.Coord): boolean {
+      if (p.r >= this._r - this._height && p.r <= this._r) {
+        let closest = closestTheta(p.theta, this._theta + (this._width / 2));
+        if (closest >= this._theta && closest <= this._theta + this._width) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 
