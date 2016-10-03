@@ -61,6 +61,10 @@ export class Game {
     PIXI.loader.load(() => this._updateDrawLoop());
   }
 
+  public isWebGL(): boolean {
+    return this._renderer instanceof PIXI.WebGLRenderer;
+  }
+
   private _updateDrawLoop(): void {
     // Request the next frame
     window.requestAnimationFrame(() => this._updateDrawLoop());

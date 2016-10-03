@@ -73,6 +73,13 @@ export class GameInstance extends UIContainer {
   }
 
   /**
+   * Returns true if the renderer we're using is WebGL based.
+   */
+  public isWebGL(): boolean {
+    return this._game.isWebGL();
+  }
+
+  /**
    * Do collision between objects after updating them.
    */
   private _collide(): void {

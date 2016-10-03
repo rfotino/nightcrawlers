@@ -42,6 +42,7 @@ export class Debugger extends PIXI.Container {
       `health:  ${game.player.health.toFixed(0)}\n` +
       `score:   ${game.score}\n` +
       `${timeType} ${timePercent.toFixed(0)}%\n` +
-      `enemies: ${game.enemySpawner.count}`;
+      `enemies: ${game.enemySpawner.count}\n` +
+      `render:  ${game.isWebGL() ? 'WebGL' : 'Canvas'}`;
   }
 }
