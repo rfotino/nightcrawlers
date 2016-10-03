@@ -144,7 +144,7 @@ export module Collider {
       let tl1 = r1.topLeft;
       let tl2 = r2.topLeft;
       let br2 = r2.bottomRight;
-      return Polar.closestTheta(tl1.theta, tl2.theta) > br2.theta;
+      return Polar.closestTheta(tl1.theta, tl2.theta) >= br2.theta;
     }
     // Intersection is a prerequisite for collision
     if (intersect(bounds1, bounds2)) {
@@ -173,6 +173,14 @@ export module Collider {
         aside(prevBounds1, bounds2) ||
         (prevResult.left && relVel.theta >= 0)
       );
+      // Only allow one direction at a time, give preference to top/bottom
+      // over left/right
+      if (left && (top || bottom)) {
+        left = false;
+      }
+      if (right && (top || bottom)) {
+        right = false;
+      }
     }
     return new Result(left, right, top, bottom, middle);
   }
