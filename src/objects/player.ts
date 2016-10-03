@@ -46,8 +46,8 @@ export class Player extends GameObject {
     this.vel.theta = this._ground ? this._ground.vel.theta : 0;
     // Handle turning due to user input
     let speed = 7 / this.pos.r;
-    let leftArrow = game.keyState.isDown('ArrowLeft');
-    let rightArrow = game.keyState.isDown('ArrowRight');
+    let leftArrow = game.keyState.isDown(KeyState.LEFTARROW);
+    let rightArrow = game.keyState.isDown(KeyState.RIGHTARROW);
     if (leftArrow && !rightArrow) {
       this.vel.theta -= speed;
       this._dirLeft = true;
@@ -59,12 +59,12 @@ export class Player extends GameObject {
     this.accel.r = Terrain.GRAVITY;
     // Handle jumping due to user input
     let jumpSpeed = 17;
-    if (game.keyState.isPressed('ArrowUp') && this._onSolidGround) {
+    if (game.keyState.isPressed(KeyState.UPARROW) && this._onSolidGround) {
       this._onSolidGround = false;
       this.vel.r = jumpSpeed;
     }
     // Handle firing bullets due to user input
-    if (game.keyState.isPressed(' ')) {
+    if (game.keyState.isPressed(KeyState.SPACEBAR)) {
       let bullet = new Bullet(this, this._dirLeft);
       game.addGameObject(bullet);
     }

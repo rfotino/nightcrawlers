@@ -151,7 +151,7 @@ export class GameInstance extends UIContainer {
   public update(): void {
     super.update();
     // Pause if the player hit escape
-    if (this.keyState.isPressed('Escape')) {
+    if (this.keyState.isPressed(KeyState.ESCAPE)) {
       this.pause();
     }
     // Do not update anything if paused

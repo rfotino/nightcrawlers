@@ -116,7 +116,7 @@ function update(): void {
       }
     });
   }
-  if (keyState.isPressed('Backspace')) {
+  if (keyState.isPressed(KeyState.BACKSPACE)) {
     rects = rects.filter(rect => rect !== selectedRect);
     selectedRect = null;
   }
