@@ -60,11 +60,11 @@ export class Platform extends Terrain {
   protected _sprite: PIXI.Sprite;
   protected _canvas: HTMLCanvasElement;
 
-  public constructor(r: number, theta: number, width: number) {
+  public constructor(r: number, theta: number, height: number, width: number) {
     super();
     this.pos.r = r;
     this.pos.theta = theta;
-    this._size = new Polar.Coord(10, width);
+    this._size = new Polar.Coord(height, width);
     this._canvas = document.createElement('canvas');
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));

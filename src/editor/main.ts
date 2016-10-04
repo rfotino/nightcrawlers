@@ -7,41 +7,38 @@ let rUpdateElem = <HTMLInputElement>document.getElementById('r-update');
 let thetaUpdateElem = <HTMLInputElement>document.getElementById('theta-update');
 let heightUpdateElem = <HTMLInputElement>document.getElementById('height-update');
 let widthUpdateElem = <HTMLInputElement>document.getElementById('width-update');
+let typeUpdateElem = <HTMLInputElement>document.getElementById('type-update');
 let rAddElem = <HTMLInputElement>document.getElementById('r-add');
 let thetaAddElem = <HTMLInputElement>document.getElementById('theta-add');
 let heightAddElem = <HTMLInputElement>document.getElementById('height-add');
 let widthAddElem = <HTMLInputElement>document.getElementById('width-add');
+let typeAddElem = <HTMLInputElement>document.getElementById('type-add');
 
-function getAdd(): Polar.Rect {
-  return new Polar.Rect(
+class LevelObject extends Polar.Rect {
+  public type: string;
+  public constructor(r: number, theta: number, height: number, width: number, type: string) {
+    super(r, theta, height, width);
+    this.type = type;
+  }
+}
+
+function getAdd(): LevelObject {
+  let obj = new LevelObject(
     parseFloat(rAddElem.value),
     parseFloat(thetaAddElem.value),
     parseFloat(heightAddElem.value),
-    parseFloat(widthAddElem.value)
+    parseFloat(widthAddElem.value),
+    typeAddElem.value
   );
+  return obj;
 }
 
-function getUpdate(): Polar.Rect {
-  return new Polar.Rect(
-    parseFloat(rUpdateElem.value),
-    parseFloat(thetaUpdateElem.value),
-    parseFloat(heightUpdateElem.value),
-    parseFloat(widthUpdateElem.value)
-  );
-}
-
-function setAdd(rect: Polar.Rect): void {
-  rAddElem.value = rect.r.toString();
-  thetaAddElem.value = rect.theta.toString();
-  heightAddElem.value = rect.height.toString();
-  widthAddElem.value = rect.width.toString();
-}
-
-function setUpdate(rect: Polar.Rect): void {
+function setUpdate(rect: LevelObject): void {
   rUpdateElem.value = rect.r.toString();
   thetaUpdateElem.value = rect.theta.toString();
   heightUpdateElem.value = rect.height.toString();
   widthUpdateElem.value = rect.width.toString();
+  typeUpdateElem.value = rect.type;
 }
 
 function addEventListeners(elem: HTMLElement,
@@ -52,35 +49,41 @@ function addEventListeners(elem: HTMLElement,
 
 let numberInputEvents = ['change', 'input'];
 addEventListeners(rUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedRect) {
-    selectedRect.r = parseFloat(rUpdateElem.value);
+  if (selectedObj) {
+    selectedObj.r = parseFloat(rUpdateElem.value);
   }
 });
 
 addEventListeners(thetaUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedRect) {
-    selectedRect.theta = parseFloat(thetaUpdateElem.value);
+  if (selectedObj) {
+    selectedObj.theta = parseFloat(thetaUpdateElem.value);
   }
 });
 
 addEventListeners(heightUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedRect) {
-    selectedRect.height = parseFloat(heightUpdateElem.value);
+  if (selectedObj) {
+    selectedObj.height = parseFloat(heightUpdateElem.value);
   }
 });
 
 addEventListeners(widthUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedRect) {
-    selectedRect.width = parseFloat(widthUpdateElem.value);
+  if (selectedObj) {
+    selectedObj.width = parseFloat(widthUpdateElem.value);
   }
 });
 
-let rects: Polar.Rect[] = [
-  new Polar.Rect(250, 0, 250, Math.PI * 2),
-  new Polar.Rect(300, 0, 50, Math.PI * 0.5),
+addEventListeners(typeUpdateElem, ['change'], (e: Event) => {
+  if (selectedObj) {
+    selectedObj.type = typeUpdateElem.value;
+  }
+})
+
+let objects: LevelObject[] = [
+  new LevelObject(250, 0, 250, Math.PI * 2, 'block'),
+  new LevelObject(300, 0, 10, Math.PI * 0.5, 'platform'),
 ];
 
-let selectedRect: Polar.Rect = null;
+let selectedObj: LevelObject = null;
 
 let mouseState = new MouseState();
 let keyState = new KeyState();
@@ -89,7 +92,7 @@ keyState.addListeners(canvas);
 
 function getScale(): number {
   let maxR = 0;
-  rects.forEach(rect => {
+  objects.forEach(rect => {
     maxR = Math.max(maxR, rect.r);
   });
   let scale = canvas.height / (maxR * 2);
@@ -108,17 +111,17 @@ function getMousePos(): Polar.Coord {
 function update(): void {
   let mousePos = getMousePos();
   if (mouseState.isClicked(MouseState.LEFT)) {
-    selectedRect = null;
-    rects.forEach(rect => {
+    selectedObj = null;
+    objects.forEach(rect => {
       if (rect.contains(mousePos)) {
-        selectedRect = rect;
+        selectedObj = rect;
         setUpdate(rect);
       }
     });
   }
   if (keyState.isPressed(KeyState.BACKSPACE)) {
-    rects = rects.filter(rect => rect !== selectedRect);
-    selectedRect = null;
+    objects = objects.filter(rect => rect !== selectedObj);
+    selectedObj = null;
   }
 }
 
@@ -130,7 +133,7 @@ function draw(): void {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.scale(scale, scale);
-  rects.forEach(rect => {
+  objects.forEach(rect => {
     let drawRadius = rect.r - (rect.height / 2);
     if (drawRadius < 0) {
       drawRadius = rect.r / 2;
@@ -138,7 +141,15 @@ function draw(): void {
     } else {
       ctx.lineWidth = rect.height;
     }
-    ctx.strokeStyle = selectedRect === rect ? 'orange' : (rect.contains(mousePos) ? 'yellow' : 'gray');
+    if (selectedObj === rect) {
+      ctx.strokeStyle = 'orange';
+    } else if (rect.contains(mousePos)) {
+      ctx.strokeStyle = 'yellow';
+    } else if (rect.type === 'platform') {
+      ctx.strokeStyle = 'rgb(200, 200, 200)';
+    } else {
+      ctx.strokeStyle = 'rgb(150, 150, 150)';
+    }
     ctx.beginPath();
     ctx.arc(0, 0, drawRadius, rect.theta, rect.theta + rect.width);
     ctx.stroke();
@@ -158,8 +169,9 @@ updateDrawLoop();
 let addButton = <HTMLInputElement>document.getElementById('add');
 addButton.addEventListener('click', () => {
   let rect = getAdd();
-  rects.push(rect);
-  selectedRect = rect;
+  objects.push(rect);
+  selectedObj = rect;
+  setUpdate(rect);
 });
 
 let loadButton = <HTMLInputElement>document.getElementById('load');
@@ -169,20 +181,36 @@ loadButton.addEventListener('click', () => {
     return;
   }
   let reader = new FileReader();
-  rects = [];
-  selectedRect = null;
+  objects = [];
+  selectedObj = null;
   reader.onload = () => {
     let dataString: string = reader.result;
     let data = JSON.parse(dataString);
-    rects = [];
-    data.blocks.forEach(block => {
-      rects.push(new Polar.Rect(
-        block.r,
-        block.theta,
-        block.height,
-        block.width
-      ));
-    });
+    objects = [];
+    if (data.blocks) {
+      data.blocks.forEach(block => {
+        let obj = new LevelObject(
+          block.r,
+          block.theta,
+          block.height,
+          block.width,
+          'block'
+        );
+        objects.push(obj);
+      });
+    }
+    if (data.platforms) {
+      data.platforms.forEach(platform => {
+        let obj = new LevelObject(
+          platform.r,
+          platform.theta,
+          platform.height,
+          platform.width,
+          'platform'
+        );
+        objects.push(obj);
+      });
+    }
   }
   reader.readAsText(fileInput.files[0]);
 });
@@ -190,7 +218,15 @@ loadButton.addEventListener('click', () => {
 let saveButton = <HTMLInputElement>document.getElementById('save');
 saveButton.addEventListener('click', () => {
   let data = {
-    blocks: rects.map(rect => {
+    blocks: objects.filter(obj => obj.type === 'block').map(rect => {
+      return {
+        r: rect.r,
+        theta: rect.theta,
+        height: rect.height,
+        width: rect.width,
+      };
+    }),
+    platforms: objects.filter(obj => obj.type === 'platform').map(rect => {
       return {
         r: rect.r,
         theta: rect.theta,
