@@ -1,6 +1,7 @@
 import { GameObject } from './game-object';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
+import { Color } from '../math/color';
 import { Collider } from '../math/collider';
 
 abstract class Terrain extends GameObject {
@@ -9,12 +10,50 @@ abstract class Terrain extends GameObject {
   protected _solidRight: boolean;
   protected _solidTop: boolean;
   protected _solidBottom: boolean;
+  protected _sprite: PIXI.Sprite;
 
   public get size(): Polar.Coord {
     return this._size;
   }
   
   public get movable(): boolean { return false; }
+
+  public constructor(r: number, theta: number, height: number, width: number,
+                     color: Color | string) {
+    super();
+    // Set up dimensions
+    this.pos.r = r;
+    this.pos.theta = theta;
+    this._size = new Polar.Coord(height, width);
+    // Create canvas to use as sprite texture
+    let canvas = document.createElement('canvas');
+    // Resize canvas
+    let w = 2 * r * Math.sin(width / 2);
+    let h = r - ((r - height) * Math.cos(width / 2));
+    canvas.width = w + 2;
+    canvas.height = h + 2;
+    // Draw platform
+    let ctx = canvas.getContext('2d');
+    ctx.translate(1, 1);
+    ctx.strokeStyle = color.toString();
+    ctx.lineWidth = height;
+    ctx.beginPath();
+    let startAngle = -(Math.PI / 2) - (width / 2);
+    ctx.arc(
+      w / 2, r,
+      r - (height / 2),
+      startAngle,
+      startAngle + width
+    );
+    ctx.stroke();
+    // Create sprite from canvas
+    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
+    this._sprite.anchor.x = 0.5;
+    this._sprite.anchor.y = 1 / canvas.height;
+    this.pos.mirror(this._sprite);
+    this.addChild(this._sprite);
+    this.rotation = width / 2;
+  }
 
   public collide(other: GameObject, result: Collider.Result): void {
     // Do nothing if the other object is not movable
@@ -57,72 +96,19 @@ abstract class Terrain extends GameObject {
 }
 
 export class Platform extends Terrain {
-  protected _sprite: PIXI.Sprite;
-  protected _canvas: HTMLCanvasElement;
-
   public constructor(r: number, theta: number, height: number, width: number) {
-    super();
-    this.pos.r = r;
-    this.pos.theta = theta;
-    this._size = new Polar.Coord(height, width);
-    this._canvas = document.createElement('canvas');
-    this._draw();
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
-    this._sprite.anchor.x = 1 - (this._size.r / this._canvas.width);
-    this._sprite.anchor.y = this._size.r / this._canvas.height;
-    this.pos.mirror(this._sprite);
-    this.addChild(this._sprite);
+    super(r, theta, height, width, new Color(255, 255, 255));
     // By default, platforms only have a solid top
     this._solidLeft = this._solidRight = this._solidBottom = false;
     this._solidTop = true;
   }
 
-  private _draw(): void {
-    // Resize canvas
-    let w = this.pos.r * (1 - Math.cos(this._size.theta));
-    let h = this.pos.r * Math.sin(this._size.theta);
-    this._canvas.width = w + (2 * this._size.r);
-    this._canvas.height = h + (2 * this._size.r);
-    // Draw platform
-    let ctx = this._canvas.getContext('2d');
-    ctx.save();
-    ctx.translate(this._size.r, this._size.r);
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = this._size.r;
-    ctx.beginPath();
-    ctx.arc(
-      -this.pos.r + w, 0,
-      this.pos.r - (this._size.r / 2), 0,
-      this._size.theta
-    );
-    ctx.stroke();
-    ctx.restore();
-  }
-
   public type(): string { return 'platform'; }
-
-  public update(game: GameInstance): void {
-    super.update(game);
-    this._sprite.rotation = this.pos.theta;
-  }
 }
 
 export class Block extends Terrain {
-  protected _sprite: PIXI.Sprite;
-  protected _canvas: HTMLCanvasElement;
-
   public constructor(r: number, theta: number, height: number, width: number) {
-    super();
-    this.pos.r = r;
-    this.pos.theta = theta;
-    this._size = new Polar.Coord(height, width);
-    this._canvas = document.createElement('canvas');
-    this._draw();
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
-    this._sprite.anchor.x = 1 - (this._size.r / this._canvas.width);
-    this._sprite.anchor.y = this._size.r / this._canvas.height;
-    this.pos.mirror(this._sprite);
-    this.addChild(this._sprite);
+    super(r, theta, height, width, new Color(150, 150, 150));
     // Blocks can't be entered from any side, unlike platforms
     this._solidLeft = true;
     this._solidRight = true;
@@ -130,34 +116,7 @@ export class Block extends Terrain {
     this._solidTop = true;
   }
 
-  private _draw(): void {
-    // Resize canvas
-    let w = this.pos.r * (1 - Math.cos(this._size.theta));
-    let h = this.pos.r * Math.sin(this._size.theta);
-    this._canvas.width = w + (2 * this._size.r);
-    this._canvas.height = h + (2 * this._size.r);
-    // Draw block
-    let ctx = this._canvas.getContext('2d');
-    ctx.save();
-    ctx.translate(this._size.r, this._size.r);
-    ctx.strokeStyle = 'rgb(220, 220, 220)';
-    ctx.lineWidth = this._size.r;
-    ctx.beginPath();
-    ctx.arc(
-      -this.pos.r + w, 0,
-      this.pos.r - (this._size.r / 2), 0,
-      this._size.theta
-    );
-    ctx.stroke();
-    ctx.restore();
-  }
-
   public type(): string { return 'block'; }
-
-  public update(game: GameInstance): void {
-    super.update(game);
-    this._sprite.rotation = this.pos.theta;
-  }
 }
 
 export const GRAVITY: number = -1;

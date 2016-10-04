@@ -70,6 +70,14 @@ export class Color {
   }
 
   /**
+   * Returns a CSS color string representing this color in the rgba(r, g, b, a)
+   * format.
+   */
+  public toString(): string {
+    return `rgba(${this._r}, ${this._g}, ${this._b}, ${this._a})`;
+  }
+
+  /**
    * Sets the RGB components of a color.
    */
   public set(r: number, g: number, b: number, a?: number): void {
