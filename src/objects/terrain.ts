@@ -107,8 +107,9 @@ export class Platform extends Terrain {
 }
 
 export class Block extends Terrain {
-  public constructor(r: number, theta: number, height: number, width: number) {
-    super(r, theta, height, width, new Color(150, 150, 150));
+  public constructor(r: number, theta: number, height: number, width: number,
+                     blockType: string) {
+    super(r, theta, height, width, Block._getColor(blockType));
     // Blocks can't be entered from any side, unlike platforms
     this._solidLeft = true;
     this._solidRight = true;
@@ -116,7 +117,39 @@ export class Block extends Terrain {
     this._solidTop = true;
   }
 
+  private static _getColor(type: string): Color {
+    switch (type) {
+      case 'grass':
+        return new Color(50, 255, 100);
+      case 'stone':
+      default:
+        return new Color(150, 150, 150);
+    }
+  }
+
   public type(): string { return 'block'; }
+}
+
+export class Decoration extends Terrain {
+  public constructor(r: number, theta: number, height: number, width: number,
+                     blockType: string) {
+    super(r, theta, height, width, Decoration._getColor(blockType));
+    // Decorations don't collide with other objects
+    this._solidLeft = false;
+    this._solidRight = false;
+    this._solidBottom = false;
+    this._solidTop = false;
+  }
+
+  private static _getColor(type: string): Color {
+    switch(type) {
+      case 'underground':
+      default:
+        return new Color(100, 100, 100);
+    }
+  }
+
+  public type(): string { return 'decoration'; }
 }
 
 export const GRAVITY: number = -1;

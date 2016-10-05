@@ -79,8 +79,11 @@ addEventListeners(typeUpdateElem, ['change'], (e: Event) => {
 })
 
 let objects: LevelObject[] = [
-  new LevelObject(250, 0, 250, Math.PI * 2, 'block'),
-  new LevelObject(300, 0, 10, Math.PI * 0.5, 'platform'),
+  new LevelObject(250, 0, 250, Math.PI * 2, 'stone'),
+  new LevelObject(300, 0, 50, Math.PI * 1.5, 'stone'),
+  new LevelObject(300, -Math.PI * 0.5, 50, Math.PI * 0.5, 'underground'),
+  new LevelObject(350, Math.PI * 0.5, 50, Math.PI * 0.5, 'grass'),
+  new LevelObject(400, 0, 10, Math.PI * 0.5, 'platform'),
 ];
 
 let selectedObj: LevelObject = null;
@@ -146,9 +149,13 @@ function draw(): void {
     } else if (rect.contains(mousePos)) {
       ctx.strokeStyle = 'yellow';
     } else if (rect.type === 'platform') {
-      ctx.strokeStyle = 'rgb(200, 200, 200)';
-    } else {
+      ctx.strokeStyle = 'rgb(200, 200, 230)';
+    } else if (rect.type === 'grass') {
+      ctx.strokeStyle = 'rgb(50, 255, 100)';
+    } else if (rect.type === 'stone') {
       ctx.strokeStyle = 'rgb(150, 150, 150)';
+    } else if (rect.type === 'underground') {
+      ctx.strokeStyle = 'rgb(100, 100, 100)';
     }
     ctx.beginPath();
     ctx.arc(0, 0, drawRadius, rect.theta, rect.theta + rect.width);
@@ -194,7 +201,7 @@ loadButton.addEventListener('click', () => {
           block.theta,
           block.height,
           block.width,
-          'block'
+          block.type || 'stone'
         );
         objects.push(obj);
       });
@@ -211,6 +218,18 @@ loadButton.addEventListener('click', () => {
         objects.push(obj);
       });
     }
+    if (data.decorations) {
+      data.decorations.forEach(decoration => {
+        let obj = new LevelObject(
+          decoration.r,
+          decoration.theta,
+          decoration.height,
+          decoration.width,
+          decoration.type
+        );
+        objects.push(obj);
+      });
+    }
   }
   reader.readAsText(fileInput.files[0]);
 });
@@ -218,12 +237,15 @@ loadButton.addEventListener('click', () => {
 let saveButton = <HTMLInputElement>document.getElementById('save');
 saveButton.addEventListener('click', () => {
   let data = {
-    blocks: objects.filter(obj => obj.type === 'block').map(rect => {
+    blocks: objects.filter(obj => {
+      return obj.type === 'grass' || obj.type === 'stone';
+    }).map(rect => {
       return {
         r: rect.r,
         theta: rect.theta,
         height: rect.height,
         width: rect.width,
+        type: rect.type,
       };
     }),
     platforms: objects.filter(obj => obj.type === 'platform').map(rect => {
@@ -232,6 +254,15 @@ saveButton.addEventListener('click', () => {
         theta: rect.theta,
         height: rect.height,
         width: rect.width,
+      };
+    }),
+    decorations: objects.filter(obj => obj.type === 'underground').map(rect => {
+      return {
+        r: rect.r,
+        theta: rect.theta,
+        height: rect.height,
+        width: rect.width,
+        type: rect.type,
       };
     }),
   }

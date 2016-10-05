@@ -5,6 +5,7 @@ import { GameObject } from './objects/game-object';
 export class Level {
   protected _blocks: Terrain.Block[];
   protected _platforms: Terrain.Platform[];
+  protected _decorations: Terrain.Decoration[];
 
   public constructor(objects: Object) {
     // Add blocks from file data
@@ -21,7 +22,8 @@ export class Level {
           rect.r,
           rect.theta,
           rect.height,
-          maxWidth
+          maxWidth,
+          rectProps['type'] || 'stone'
         ));
         rect.theta += maxWidth;
         rect.width -= maxWidth;
@@ -31,7 +33,8 @@ export class Level {
         rect.r,
         rect.theta,
         rect.height,
-        rect.width
+        rect.width,
+        rectProps['type'] || 'stone'
       ));
     });
     // Add platforms from file data
@@ -64,6 +67,37 @@ export class Level {
         ));
       });
     }
+    // Add decorations from file data
+    this._decorations = [];
+    if (objects['decorations']) {
+      objects['decorations'].forEach((rectProps: Object) => {
+        let rect = new Polar.Rect(
+          rectProps['r'], rectProps['theta'],
+          rectProps['height'], rectProps['width']
+        );
+        // If more than max width, add in pieces
+        let maxWidth = Math.PI / 2;
+        while (rect.width > maxWidth) {
+          this._decorations.push(new Terrain.Decoration(
+            rect.r,
+            rect.theta,
+            rect.height,
+            maxWidth,
+            rectProps['type']
+          ));
+          rect.theta += maxWidth;
+          rect.width -= maxWidth;
+        }
+        // Add leftover piece
+        this._decorations.push(new Terrain.Decoration(
+          rect.r,
+          rect.theta,
+          rect.height,
+          rect.width,
+          rectProps['type']
+        ));
+      });
+    }
   }
 
   public getCoreRadius(): number {
@@ -89,6 +123,6 @@ export class Level {
   }
 
   public getObjects(): GameObject[] {
-    return [].concat(this._blocks, this._platforms);
+    return [].concat(this._blocks, this._platforms, this._decorations);
   }
 }
