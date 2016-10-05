@@ -19,6 +19,10 @@ export class Bullet extends GameObject {
     return 5;
   }
 
+  public get z(): number {
+    return 20;
+  }
+
   public constructor(owner: Player, left: boolean) {
     super();
     this._owner = owner;

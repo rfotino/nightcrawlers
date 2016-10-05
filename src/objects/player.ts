@@ -23,6 +23,10 @@ export class Player extends GameObject {
     return 50;
   }
 
+  public get z(): number {
+    return 30;
+  }
+
   public constructor(level: Level) {
     super();
     this._health = 100;

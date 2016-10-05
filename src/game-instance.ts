@@ -182,6 +182,11 @@ export class GameInstance extends UIContainer {
       }
     });
     this._gameObjects = this._gameObjects.filter(obj => obj.alive);
+    // Sort game objects by depth
+    this._gameObjects.sort((a, b) => a.z - b.z);
+    this._gameObjects.forEach((obj, index) => {
+      this._innerViewStage.setChildIndex(obj, index);
+    });
     // Roll over previous game object positions
     this._gameObjects.forEach(obj => obj.rollOver());
     // Update the debug text

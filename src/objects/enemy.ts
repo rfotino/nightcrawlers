@@ -12,12 +12,16 @@ export class Enemy extends GameObject {
   private _damageAmount: number = 0.25;
   private _maxHealth: number = 20;
 
-  public get width() {
+  public get width(): number {
     return 30;
   }
   
-  public get height() {
+  public get height(): number {
     return 50;
+  }
+
+  public get z(): number {
+    return 40;
   }
 
   public constructor(r: number, theta: number) {

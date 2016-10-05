@@ -12,6 +12,10 @@ abstract class Terrain extends GameObject {
   protected _solidBottom: boolean;
   protected _sprite: PIXI.Sprite;
 
+  public get z(): number {
+    return 10;
+  }
+
   public get size(): Polar.Coord {
     return this._size;
   }

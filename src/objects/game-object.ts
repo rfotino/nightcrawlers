@@ -18,6 +18,10 @@ export abstract class GameObject extends PIXI.Container {
     return this._id;
   }
 
+  public get z(): number {
+    return 0;
+  }
+
   public get pos(): Polar.Coord {
     return this._pos;
   }
