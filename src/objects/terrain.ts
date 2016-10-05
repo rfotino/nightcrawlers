@@ -29,6 +29,10 @@ abstract class Terrain extends GameObject {
     this.pos.r = r;
     this.pos.theta = theta;
     this._size = new Polar.Coord(height, width);
+    // Increase visual height and width by 1 pixel to prevent seams between
+    // adjacent terrain elements.
+    height++;
+    width += 1 / r;
     // Create canvas to use as sprite texture
     let canvas = document.createElement('canvas');
     // Resize canvas
