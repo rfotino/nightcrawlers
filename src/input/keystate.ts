@@ -10,6 +10,7 @@ export class KeyState {
   private _states: {[key: number]: boolean} = {};
 
   public static get BACKSPACE(): number { return 8; }
+  public static get SHIFT(): number { return 16; }
   public static get ESCAPE(): number { return 27; }
   public static get SPACEBAR(): number { return 32; }
   public static get LEFTARROW(): number { return 37; }

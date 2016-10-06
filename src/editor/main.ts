@@ -99,6 +99,9 @@ let objects: LevelObject[] = [
 let selectedObj: LevelObject = null;
 let addingObj: LevelObject = null;
 
+const RSTEP = 10;
+const THETASTEP = 0.025;
+
 let mouseState = new MouseState();
 let keyState = new KeyState();
 mouseState.addListeners(canvas);
@@ -124,6 +127,7 @@ function getMousePos(): Polar.Coord {
 
 function update(): void {
   let mousePos = getMousePos();
+  // Select an object if the user clicks on it
   if (!addingObj && mouseState.isDown(MouseState.LEFT)) {
     selectedObj = null;
     objects.forEach(obj => {
@@ -133,6 +137,31 @@ function update(): void {
       }
     });
   }
+  // Change size of object with arrow keys
+  if (selectedObj) {
+    if (keyState.isDown(KeyState.SHIFT)) {
+      if (keyState.isPressed(KeyState.UPARROW)) {
+        selectedObj.height += RSTEP;
+      } else if (keyState.isPressed(KeyState.DOWNARROW)) {
+        selectedObj.height -= RSTEP;
+      } else if (keyState.isPressed(KeyState.LEFTARROW)) {
+        selectedObj.width -= THETASTEP;
+      } else if (keyState.isPressed(KeyState.RIGHTARROW)) {
+        selectedObj.width += THETASTEP;
+      }
+    } else {
+      if (keyState.isPressed(KeyState.UPARROW)) {
+        selectedObj.r += RSTEP;
+      } else if (keyState.isPressed(KeyState.DOWNARROW)) {
+        selectedObj.r -= RSTEP;
+      } else if (keyState.isPressed(KeyState.LEFTARROW)) {
+        selectedObj.theta -= THETASTEP;
+      } else if (keyState.isPressed(KeyState.RIGHTARROW)) {
+        selectedObj.theta += THETASTEP;
+      }
+    }
+  }
+  // Delete selected object if the user presses backspace
   if (keyState.isPressed(KeyState.BACKSPACE)) {
     objects = objects.filter(rect => rect !== selectedObj);
     selectedObj = null;
@@ -141,8 +170,8 @@ function update(): void {
   if (!addingObj && !selectedObj && mouseState.isDown(MouseState.LEFT)) {
     addingObj = new LevelObject(
       elem('type-new').value,
-      Math.round(mousePos.r / 10) * 10,
-      Math.round(mousePos.theta / 0.025) * 0.025,
+      Math.round(mousePos.r / RSTEP) * RSTEP,
+      Math.round(mousePos.theta / THETASTEP) * THETASTEP,
       0,
       0
     );
@@ -153,8 +182,8 @@ function update(): void {
       if (width < 0) {
         width += Math.PI * 2;
       }
-      addingObj.height = Math.round(height / 10) * 10;
-      addingObj.width = Math.round(width / 0.025) * 0.025;
+      addingObj.height = Math.round(height / RSTEP) * RSTEP;
+      addingObj.width = Math.round(width / THETASTEP) * THETASTEP;
       setFields(addingObj);
     } else {
       if (addingObj.r > 0 && addingObj.height > 0 && addingObj.width > 0) {
