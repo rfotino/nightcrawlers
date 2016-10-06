@@ -139,6 +139,7 @@ function update(): void {
   }
   // Change size of object with arrow keys
   if (selectedObj) {
+    let changed = true;
     if (keyState.isDown(KeyState.SHIFT)) {
       if (keyState.isPressed(KeyState.UPARROW)) {
         selectedObj.height += RSTEP;
@@ -148,6 +149,8 @@ function update(): void {
         selectedObj.width -= THETASTEP;
       } else if (keyState.isPressed(KeyState.RIGHTARROW)) {
         selectedObj.width += THETASTEP;
+      } else {
+        changed = false;
       }
     } else {
       if (keyState.isPressed(KeyState.UPARROW)) {
@@ -158,7 +161,12 @@ function update(): void {
         selectedObj.theta -= THETASTEP;
       } else if (keyState.isPressed(KeyState.RIGHTARROW)) {
         selectedObj.theta += THETASTEP;
+      } else {
+        changed = false;
       }
+    }
+    if (changed) {
+      setFields(selectedObj);
     }
   }
   // Delete selected object if the user presses backspace
