@@ -21,12 +21,14 @@ export class KeyState {
   public addListeners(elem: HTMLElement,
                       trigger?: (string, x: number, y: number) => void): void {
     elem.addEventListener('keydown', (e: KeyboardEvent) => {
+      e.preventDefault();
       this._states[e.keyCode] = true;
       if (trigger) {
         trigger('keydown', -1, -1);
       }
     });
     elem.addEventListener('keyup', (e: KeyboardEvent) => {
+      e.preventDefault();
       this._states[e.keyCode] = false;
       if (trigger) {
         trigger('keyup', -1, -1);

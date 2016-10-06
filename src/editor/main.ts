@@ -1,4 +1,5 @@
 import { Polar } from '../math/polar';
+import { Color } from '../math/color';
 import { KeyState } from '../input/keystate';
 import { MouseState } from '../input/mousestate';
 
@@ -37,6 +38,20 @@ class LevelObject {
     let r = (this.r * (1 - anim)) + (this.rPrime * anim);
     let theta = (this.theta * (1 - anim)) + (this.thetaPrime * anim);
     return new Polar.Rect(r, theta, this.height, this.width);
+  }
+
+  public getColor(): Color {
+    switch (this.type) {
+      default:
+      case 'stone':
+        return new Color(150, 150, 150);
+      case 'grass':
+        return new Color(50, 255, 100);
+      case 'platform':
+        return new Color(200, 200, 230);
+      case 'underground':
+        return new Color(100, 100, 100);
+    }
   }
 }
 
@@ -224,7 +239,10 @@ function update(): void {
   })
 }
 
+let dashOffset = 0;
+
 function draw(): void {
+  dashOffset++;
   let scale = getScale();
   let mousePos = getMousePos();
   let ctx = canvas.getContext('2d');
@@ -234,28 +252,37 @@ function draw(): void {
   ctx.scale(scale, scale);
   let drawables = addingObj ? objects.concat(addingObj) : objects;
   drawables.forEach(obj => {
-    if (selectedObj === obj) {
-      ctx.strokeStyle = 'orange';
-    } else if (obj.toRect().contains(mousePos) && !addingObj) {
-      ctx.strokeStyle = 'yellow';
-    } else if (obj.type === 'platform') {
-      ctx.strokeStyle = 'rgb(200, 200, 230)';
-    } else if (obj.type === 'grass') {
-      ctx.strokeStyle = 'rgb(50, 255, 100)';
-    } else if (obj.type === 'stone') {
-      ctx.strokeStyle = 'rgb(150, 150, 150)';
-    } else if (obj.type === 'underground') {
-      ctx.strokeStyle = 'rgb(100, 100, 100)';
-    }
+    let color = obj.getColor();
     let rect = obj.toRect();
-    let drawRadius = rect.r - (rect.height / 2);
-    if (drawRadius > 0 && rect.height > 0) {
-      ctx.lineWidth = rect.height;
+    if (obj.toRect().contains(mousePos) && !addingObj) {
+      color.set(200, 200, 50);
+    }
+    ctx.fillStyle = color.toString();
+    if (rect.r > 0 && rect.height > 0) {
+      let minR = Math.max(0, rect.r - rect.height);
       ctx.beginPath();
-      ctx.arc(0, 0, drawRadius, rect.theta, rect.theta + rect.width);
-      ctx.stroke();
+      ctx.arc(0, 0, rect.r, rect.theta, rect.theta + rect.width);
+      ctx.arc(0, 0, minR, rect.theta + rect.width, rect.theta, true);
+      ctx.closePath();
+      ctx.fill();
     }
   });
+  // Highlight selected object
+  if (selectedObj) {
+    let rect = selectedObj.toRect();
+    if (rect.r > 0 && rect.height > 0) {
+      let minR = Math.max(0, rect.r - rect.height);
+      ctx.beginPath();
+      ctx.arc(0, 0, rect.r, rect.theta, rect.theta + rect.width);
+      ctx.arc(0, 0, minR, rect.theta + rect.width, rect.theta, true);
+      ctx.closePath();
+      ctx.lineWidth = 2 / scale;
+      ctx.strokeStyle = 'black';
+      ctx.setLineDash([5 / scale, 10 / scale]);
+      ctx.lineDashOffset = dashOffset;
+      ctx.stroke();
+    }
+  }
   ctx.restore();
   mouseState.rollOver();
   keyState.rollOver();

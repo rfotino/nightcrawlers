@@ -74,7 +74,10 @@ export class Color {
    * format.
    */
   public toString(): string {
-    return `rgba(${this._r}, ${this._g}, ${this._b}, ${this._a})`;
+    let r = Math.round(this._r),
+        g = Math.round(this._g),
+        b = Math.round(this._b);
+    return `rgba(${r}, ${g}, ${b}, ${this._a})`;
   }
 
   /**
