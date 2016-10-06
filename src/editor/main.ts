@@ -97,6 +97,7 @@ let objects: LevelObject[] = [
 ];
 
 let selectedObj: LevelObject = null;
+let addingObj: LevelObject = null;
 
 let mouseState = new MouseState();
 let keyState = new KeyState();
@@ -123,7 +124,7 @@ function getMousePos(): Polar.Coord {
 
 function update(): void {
   let mousePos = getMousePos();
-  if (mouseState.isClicked(MouseState.LEFT)) {
+  if (!addingObj && mouseState.isDown(MouseState.LEFT)) {
     selectedObj = null;
     objects.forEach(obj => {
       if (obj.toRect().contains(mousePos)) {
@@ -135,6 +136,33 @@ function update(): void {
   if (keyState.isPressed(KeyState.BACKSPACE)) {
     objects = objects.filter(rect => rect !== selectedObj);
     selectedObj = null;
+  }
+  // Update whether we're adding an object or not
+  if (!addingObj && !selectedObj && mouseState.isDown(MouseState.LEFT)) {
+    addingObj = new LevelObject(
+      elem('type-new').value,
+      Math.round(mousePos.r / 10) * 10,
+      Math.round(mousePos.theta / 0.025) * 0.025,
+      0,
+      0
+    );
+  } else if (addingObj) {
+    if (mouseState.isDown(MouseState.LEFT)) {
+      let height = Math.max(0, addingObj.r - mousePos.r);
+      let width = mousePos.theta - addingObj.theta;
+      if (width < 0) {
+        width += Math.PI * 2;
+      }
+      addingObj.height = Math.round(height / 10) * 10;
+      addingObj.width = Math.round(width / 0.025) * 0.025;
+      setFields(addingObj);
+    } else {
+      if (addingObj.r > 0 && addingObj.height > 0 && addingObj.width > 0) {
+        objects.push(addingObj);
+        selectedObj = addingObj;
+      }
+      addingObj = null;
+    }
   }
   // Update animation frames
   objects.forEach(obj => {
@@ -167,10 +195,11 @@ function draw(): void {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.scale(scale, scale);
-  objects.forEach(obj => {
+  let drawables = addingObj ? objects.concat(addingObj) : objects;
+  drawables.forEach(obj => {
     if (selectedObj === obj) {
       ctx.strokeStyle = 'orange';
-    } else if (obj.toRect().contains(mousePos)) {
+    } else if (obj.toRect().contains(mousePos) && !addingObj) {
       ctx.strokeStyle = 'yellow';
     } else if (obj.type === 'platform') {
       ctx.strokeStyle = 'rgb(200, 200, 230)';
@@ -183,7 +212,7 @@ function draw(): void {
     }
     let rect = obj.toRect();
     let drawRadius = rect.r - (rect.height / 2);
-    if (drawRadius > 0) {
+    if (drawRadius > 0 && rect.height > 0) {
       ctx.lineWidth = rect.height;
       ctx.beginPath();
       ctx.arc(0, 0, drawRadius, rect.theta, rect.theta + rect.width);
