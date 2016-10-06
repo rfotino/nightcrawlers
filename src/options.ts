@@ -1,5 +1,7 @@
 import { Level } from './level';
 
+/// <reference path="../typings/require.d.ts" />
+
 export class Options {
   public debug: boolean;
   protected _levelData: Object;
@@ -14,11 +16,6 @@ export class Options {
 
   public constructor() {
     this.debug = true;
-    this._levelData = {
-      blocks: [
-        { r: 1500, theta: 0, height: 1500, width: Math.PI * 2 },
-        { r: 1550, theta: -0.5, height: 50, width: Math.PI / 4 },
-      ],
-    };
+    this._levelData = require('../levels/survival.json');
   }
 }

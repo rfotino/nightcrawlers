@@ -122,6 +122,14 @@ let keyState = new KeyState();
 mouseState.addListeners(canvas);
 keyState.addListeners(canvas);
 
+// Prevent default key action when canvas is focused, unless control key
+// is pressed
+canvas.addEventListener('keyup', (e: KeyboardEvent) => {
+  if (!e.ctrlKey) {
+    e.preventDefault();
+  }
+});
+
 function getScale(): number {
   let maxR = 0;
   objects.forEach(obj => {
@@ -356,21 +364,21 @@ elem('save').addEventListener('click', () => {
   let data = {
     blocks: objects.filter(obj => {
       return obj.type === 'grass' || obj.type === 'stone';
-    }).map(rect => {
+    }).map(obj => {
       return {
-        r: rect.r,
-        theta: rect.theta,
-        height: rect.height,
-        width: rect.width,
-        type: rect.type,
+        r: Math.round(obj.r),
+        theta: Math.round(obj.theta * 1000) / 1000,
+        height: Math.round(obj.height),
+        width: Math.round(obj.width * 1000) / 1000,
+        type: obj.type,
       };
     }),
     platforms: objects.filter(obj => obj.type === 'platform').map(obj => {
       let ret = {
-        r: obj.r,
-        theta: obj.theta,
-        height: obj.height,
-        width: obj.width,
+        r: Math.round(obj.r),
+        theta: Math.round(obj.theta * 1000) / 1000,
+        height: Math.round(obj.height),
+        width: Math.round(obj.width * 1000) / 1000,
         moves: obj.moves,
       };
       if (obj.moves) {
@@ -380,13 +388,13 @@ elem('save').addEventListener('click', () => {
       }
       return ret;
     }),
-    decorations: objects.filter(obj => obj.type === 'underground').map(rect => {
+    decorations: objects.filter(obj => obj.type === 'underground').map(obj => {
       return {
-        r: rect.r,
-        theta: rect.theta,
-        height: rect.height,
-        width: rect.width,
-        type: rect.type,
+        r: Math.round(obj.r),
+        theta: Math.round(obj.theta * 1000) / 1000,
+        height: Math.round(obj.height),
+        width: Math.round(obj.width * 1000) / 1000,
+        type: obj.type,
       };
     }),
   }
