@@ -31,8 +31,8 @@ abstract class Terrain extends GameObject {
     this._size = new Polar.Coord(height, width);
     // Increase visual height and width by 1 pixel to prevent seams between
     // adjacent terrain elements.
-    height++;
-    width += 1 / r;
+    height += 1.5;
+    width += 1.5 / r;
     // Create canvas to use as sprite texture
     let canvas = document.createElement('canvas');
     // Resize canvas
@@ -168,6 +168,8 @@ export class Block extends Terrain {
 }
 
 export class Decoration extends Terrain {
+  public get z(): number { return 5; }
+
   public constructor(r: number, theta: number, height: number, width: number,
                      blockType: string) {
     super(r, theta, height, width, Decoration._getColor(blockType));
