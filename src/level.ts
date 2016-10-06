@@ -53,7 +53,11 @@ export class Level {
             rect.r,
             rect.theta,
             rect.height,
-            maxWidth
+            maxWidth,
+            rectProps['moves'] || false,
+            rectProps['rate'] || 0,
+            rectProps['rPrime'] || rect.r,
+            rectProps['thetaPrime'] || rect.theta
           ));
           rect.theta += maxWidth;
           rect.width -= maxWidth;
@@ -63,7 +67,11 @@ export class Level {
           rect.r,
           rect.theta,
           rect.height,
-          rect.width
+          rect.width,
+          rectProps['moves'] || false,
+          rectProps['rate'] || 0,
+          rectProps['rPrime'] || rect.r,
+          rectProps['thetaPrime'] || rect.theta
         ));
       });
     }

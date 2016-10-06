@@ -3,42 +3,57 @@ import { KeyState } from '../input/keystate';
 import { MouseState } from '../input/mousestate';
 
 let canvas = <HTMLCanvasElement>document.getElementById('canvas');
-let rUpdateElem = <HTMLInputElement>document.getElementById('r-update');
-let thetaUpdateElem = <HTMLInputElement>document.getElementById('theta-update');
-let heightUpdateElem = <HTMLInputElement>document.getElementById('height-update');
-let widthUpdateElem = <HTMLInputElement>document.getElementById('width-update');
-let typeUpdateElem = <HTMLInputElement>document.getElementById('type-update');
-let rAddElem = <HTMLInputElement>document.getElementById('r-add');
-let thetaAddElem = <HTMLInputElement>document.getElementById('theta-add');
-let heightAddElem = <HTMLInputElement>document.getElementById('height-add');
-let widthAddElem = <HTMLInputElement>document.getElementById('width-add');
-let typeAddElem = <HTMLInputElement>document.getElementById('type-add');
 
-class LevelObject extends Polar.Rect {
+class LevelObject {
   public type: string;
-  public constructor(r: number, theta: number, height: number, width: number, type: string) {
-    super(r, theta, height, width);
+  public r: number;
+  public theta: number;
+  public height: number;
+  public width: number;
+  public rate: number;
+  public moves: boolean;
+  public rPrime: number;
+  public thetaPrime: number;
+  public frame: number;
+  public framesUp: boolean;
+
+  public constructor(type: string,
+                     r: number, theta: number, height: number, width: number) {
     this.type = type;
+    this.r = r;
+    this.theta = theta;
+    this.height = height;
+    this.width = width;
+    this.rate = 60;
+    this.moves = false;
+    this.rPrime = this.r;
+    this.thetaPrime = this.theta;
+    this.frame = 0;
+    this.framesUp = true;
+  }
+
+  public toRect(): Polar.Rect {
+    let anim = (this.frame / Math.max(this.rate, 1));
+    let r = (this.r * (1 - anim)) + (this.rPrime * anim);
+    let theta = (this.theta * (1 - anim)) + (this.thetaPrime * anim);
+    return new Polar.Rect(r, theta, this.height, this.width);
   }
 }
 
-function getAdd(): LevelObject {
-  let obj = new LevelObject(
-    parseFloat(rAddElem.value),
-    parseFloat(thetaAddElem.value),
-    parseFloat(heightAddElem.value),
-    parseFloat(widthAddElem.value),
-    typeAddElem.value
-  );
-  return obj;
+function elem(id: string): HTMLInputElement {
+  return <HTMLInputElement>document.getElementById(id);
 }
 
-function setUpdate(rect: LevelObject): void {
-  rUpdateElem.value = rect.r.toString();
-  thetaUpdateElem.value = rect.theta.toString();
-  heightUpdateElem.value = rect.height.toString();
-  widthUpdateElem.value = rect.width.toString();
-  typeUpdateElem.value = rect.type;
+function setFields(obj: LevelObject): void {
+  elem('type').value = obj.type;
+  elem('r').value = obj.r.toString();
+  elem('theta').value = obj.theta.toString();
+  elem('height').value = obj.height.toString();
+  elem('width').value = obj.width.toString();
+  elem('rate').value = obj.rate.toString();
+  elem('moves').checked = obj.moves;
+  elem('r-prime').value = obj.rPrime.toString();
+  elem('theta-prime').value = obj.thetaPrime.toString();
 }
 
 function addEventListeners(elem: HTMLElement,
@@ -47,43 +62,38 @@ function addEventListeners(elem: HTMLElement,
   types.forEach(type => elem.addEventListener(type, callback));
 }
 
-let numberInputEvents = ['change', 'input'];
-addEventListeners(rUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedObj) {
-    selectedObj.r = parseFloat(rUpdateElem.value);
-  }
+[
+  'type',
+  'r',
+  'theta',
+  'height',
+  'width',
+  'rate',
+  'moves',
+  'r-prime',
+  'theta-prime',
+].forEach((id: string) => {
+  addEventListeners(elem(id), ['change', 'input'], (e: Event) => {
+    if (selectedObj) {
+      selectedObj.type = elem('type').value;
+      selectedObj.r = parseFloat(elem('r').value);
+      selectedObj.theta = parseFloat(elem('theta').value);
+      selectedObj.height = parseFloat(elem('height').value);
+      selectedObj.width = parseFloat(elem('width').value);
+      selectedObj.rate = parseFloat(elem('rate').value);
+      selectedObj.moves = elem('moves').checked;
+      selectedObj.rPrime = parseFloat(elem('r-prime').value);
+      selectedObj.thetaPrime = parseFloat(elem('theta-prime').value);
+    }
+  });
 });
-
-addEventListeners(thetaUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedObj) {
-    selectedObj.theta = parseFloat(thetaUpdateElem.value);
-  }
-});
-
-addEventListeners(heightUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedObj) {
-    selectedObj.height = parseFloat(heightUpdateElem.value);
-  }
-});
-
-addEventListeners(widthUpdateElem, numberInputEvents, (e: Event) => {
-  if (selectedObj) {
-    selectedObj.width = parseFloat(widthUpdateElem.value);
-  }
-});
-
-addEventListeners(typeUpdateElem, ['change'], (e: Event) => {
-  if (selectedObj) {
-    selectedObj.type = typeUpdateElem.value;
-  }
-})
 
 let objects: LevelObject[] = [
-  new LevelObject(250, 0, 250, Math.PI * 2, 'stone'),
-  new LevelObject(300, 0, 50, Math.PI * 1.5, 'stone'),
-  new LevelObject(300, -Math.PI * 0.5, 50, Math.PI * 0.5, 'underground'),
-  new LevelObject(350, Math.PI * 0.5, 50, Math.PI * 0.5, 'grass'),
-  new LevelObject(400, 0, 10, Math.PI * 0.5, 'platform'),
+  new LevelObject('stone', 250, 0, 250, Math.PI * 2),
+  new LevelObject('stone', 300, 0, 50, Math.PI * 1.5),
+  new LevelObject('underground', 300, -Math.PI * 0.5, 50, Math.PI * 0.5),
+  new LevelObject('grass', 350, Math.PI * 0.5, 50, Math.PI * 0.5),
+  new LevelObject('platform', 400, 0, 10, Math.PI * 0.5),
 ];
 
 let selectedObj: LevelObject = null;
@@ -95,8 +105,8 @@ keyState.addListeners(canvas);
 
 function getScale(): number {
   let maxR = 0;
-  objects.forEach(rect => {
-    maxR = Math.max(maxR, rect.r);
+  objects.forEach(obj => {
+    maxR = Math.max(maxR, obj.r, obj.rPrime);
   });
   let scale = canvas.height / (maxR * 2);
   return scale;
@@ -115,10 +125,10 @@ function update(): void {
   let mousePos = getMousePos();
   if (mouseState.isClicked(MouseState.LEFT)) {
     selectedObj = null;
-    objects.forEach(rect => {
-      if (rect.contains(mousePos)) {
-        selectedObj = rect;
-        setUpdate(rect);
+    objects.forEach(obj => {
+      if (obj.toRect().contains(mousePos)) {
+        selectedObj = obj;
+        setFields(obj);
       }
     });
   }
@@ -126,6 +136,27 @@ function update(): void {
     objects = objects.filter(rect => rect !== selectedObj);
     selectedObj = null;
   }
+  // Update animation frames
+  objects.forEach(obj => {
+    if (obj.type === 'platform' && obj.moves) {
+      if (obj.framesUp) {
+        if (obj.frame < obj.rate) {
+          obj.frame++;
+        } else {
+          obj.framesUp = false;
+        }
+      } else {
+        if (obj.frame > 0) {
+          obj.frame--;
+        } else {
+          obj.framesUp = true;
+        }
+      }
+    } else {
+      obj.frame = 0;
+      obj.framesUp = true;
+    }
+  })
 }
 
 function draw(): void {
@@ -136,30 +167,28 @@ function draw(): void {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.scale(scale, scale);
-  objects.forEach(rect => {
-    let drawRadius = rect.r - (rect.height / 2);
-    if (drawRadius < 0) {
-      drawRadius = rect.r / 2;
-      ctx.lineWidth = drawRadius * 2;
-    } else {
-      ctx.lineWidth = rect.height;
-    }
-    if (selectedObj === rect) {
+  objects.forEach(obj => {
+    if (selectedObj === obj) {
       ctx.strokeStyle = 'orange';
-    } else if (rect.contains(mousePos)) {
+    } else if (obj.toRect().contains(mousePos)) {
       ctx.strokeStyle = 'yellow';
-    } else if (rect.type === 'platform') {
+    } else if (obj.type === 'platform') {
       ctx.strokeStyle = 'rgb(200, 200, 230)';
-    } else if (rect.type === 'grass') {
+    } else if (obj.type === 'grass') {
       ctx.strokeStyle = 'rgb(50, 255, 100)';
-    } else if (rect.type === 'stone') {
+    } else if (obj.type === 'stone') {
       ctx.strokeStyle = 'rgb(150, 150, 150)';
-    } else if (rect.type === 'underground') {
+    } else if (obj.type === 'underground') {
       ctx.strokeStyle = 'rgb(100, 100, 100)';
     }
-    ctx.beginPath();
-    ctx.arc(0, 0, drawRadius, rect.theta, rect.theta + rect.width);
-    ctx.stroke();
+    let rect = obj.toRect();
+    let drawRadius = rect.r - (rect.height / 2);
+    if (drawRadius > 0) {
+      ctx.lineWidth = rect.height;
+      ctx.beginPath();
+      ctx.arc(0, 0, drawRadius, rect.theta, rect.theta + rect.width);
+      ctx.stroke();
+    }
   });
   ctx.restore();
   mouseState.rollOver();
@@ -173,17 +202,8 @@ function updateDrawLoop(): void {
 }
 updateDrawLoop();
 
-let addButton = <HTMLInputElement>document.getElementById('add');
-addButton.addEventListener('click', () => {
-  let rect = getAdd();
-  objects.push(rect);
-  selectedObj = rect;
-  setUpdate(rect);
-});
-
-let loadButton = <HTMLInputElement>document.getElementById('load');
-loadButton.addEventListener('click', () => {
-  let fileInput = <HTMLInputElement>document.getElementById('file');
+elem('load').addEventListener('click', () => {
+  let fileInput = elem('file');
   if (fileInput.files.length <= 0) {
     return;
   }
@@ -197,11 +217,11 @@ loadButton.addEventListener('click', () => {
     if (data.blocks) {
       data.blocks.forEach(block => {
         let obj = new LevelObject(
+          block.type || 'stone',
           block.r,
           block.theta,
           block.height,
-          block.width,
-          block.type || 'stone'
+          block.width
         );
         objects.push(obj);
       });
@@ -209,23 +229,27 @@ loadButton.addEventListener('click', () => {
     if (data.platforms) {
       data.platforms.forEach(platform => {
         let obj = new LevelObject(
+          'platform',
           platform.r,
           platform.theta,
           platform.height,
-          platform.width,
-          'platform'
+          platform.width
         );
+        obj.rate = platform.rate || 60;
+        obj.moves = platform.moves || false;
+        obj.rPrime = platform.rPrime || platform.r;
+        obj.thetaPrime = platform.thetaPrime || platform.theta;
         objects.push(obj);
       });
     }
     if (data.decorations) {
       data.decorations.forEach(decoration => {
         let obj = new LevelObject(
+          decoration.type,
           decoration.r,
           decoration.theta,
           decoration.height,
-          decoration.width,
-          decoration.type
+          decoration.width
         );
         objects.push(obj);
       });
@@ -234,8 +258,8 @@ loadButton.addEventListener('click', () => {
   reader.readAsText(fileInput.files[0]);
 });
 
-let saveButton = <HTMLInputElement>document.getElementById('save');
-saveButton.addEventListener('click', () => {
+elem('save').addEventListener('click', () => {
+  objects = objects.filter(obj => obj.r > 0).sort((a, b) => a.r - b.r);
   let data = {
     blocks: objects.filter(obj => {
       return obj.type === 'grass' || obj.type === 'stone';
@@ -248,13 +272,20 @@ saveButton.addEventListener('click', () => {
         type: rect.type,
       };
     }),
-    platforms: objects.filter(obj => obj.type === 'platform').map(rect => {
-      return {
-        r: rect.r,
-        theta: rect.theta,
-        height: rect.height,
-        width: rect.width,
+    platforms: objects.filter(obj => obj.type === 'platform').map(obj => {
+      let ret = {
+        r: obj.r,
+        theta: obj.theta,
+        height: obj.height,
+        width: obj.width,
+        moves: obj.moves,
       };
+      if (obj.moves) {
+        ret['rate'] = obj.rate;
+        ret['rPrime'] = obj.rPrime;
+        ret['thetaPrime'] = obj.thetaPrime;
+      }
+      return ret;
     }),
     decorations: objects.filter(obj => obj.type === 'underground').map(rect => {
       return {

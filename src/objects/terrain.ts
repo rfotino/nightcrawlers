@@ -104,14 +104,43 @@ abstract class Terrain extends GameObject {
 }
 
 export class Platform extends Terrain {
-  public constructor(r: number, theta: number, height: number, width: number) {
+  private _rMin: number;
+  private _rMax: number;
+  private _thetaMin: number;
+  private _thetaMax: number;
+
+  public constructor(r: number, theta: number, height: number, width: number,
+                     moves: boolean = false,
+                     rate: number = 0,
+                     rPrime: number = r,
+                     thetaPrime: number = theta) {
     super(r, theta, height, width, new Color(255, 255, 255));
+    // Assign animation characteristics for moving between r and rPrime and
+    // theta and thetaPrime every rate frames
+    if (moves && rate > 0) {
+      this.vel.r = (rPrime - r) / rate;
+      this.vel.theta = (thetaPrime - theta) / rate;
+    }
+    this._rMin = Math.min(r, rPrime);
+    this._rMax = Math.max(r, rPrime);
+    this._thetaMin = Math.min(theta, thetaPrime);
+    this._thetaMax = Math.max(theta, thetaPrime);
     // By default, platforms only have a solid top
     this._solidLeft = this._solidRight = this._solidBottom = false;
     this._solidTop = true;
   }
 
   public type(): string { return 'platform'; }
+
+  public update(game: GameInstance): void {
+    super.update(game);
+    if (this.pos.r <= this._rMin || this.pos.r >= this._rMax) {
+      this.vel.r *= -1;
+    }
+    if (this.pos.theta <= this._thetaMin || this.pos.theta >= this._thetaMax) {
+      this.vel.theta *= -1;
+    }
+  }
 }
 
 export class Block extends Terrain {
