@@ -51,6 +51,69 @@ class LevelObject {
         return new Color(200, 200, 230);
       case 'underground':
         return new Color(100, 100, 100);
+      case 'player-spawn':
+        return new Color(50, 100, 255);
+    }
+  }
+
+  public draw(ctx: CanvasRenderingContext2D): void {
+    ctx.beginPath();
+    switch (this.type) {
+      default:
+      case 'stone':
+      case 'grass':
+      case 'platform':
+      case 'underground':
+        let rect = this.toRect();
+        if (rect.r > 0 && rect.height > 0) {
+          let minR = Math.max(0, rect.r - rect.height);
+          ctx.arc(0, 0, rect.r, rect.theta, rect.theta + rect.width);
+          ctx.arc(0, 0, minR, rect.theta + rect.width, rect.theta, true);
+          ctx.closePath();
+        }
+        break;
+      case 'player-spawn':
+        ctx.arc(
+          this.r * Math.cos(this.theta),
+          this.r * Math.sin(this.theta),
+          30,
+          0,
+          Math.PI * 2
+        );
+        break;
+    }
+  }
+
+  public contains(coord: Polar.Coord): boolean {
+    switch (this.type) {
+      default:
+      case 'stone':
+      case 'grass':
+      case 'platform':
+      case 'underground':
+        return this.toRect().contains(coord);
+      case 'player-spawn':
+        let thisX = this.r * Math.cos(this.theta);
+        let thisY = this.r * Math.sin(this.theta);
+        let thatX = coord.r * Math.cos(coord.theta);
+        let thatY = coord.r * Math.sin(coord.theta);
+        let dist = Math.sqrt(
+          Math.pow(thisX - thatX, 2) + Math.pow(thisY - thatY, 2)
+        );
+        return dist < 30;
+    }
+  }
+
+  public canAdd(): boolean {
+    switch (this.type) {
+      default:
+      case 'stone':
+      case 'grass':
+      case 'platform':
+      case 'underground':
+        return this.r > 0 && this.height > 0 && this.width > 0;
+      case 'player-spawn':
+        return true;
     }
   }
 }
@@ -154,7 +217,7 @@ function update(): void {
   if (!addingObj && mouseState.isDown(MouseState.LEFT)) {
     selectedObj = null;
     objects.forEach(obj => {
-      if (obj.toRect().contains(mousePos)) {
+      if (obj.contains(mousePos)) {
         selectedObj = obj;
         setFields(obj);
       }
@@ -217,7 +280,7 @@ function update(): void {
       addingObj.width = Math.round(width / THETASTEP) * THETASTEP;
       setFields(addingObj);
     } else {
-      if (addingObj.r > 0 && addingObj.height > 0 && addingObj.width > 0) {
+      if (addingObj.canAdd()) {
         objects.push(addingObj);
         selectedObj = addingObj;
       }
@@ -255,41 +318,29 @@ function draw(): void {
   let mousePos = getMousePos();
   let ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.scale(scale, scale);
   let drawables = addingObj ? objects.concat(addingObj) : objects;
   drawables.forEach(obj => {
     let color = obj.getColor();
-    let rect = obj.toRect();
-    if (obj.toRect().contains(mousePos) && !addingObj) {
+    if (obj.contains(mousePos) && !addingObj) {
       color.set(200, 200, 50);
     }
     ctx.fillStyle = color.toString();
-    if (rect.r > 0 && rect.height > 0) {
-      let minR = Math.max(0, rect.r - rect.height);
-      ctx.beginPath();
-      ctx.arc(0, 0, rect.r, rect.theta, rect.theta + rect.width);
-      ctx.arc(0, 0, minR, rect.theta + rect.width, rect.theta, true);
-      ctx.closePath();
-      ctx.fill();
-    }
+    obj.draw(ctx);
+    ctx.fill();
   });
   // Highlight selected object
   if (selectedObj) {
-    let rect = selectedObj.toRect();
-    if (rect.r > 0 && rect.height > 0) {
-      let minR = Math.max(0, rect.r - rect.height);
-      ctx.beginPath();
-      ctx.arc(0, 0, rect.r, rect.theta, rect.theta + rect.width);
-      ctx.arc(0, 0, minR, rect.theta + rect.width, rect.theta, true);
-      ctx.closePath();
-      ctx.lineWidth = 2 / scale;
-      ctx.strokeStyle = 'black';
-      ctx.setLineDash([5 / scale, 10 / scale]);
-      ctx.lineDashOffset = dashOffset;
-      ctx.stroke();
-    }
+    selectedObj.draw(ctx);
+    ctx.lineWidth = 2 / scale;
+    ctx.strokeStyle = 'black';
+    ctx.setLineDash([5 / scale, 10 / scale]);
+    ctx.lineDashOffset = dashOffset;
+    ctx.stroke();
   }
   ctx.restore();
   mouseState.rollOver();
@@ -355,13 +406,35 @@ elem('load').addEventListener('click', () => {
         objects.push(obj);
       });
     }
+    if (data.playerSpawns) {
+      data.playerSpawns.forEach(spawn => {
+        let obj = new LevelObject(
+          'player-spawn',
+          spawn.r,
+          spawn.theta,
+          1,
+          1
+        );
+        objects.push(obj);
+      })
+    }
   }
   reader.readAsText(fileInput.files[0]);
 });
 
 elem('save').addEventListener('click', () => {
-  objects = objects.filter(obj => obj.r > 0).sort((a, b) => a.r - b.r);
+  objects = objects.filter(obj => obj.r > 0).sort((a, b) => {
+    return a.r - b.r || a.theta - b.theta;
+  });
   let data = {
+    playerSpawns: objects.filter(obj => {
+      return obj.type === 'player-spawn';
+    }).map(obj => {
+      return {
+        r: Math.round(obj.r),
+        theta: Math.round(obj.theta * 1000) / 1000,
+      };
+    }),
     blocks: objects.filter(obj => {
       return obj.type === 'grass' || obj.type === 'stone';
     }).map(obj => {

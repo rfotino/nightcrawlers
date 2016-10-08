@@ -34,10 +34,12 @@ export class Player extends GameObject {
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
-    this.pos.r = level.getOuterRadius() + (this.height / 2);
-    this.pos.theta = 0;
     this.pos.mirror(this._sprite);
     this.addChild(this._sprite);
+    // Spawn the player at a random spawn point
+    let spawnPoint = level.getPlayerSpawn();
+    this.pos.r = spawnPoint.r;
+    this.pos.theta = spawnPoint.theta;
   }
 
   public type(): string { return 'player'; }

@@ -6,6 +6,7 @@ export class Level {
   protected _blocks: Terrain.Block[];
   protected _platforms: Terrain.Platform[];
   protected _decorations: Terrain.Decoration[];
+  protected _playerSpawns: Polar.Coord[];
 
   public constructor(objects: Object) {
     // Add blocks from file data
@@ -106,6 +107,27 @@ export class Level {
         ));
       });
     }
+    // Add spawn points from file data
+    this._playerSpawns = [];
+    if (objects['playerSpawns']) {
+      objects['playerSpawns'].forEach((spawnProps: Object) => {
+        this._playerSpawns.push(new Polar.Coord(
+          spawnProps['r'],
+          spawnProps['theta']
+        ));
+      })
+    } else {
+      this._playerSpawns.push(new Polar.Coord(this.getOuterRadius() + 30, 0));
+    }
+  }
+
+  /**
+   * Returns a random spawn point from this level's list of player spawn
+   * points.
+   */
+  public getPlayerSpawn(): Polar.Coord {
+    let randomIndex = Math.floor(Math.random() * this._playerSpawns.length);
+    return this._playerSpawns[randomIndex];
   }
 
   public getCoreRadius(): number {
