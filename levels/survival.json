@@ -13,6 +13,32 @@
       "theta": 2.35
     }
   ],
+  "itemSpawns": [
+    {
+      "r": 900,
+      "theta": -2.48,
+      "rate": 1800,
+      "type": "mines"
+    },
+    {
+      "r": 950,
+      "theta": 0.9,
+      "rate": 1800,
+      "type": "shotgun"
+    },
+    {
+      "r": 1300,
+      "theta": 0.125,
+      "rate": 1800,
+      "type": "armor"
+    },
+    {
+      "r": 1400,
+      "theta": 2.875,
+      "rate": 1800,
+      "type": "armor"
+    }
+  ],
   "blocks": [
     {
       "r": 850,

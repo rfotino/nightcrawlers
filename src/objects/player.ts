@@ -46,6 +46,10 @@ export class Player extends GameObject {
 
   public team(): string { return 'player'; }
 
+  public heal(amount: number): void {
+    this._health = Math.min(100, this._health + amount);
+  }
+
   public update(game: GameInstance): void {
     super.update(game);
     // Add relative velocity from the ground

@@ -18,6 +18,7 @@
           <option value="underground">underground</option>f
           <option value="platform">platform</option>
           <option value="player-spawn">player spawn</option>
+          <option value="item-spawn">item spawn</option>
         </select>
       </label>
       <br />
@@ -30,6 +31,15 @@
       <label>rate: <input type="number" id="rate" value="0" step="1" /></label>
       <label>r': <input type="number" id="r-prime" value="0" step="10" disabled /></label>
       <label>theta': <input type="number" id="theta-prime" value="0" step="0.025" /></label>
+      <br />
+      <label>
+        item type:
+        <select id="item-type">
+          <option value="armor">armor</option>
+          <option value="shotgun">shotgun</option>
+          <option value="mines">mines</option>
+        </select>
+      </label>
     </div>
     <br />
     <div>
@@ -41,6 +51,7 @@
           <option value="underground">underground</option>
           <option value="platform">platform</option>
           <option value="player-spawn">player spawn</option>
+          <option value="item-spawn">item spawn</option>
         </select>
       </label>
       (click and drag to add)

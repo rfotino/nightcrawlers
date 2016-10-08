@@ -6,6 +6,7 @@ import { Player } from './objects/player';
 import * as Terrain from './objects/terrain';
 import { Enemy } from './objects/enemy';
 import { EnemySpawner } from './objects/enemy-spawner';
+import { ItemSpawner } from './objects/item-spawner';
 import { Background } from './objects/background';
 import { TimeKeeper } from './timekeeper';
 import { KeyState } from './input/keystate';
@@ -20,6 +21,7 @@ export class GameInstance extends UIContainer {
   public background: Background;
   public timeKeeper: TimeKeeper;
   public enemySpawner: EnemySpawner;
+  public itemSpawners: ItemSpawner[];
   protected _level: Level;
   protected _options: Options;
   protected _outerViewStage: PIXI.Container;
@@ -47,6 +49,7 @@ export class GameInstance extends UIContainer {
     this.player = new Player(this._level);
     this.timeKeeper = new TimeKeeper();
     this.enemySpawner = new EnemySpawner();
+    this.itemSpawners = this._level.getItemSpawners();
     this.background = new Background();
     this._gameObjects = [].concat(
       [
@@ -169,6 +172,8 @@ export class GameInstance extends UIContainer {
     this.timeKeeper.update();
     // Maybe spawn an enemy
     this.enemySpawner.update(this);
+    // Maybe spawn some items
+    this.itemSpawners.forEach(spawner => spawner.update(this));
     // Update the background for the time of day
     this.background.update(this);
     // Call each game object's update function

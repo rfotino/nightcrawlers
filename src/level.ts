@@ -1,12 +1,14 @@
 import * as Terrain from './objects/terrain';
 import { Polar } from './math/polar';
 import { GameObject } from './objects/game-object';
+import { ItemSpawner } from './objects/item-spawner';
 
 export class Level {
   protected _blocks: Terrain.Block[];
   protected _platforms: Terrain.Platform[];
   protected _decorations: Terrain.Decoration[];
   protected _playerSpawns: Polar.Coord[];
+  protected _itemSpawns: ItemSpawner[];
 
   public constructor(objects: Object) {
     // Add blocks from file data
@@ -119,6 +121,18 @@ export class Level {
     } else {
       this._playerSpawns.push(new Polar.Coord(this.getOuterRadius() + 30, 0));
     }
+    // Add item spawners from file data
+    this._itemSpawns = [];
+    if (objects['itemSpawns']) {
+      objects['itemSpawns'].forEach((spawnProps: Object) => {
+        this._itemSpawns.push(new ItemSpawner(
+          spawnProps['r'],
+          spawnProps['theta'],
+          spawnProps['rate'],
+          spawnProps['type']
+        ));
+      })
+    }
   }
 
   /**
@@ -154,5 +168,9 @@ export class Level {
 
   public getObjects(): GameObject[] {
     return [].concat(this._blocks, this._platforms, this._decorations);
+  }
+
+  public getItemSpawners(): ItemSpawner[] {
+    return this._itemSpawns;
   }
 }

@@ -15,8 +15,25 @@ class LevelObject {
   public moves: boolean;
   public rPrime: number;
   public thetaPrime: number;
+  public itemType: string;
   public frame: number;
   public framesUp: boolean;
+
+  public get z(): number {
+    switch (this.type) {
+      default:
+      case 'underground':
+        return 5
+      case 'stone':
+      case 'grass':
+        return 10;
+      case 'platform':
+        return 15;
+      case 'player-spawn':
+      case 'item-spawn':
+        return 20;
+    }
+  }
 
   public constructor(type: string,
                      r: number, theta: number, height: number, width: number) {
@@ -29,6 +46,7 @@ class LevelObject {
     this.moves = false;
     this.rPrime = this.r;
     this.thetaPrime = this.theta;
+    this.itemType = elem('item-type').value;
     this.frame = 0;
     this.framesUp = true;
   }
@@ -53,6 +71,8 @@ class LevelObject {
         return new Color(100, 100, 100);
       case 'player-spawn':
         return new Color(50, 100, 255);
+      case 'item-spawn':
+        return new Color(150, 200, 255);
     }
   }
 
@@ -73,10 +93,11 @@ class LevelObject {
         }
         break;
       case 'player-spawn':
+      case 'item-spawn':
         ctx.arc(
           this.r * Math.cos(this.theta),
           this.r * Math.sin(this.theta),
-          30,
+          20,
           0,
           Math.PI * 2
         );
@@ -93,6 +114,7 @@ class LevelObject {
       case 'underground':
         return this.toRect().contains(coord);
       case 'player-spawn':
+      case 'item-spawn':
         let thisX = this.r * Math.cos(this.theta);
         let thisY = this.r * Math.sin(this.theta);
         let thatX = coord.r * Math.cos(coord.theta);
@@ -100,7 +122,7 @@ class LevelObject {
         let dist = Math.sqrt(
           Math.pow(thisX - thatX, 2) + Math.pow(thisY - thatY, 2)
         );
-        return dist < 30;
+        return dist < 20;
     }
   }
 
@@ -113,6 +135,7 @@ class LevelObject {
       case 'underground':
         return this.r > 0 && this.height > 0 && this.width > 0;
       case 'player-spawn':
+      case 'item-spawn':
         return true;
     }
   }
@@ -132,6 +155,7 @@ function setFields(obj: LevelObject): void {
   elem('moves').checked = obj.moves;
   elem('r-prime').value = obj.rPrime.toString();
   elem('theta-prime').value = obj.thetaPrime.toString();
+  elem('item-type').value = obj.itemType;
 }
 
 function addEventListeners(elem: HTMLElement,
@@ -150,6 +174,7 @@ function addEventListeners(elem: HTMLElement,
   'moves',
   'r-prime',
   'theta-prime',
+  'item-type',
 ].forEach((id: string) => {
   addEventListeners(elem(id), ['change', 'input'], (e: Event) => {
     if (selectedObj) {
@@ -162,6 +187,7 @@ function addEventListeners(elem: HTMLElement,
       selectedObj.moves = elem('moves').checked;
       selectedObj.rPrime = parseFloat(elem('r-prime').value);
       selectedObj.thetaPrime = parseFloat(elem('theta-prime').value);
+      selectedObj.itemType = elem('item-type').value;
     }
   });
 });
@@ -191,6 +217,7 @@ canvas.addEventListener('keyup', (e: KeyboardEvent) => {
   if (!e.ctrlKey) {
     e.preventDefault();
   }
+  return false;
 });
 
 function getScale(): number {
@@ -324,7 +351,7 @@ function draw(): void {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.scale(scale, scale);
   let drawables = addingObj ? objects.concat(addingObj) : objects;
-  drawables.forEach(obj => {
+  drawables.sort((a, b) => a.z - b.z).forEach(obj => {
     let color = obj.getColor();
     if (obj.contains(mousePos) && !addingObj) {
       color.set(200, 200, 50);
@@ -418,6 +445,20 @@ elem('load').addEventListener('click', () => {
         objects.push(obj);
       })
     }
+    if (data.itemSpawns) {
+      data.itemSpawns.forEach(spawn => {
+        let obj = new LevelObject(
+          'item-spawn',
+          spawn.r,
+          spawn.theta,
+          1,
+          1
+        );
+        obj.rate = spawn.rate;
+        obj.itemType = spawn.type;
+        objects.push(obj);
+      })
+    }
   }
   reader.readAsText(fileInput.files[0]);
 });
@@ -433,6 +474,16 @@ elem('save').addEventListener('click', () => {
       return {
         r: Math.round(obj.r),
         theta: Math.round(obj.theta * 1000) / 1000,
+      };
+    }),
+    itemSpawns: objects.filter(obj => {
+      return obj.type === 'item-spawn';
+    }).map(obj => {
+      return {
+        r: Math.round(obj.r),
+        theta: Math.round(obj.theta * 1000) / 1000,
+        rate: Math.round(obj.rate),
+        type: obj.itemType,
       };
     }),
     blocks: objects.filter(obj => {
@@ -455,9 +506,9 @@ elem('save').addEventListener('click', () => {
         moves: obj.moves,
       };
       if (obj.moves) {
-        ret['rate'] = obj.rate;
-        ret['rPrime'] = obj.rPrime;
-        ret['thetaPrime'] = obj.thetaPrime;
+        ret['rate'] = Math.round(obj.rate);
+        ret['rPrime'] = Math.round(obj.rPrime);
+        ret['thetaPrime'] = Math.round(obj.thetaPrime * 1000) / 1000;
       }
       return ret;
     }),
