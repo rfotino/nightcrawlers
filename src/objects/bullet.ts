@@ -1,5 +1,6 @@
 import { GameObject } from './game-object';
 import { Player } from './player';
+import { Enemy } from './enemy';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
@@ -52,7 +53,7 @@ export class Bullet extends GameObject {
     if (other.team() === 'enemy') {
       other.damage(this._damageAmount);
       if (!other.alive) {
-        this._owner.score++;
+        this._owner.score += (<Enemy>other).score;
       }
       this.kill();
     }

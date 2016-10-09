@@ -10,6 +10,7 @@ export class Enemy extends GameObject {
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
   private _damageAmount: number = 0.25;
+  protected _score: number = 50;
 
   public get width(): number {
     return 30;
@@ -21,6 +22,10 @@ export class Enemy extends GameObject {
 
   public get z(): number {
     return 40;
+  }
+
+  public get score(): number {
+    return this._score;
   }
 
   public constructor(r: number, theta: number) {

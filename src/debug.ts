@@ -11,7 +11,7 @@ export class Debugger extends PIXI.Container {
       fontFamily: 'Monospace',
       fontSize: '24px',
       lineHeight: 28,
-      fill: 'white',
+      fill: 'magenta',
     });
     this._text.position.set(15, 15);
     this._text.visible = visible;
@@ -39,10 +39,11 @@ export class Debugger extends PIXI.Container {
       `FPS:     ${fps.toFixed(0)}\n` +
       `r:       ${game.player.pos.r.toFixed(0)}\n` +
       `θ:       ${(game.player.pos.theta / Math.PI).toFixed(2)}π\n` +
-      `health:  ${game.player.health.toFixed(0)}\n` +
-      `score:   ${game.score}\n` +
       `${timeType} ${timePercent.toFixed(0)}%\n` +
       `enemies: ${game.enemySpawner.count}\n` +
       `render:  ${game.isWebGL() ? 'WebGL' : 'Canvas'}`;
+    // Put text in bottom left
+    this._text.x = 5;
+    this._text.y = game.view.height - this.height;
   }
 }

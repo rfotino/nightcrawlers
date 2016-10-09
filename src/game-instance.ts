@@ -14,6 +14,7 @@ import { Polar } from './math/polar';
 import { Debugger } from './debug';
 import { Collider } from './math/collider';
 import { UIContainer } from './ui/container';
+import { UILabel } from './ui/label';
 import { PauseMenu } from './ui/menu';
 import { HealthBar } from './ui/healthbar';
 
@@ -34,6 +35,7 @@ export class GameInstance extends UIContainer {
   protected _pauseMenu: PauseMenu;
   protected _paused: boolean;
   protected _healthBar: HealthBar;
+  protected _scoreLabel: UILabel;
 
   public get score(): number {
     return this.player.score;
@@ -78,6 +80,9 @@ export class GameInstance extends UIContainer {
     // Add the health bar
     this._healthBar = new HealthBar(game, this.player);
     this.addComponent(this._healthBar);
+    // Add score label
+    this._scoreLabel = new UILabel(game, '0');
+    this.addComponent(this._scoreLabel);
   }
 
   /**
@@ -164,6 +169,10 @@ export class GameInstance extends UIContainer {
     this._healthBar.height = this._healthBar.width / 12;
     this._healthBar.x = (this.view.width * 0.95) - this._healthBar.width;
     this._healthBar.y = (this.view.height * 0.05);
+    // Update score label position
+    this._scoreLabel.x = this.view.width * 0.05;
+    this._scoreLabel.y = this.view.height * 0.02;
+    this._scoreLabel.height = this.view.height * 0.15;
   }
 
   /**
@@ -207,6 +216,8 @@ export class GameInstance extends UIContainer {
     this._gameObjects.forEach(obj => obj.rollOver());
     // Update the debug text
     this._debugger.update(this);
+    // Update the score label
+    this._scoreLabel.title = `${this.score}`;
   }
 
   public addGameObject(obj: GameObject): void {
