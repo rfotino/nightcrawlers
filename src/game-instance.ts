@@ -15,6 +15,7 @@ import { Debugger } from './debug';
 import { Collider } from './math/collider';
 import { UIContainer } from './ui/container';
 import { PauseMenu } from './ui/menu';
+import { HealthBar } from './ui/healthbar';
 
 export class GameInstance extends UIContainer {
   public player: Player;
@@ -32,6 +33,7 @@ export class GameInstance extends UIContainer {
   protected _previousCollisions: Collider.Previous;
   protected _pauseMenu: PauseMenu;
   protected _paused: boolean;
+  protected _healthBar: HealthBar;
 
   public get score(): number {
     return this.player.score;
@@ -73,6 +75,9 @@ export class GameInstance extends UIContainer {
     // Create the pause menu for later
     this._pauseMenu = new PauseMenu(game, this);
     this._paused = false;
+    // Add the health bar
+    this._healthBar = new HealthBar(game, this.player);
+    this.addComponent(this._healthBar);
   }
 
   /**
@@ -133,6 +138,7 @@ export class GameInstance extends UIContainer {
    */
   public doLayout(): void {
     super.doLayout();
+    // Scroll the view if the player goes too close to the edge of the screen
     let viewableTheta = this.view.width / (this.player.pos.r * 2);
     let diffTheta = viewableTheta / 3;
     let minTheta = this.player.pos.theta - diffTheta;
@@ -153,6 +159,11 @@ export class GameInstance extends UIContainer {
     this._outerViewStage.y = this.view.height / 2;
     this._innerViewStage.rotation = -(Math.PI / 2) - this._playerView.theta;
     this._innerViewStage.y = this._playerView.r;
+    // Update health bar position
+    this._healthBar.width = this.view.width / 3.5;
+    this._healthBar.height = this._healthBar.width / 12;
+    this._healthBar.x = (this.view.width * 0.95) - this._healthBar.width;
+    this._healthBar.y = (this.view.height * 0.05);
   }
 
   /**

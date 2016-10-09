@@ -29,7 +29,8 @@ export class Player extends GameObject {
 
   public constructor(level: Level) {
     super();
-    this._health = 100;
+    this._maxHealth = 100;
+    this._health = this._maxHealth;
     this._canvas = document.createElement('canvas');
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
@@ -47,7 +48,7 @@ export class Player extends GameObject {
   public team(): string { return 'player'; }
 
   public heal(amount: number): void {
-    this._health = Math.min(100, this._health + amount);
+    this._health = Math.min(this._maxHealth, this._health + amount);
   }
 
   public update(game: GameInstance): void {

@@ -12,6 +12,7 @@ export abstract class GameObject extends PIXI.Container {
   private _vel: Polar.Coord;
   private _accel: Polar.Coord;
   private _alive: boolean = true;
+  protected _maxHealth: number = Infinity;
   protected _health: number = Infinity;
 
   public get id(): number {
@@ -44,6 +45,10 @@ export abstract class GameObject extends PIXI.Container {
 
   public get health(): number {
     return this._health;
+  }
+
+  public get maxHealth(): number {
+    return this._maxHealth;
   }
 
   public get movable(): boolean {
