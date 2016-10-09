@@ -3,6 +3,7 @@
 import { GameInstance } from './game-instance';
 import { KeyState } from './input/keystate';
 import { MouseState } from './input/mousestate';
+import { TouchState } from './input/touchstate';
 import { UIContainer } from './ui/container';
 import { MainMenu } from './ui/menu';
 
@@ -12,10 +13,12 @@ export class Game {
   protected _mainMenu: MainMenu;
   protected _keyState: KeyState;
   protected _mouseState: MouseState;
+  protected _touchState: TouchState;
 
   public get mainMenu(): MainMenu { return this._mainMenu; }
   public get keyState(): KeyState { return this._keyState; }
   public get mouseState(): MouseState { return this._mouseState; }
+  public get touchState(): TouchState { return this._touchState; }
 
   public get view(): HTMLCanvasElement {
     return this._renderer.view;
@@ -35,9 +38,10 @@ export class Game {
         backgroundColor: 0x000000,
       }
     );
-    // Add mouse/key listeners
+    // Add mouse/key/touch listeners
     this._keyState = new KeyState();
     this._mouseState = new MouseState();
+    this._touchState = new TouchState();
     this._keyState.addListeners(
       this._renderer.view,
       (event: string, mouseX: number, mouseY: number) => {
@@ -50,6 +54,12 @@ export class Game {
         this._activeScreen.trigger(event, mouseX, mouseY);
       }
     );
+    this._touchState.addListeners(
+      this._renderer.view,
+      (event: string, touchX: number, touchY: number) => {
+        this._activeScreen.trigger(event, touchX, touchY);
+      }
+    )
     this._renderer.view.tabIndex = -1;
     this._renderer.view.oncontextmenu = () => false;
     // Set the active view to be a game instance

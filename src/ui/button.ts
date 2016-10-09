@@ -6,21 +6,26 @@ import { MouseState } from '../input/mousestate';
 export class UIButton extends UILabel {
   public constructor(game: Game, title: string) {
     super(game, title);
-    this.addListener('mouseup', (x: number, y: number) => {
-      this.trigger('action', x, y);
+    [
+      'mouseup',
+      'touchend',
+    ].forEach(eventType => {
+      this.addListener(eventType, (x: number, y: number) => {
+        this.trigger('action', x, y);
+      });
     });
   }
 
   public update(): void {
     super.update();
     let bounds = this.getBounds();
-    if (this.mouseState.x >= bounds.x &&
-        this.mouseState.x <= bounds.x + bounds.width &&
-        this.mouseState.y >= bounds.y &&
-        this.mouseState.y <= bounds.y + bounds.height) {
+    if (bounds.contains(this.mouseState.x, this.mouseState.y) ||
+        (bounds.contains(this.touchState.x, this.touchState.y) &&
+         this.touchState.isDown())) {
       // Hovering
       this._text.style.fill = 'gray';
-      if (this.mouseState.isDown(MouseState.LEFT)) {
+      if (this.mouseState.isDown(MouseState.LEFT) ||
+          this.touchState.isDown()) {
         // Mouse pressed
         this._text.y += this.height * 0.05;
       }

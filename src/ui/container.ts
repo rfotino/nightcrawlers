@@ -1,6 +1,7 @@
 import { Game } from '../game';
 import { KeyState } from '../input/keystate';
 import { MouseState } from '../input/mousestate';
+import { TouchState } from '../input/touchstate';
 import { Color } from '../math/color';
 
 export abstract class UIContainer extends PIXI.Container {
@@ -17,6 +18,10 @@ export abstract class UIContainer extends PIXI.Container {
 
   public get mouseState(): MouseState {
     return this._game.mouseState;
+  }
+
+  public get touchState(): TouchState {
+    return this._game.touchState;
   }
 
   public get view(): HTMLCanvasElement {
@@ -60,8 +65,7 @@ export abstract class UIContainer extends PIXI.Container {
     }
     this._childComponents.forEach(child => {
       let bounds = child.getBounds();
-      if (mouseX >= bounds.x && mouseY >= bounds.y &&
-          mouseX <= bounds.x + bounds.width && mouseY <= bounds.y + bounds.height) {
+      if (bounds.contains(mouseX, mouseY)) {
         child.trigger(event, mouseX, mouseY);
       }
     });
