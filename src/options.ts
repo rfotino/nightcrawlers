@@ -16,6 +16,6 @@ export class Options {
 
   public constructor() {
     this.debug = true;
-    this._levelData = require('../levels/survival.json');
+    this._levelData = require('../assets/levels/survival.json');
   }
 }

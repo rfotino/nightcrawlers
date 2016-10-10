@@ -28,14 +28,17 @@ export class Enemy extends GameObject {
     return this._score;
   }
 
-  public constructor(r: number, theta: number) {
+  public constructor(game: GameInstance) {
     super();
     this._maxHealth = 20;
     this._health = this._maxHealth;
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     this._sprite.anchor.set(0.5, 0.5);
-    this.pos.set(r, theta);
+    this.pos.set(
+      game.player.pos.r + 300,
+      game.player.pos.theta - 0.5 + Math.random()
+    );
     this.pos.mirror(this._sprite);
     this.addChild(this._sprite);
   }

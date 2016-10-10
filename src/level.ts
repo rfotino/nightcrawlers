@@ -9,7 +9,11 @@ export class Level {
   protected _decorations: Terrain.Decoration[];
   protected _playerSpawns: Polar.Coord[];
   protected _itemSpawns: ItemSpawner[];
+  protected _waves: {[key: string]: number}[];
 
+  /**
+   * Construct a level from a JSON object saved to a file by the level editor.
+   */
   public constructor(objects: Object) {
     // Add blocks from file data
     this._blocks = [];
@@ -133,6 +137,8 @@ export class Level {
         ));
       })
     }
+    // Add waves of enemies from file data
+    this._waves = objects['waves'] || [];
   }
 
   /**
@@ -144,6 +150,9 @@ export class Level {
     return this._playerSpawns[randomIndex];
   }
 
+  /**
+   * Gets the radius of the lowest block/platform.
+   */
   public getCoreRadius(): number {
     let min = Infinity;
     this._blocks.forEach(block => {
@@ -155,6 +164,9 @@ export class Level {
     return min;
   }
 
+  /**
+   * Returns the radius of the highest block/platform.
+   */
   public getOuterRadius(): number {
     let max = 0;
     this._blocks.forEach(block => {
@@ -166,11 +178,40 @@ export class Level {
     return max;
   }
 
+  /**
+   * Gets all of the terrain game objects for this level.
+   */
   public getObjects(): GameObject[] {
     return [].concat(this._blocks, this._platforms, this._decorations);
   }
 
+  /**
+   * Returns all of the static item spawners for this level.
+   */
   public getItemSpawners(): ItemSpawner[] {
     return this._itemSpawns;
+  }
+
+  /**
+   * Get enemy wave i, starting at zero. Returns a {string: number} key value
+   * pair of the form {enemyType: count}.
+   */
+  public getWave(i: number): {[key: string]: number} {
+    if (i < 0 || this._waves.length <= 0) {
+      return {};
+    } else if (i < this._waves.length) {
+      return this._waves[i];
+    } else {
+      // Past the end of the designed waves we just return 2 more of each
+      // enemy type than the previous wave.
+      let lastWave = this._waves[this._waves.length - 1];
+      let newWave: {[key: string]: number} = {};
+      for (let type in lastWave) {
+        if (lastWave.hasOwnProperty(type)) {
+          newWave[type] = lastWave[type] + (2 * (i - this._waves.length + 1));
+        }
+      }
+      return newWave;
+    }
   }
 }

@@ -371,5 +371,31 @@
       "width": 0.6,
       "type": "underground"
     }
+  ],
+  "waves": [
+    {
+      "zombie": 3
+    },
+    {
+      "zombie": 5
+    },
+    {
+      "zombie": 5,
+      "bat": 2
+    },
+    {
+      "zombie": 6,
+      "bat": 4
+    },
+    {
+      "zombie": 10,
+      "bat": 4,
+      "spider": 2
+    },
+    {
+      "zombie": 12,
+      "bat": 5,
+      "spider": 4
+    }
   ]
 }

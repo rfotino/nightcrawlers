@@ -1,38 +1,67 @@
 import { Enemy } from './enemy';
+import { FlyingBat } from './flying-bat';
+import { Skeleton } from './skeleton';
+import { Spider } from './spider';
+import { Zombie } from './zombie';
 import { GameInstance } from '../game-instance';
 
 export class EnemySpawner {
-  private _enemies: Enemy[];
+  private _enemiesToSpawn: string[] = [];
+  private _enemies: Enemy[] = [];
   private _spawnCounter: number = 0;
   private _spawnCounterMax: number = 120;
 
-  public get count(): number {
+  public get numAlive(): number {
     return this._enemies.filter(enemy => enemy.alive).length;
   }
 
-  public constructor() {
-    this._enemies = [];
+  public get numToSpawn(): number {
+    return this._enemiesToSpawn.length;
   }
 
+  /**
+   * Add a wave of enemies to spawn. The wave is of the form {enemyType: count}.
+   */
+  public addWave(wave: {[key: string]: number}): void {
+    for (let type in wave) {
+      if (wave.hasOwnProperty(type)) {
+        let num = wave[type];
+        for (let i = 0; i < num; i++) {
+          this._enemiesToSpawn.push(type);
+        }
+      }
+    }
+  }
+
+  /**
+   * Update the timer, maybe spawn some enemies.
+   */
   public update(game: GameInstance): void {
     if (game.timeKeeper.isDay) {
-      this._enemies.forEach(enemy => {
-        enemy.kill();
-      });
-      this._enemies = [];
       this._spawnCounter = 0;
     } else {
       this._spawnCounter++;
       if (this._spawnCounter >= this._spawnCounterMax) {
-        const thetaRange = 1;
-        let theta = (
-          game.player.pos.theta -
-          (thetaRange / 2) +
-          (Math.random() * thetaRange)
-        );
-        let enemy = new Enemy(game.player.pos.r + 300, theta);
-        game.addGameObject(enemy);
-        this._enemies.push(enemy);
+        let newEnemyType = this._enemiesToSpawn.shift();
+        let enemy = null;
+        switch (newEnemyType) {
+          case 'zombie':
+            enemy = new Zombie(game);
+            break;
+          case 'bat':
+            enemy = new FlyingBat(game);
+            break;
+          case 'skeleton':
+            enemy = new Skeleton(game);
+            break;
+          case 'spider':
+            enemy = new Spider(game);
+            break;
+        }
+        if (enemy) {
+          game.addGameObject(enemy);
+          this._enemies.push(enemy);
+        }
         this._spawnCounter = 0;
       }
     }

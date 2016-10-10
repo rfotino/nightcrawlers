@@ -1,8 +1,10 @@
 export class TimeKeeper {
-  private _isDay: boolean = true;
-  private _time: number = 0;
-  private _dayLength = 400;
-  private _nightLength = 600;
+  protected _counter: number = 0;
+  protected _isDay: boolean = true;
+  protected _dayLength: number = 400;
+  protected _transitioning: boolean = false;
+  protected _transition: number = 0;
+  protected _transitionLength: number = 50;
 
   /**
    * Returns true if it is currently day, false otherwise.
@@ -22,21 +24,37 @@ export class TimeKeeper {
    * Returns a number between 0 and 1 representing the progress through the
    * current day or night.
    */
-  public get time(): number {
-    return this._time;
+  public get transition(): number {
+    return this._transition;
   }
 
   /**
    * Updates the time of day for another frame.
    */
   public update() {
-    this._time += this._isDay ? 1 / this._dayLength : 1 / this._nightLength;
-    if (this._time > 1) {
-      this._time = 0;
-      if (!this._isDay) {
-        this._nightLength += 60;
+    this._counter++;
+    if (this._transitioning) {
+      if (this._counter > this._transitionLength) {
+        this._counter = 0;
+        this._isDay = !this._isDay;
+        this._transitioning = false;
       }
-      this._isDay = !this._isDay;
+      this._transition = this._counter / this._transitionLength;
+    } else if (this._isDay) {
+      if (this._counter > this._dayLength) {
+        this._counter = 0;
+        this._transitioning = true;
+      }
     }
+  }
+
+  /**
+   * End the current night and begin transitioning into day.
+   */
+  public endNight() {
+    this._counter = 0;
+    this._isDay = false;
+    this._transitioning = true;
+    this._transition = 0;
   }
 }

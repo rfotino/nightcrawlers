@@ -66,8 +66,8 @@ export class Game {
     this._mainMenu = new MainMenu(this);
     this._activeScreen = this._mainMenu;
     // Preload assets
-    PIXI.loader.add('planet', 'assets/planet.png');
-    PIXI.loader.add('player', 'assets/player.png');
+    PIXI.loader.add('planet', 'assets/images/planet.png');
+    PIXI.loader.add('player', 'assets/images/player.png');
     PIXI.loader.load(() => this._updateDrawLoop());
   }
 

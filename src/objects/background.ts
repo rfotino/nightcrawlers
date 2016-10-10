@@ -18,18 +18,13 @@ export class Background extends PIXI.Container {
     var bgColor: Color;
     let dayColor = new Color(135, 206, 250);
     let nightColor = new Color(0, 0, 50);
-    let time = game.timeKeeper.time;
-    let threshold = 0.8;
+    let transition = game.timeKeeper.transition;
     if (game.timeKeeper.isDay) {
       bgColor = dayColor.clone();
-      if (time > threshold) {
-        bgColor.blend(nightColor, (time - threshold) / (1 - threshold));
-      }
+      bgColor.blend(nightColor, transition);
     } else {
       bgColor = nightColor.clone();
-      if (time > threshold) {
-        bgColor.blend(dayColor, (time - threshold) / (1 - threshold));
-      }
+      bgColor.blend(dayColor, transition);
     }
     this._sprite.tint = bgColor.toPixi();
   }

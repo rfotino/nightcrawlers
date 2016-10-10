@@ -36,6 +36,7 @@ export class GameInstance extends UIContainer {
   protected _paused: boolean;
   protected _healthBar: HealthBar;
   protected _scoreLabel: UILabel;
+  protected _waveIndex: number;
 
   public get score(): number {
     return this.player.score;
@@ -83,6 +84,9 @@ export class GameInstance extends UIContainer {
     // Add score label
     this._scoreLabel = new UILabel(game, '0');
     this.addComponent(this._scoreLabel);
+    // Set initial wave index to zero and seed initial wave of monsters
+    this._waveIndex = 0;
+    this.enemySpawner.addWave(this._level.getWave(0));
   }
 
   /**
@@ -207,6 +211,14 @@ export class GameInstance extends UIContainer {
       }
     });
     this._gameObjects = this._gameObjects.filter(obj => obj.alive);
+    // End the night if all enemies in the wave were defeated
+    if (this.timeKeeper.isNight &&
+        this.enemySpawner.numAlive === 0 &&
+        this.enemySpawner.numToSpawn === 0) {
+      this.timeKeeper.endNight();
+      this._waveIndex++;
+      this.enemySpawner.addWave(this._level.getWave(this._waveIndex));
+    }
     // Sort game objects by depth
     this._gameObjects.sort((a, b) => a.z - b.z || a.id - b.id);
     this._gameObjects.forEach((obj, index) => {

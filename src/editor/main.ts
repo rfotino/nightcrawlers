@@ -381,6 +381,8 @@ function updateDrawLoop(): void {
 }
 updateDrawLoop();
 
+let waves = [];
+
 elem('load').addEventListener('click', () => {
   let fileInput = elem('file');
   if (fileInput.files.length <= 0) {
@@ -459,6 +461,9 @@ elem('load').addEventListener('click', () => {
         objects.push(obj);
       })
     }
+    if (data.waves) {
+      waves = data.waves;
+    }
   }
   reader.readAsText(fileInput.files[0]);
 });
@@ -521,6 +526,7 @@ elem('save').addEventListener('click', () => {
         type: obj.type,
       };
     }),
+    waves: waves
   }
   let dataString = JSON.stringify(data, null, 2);
   let anchor = document.createElement('a');

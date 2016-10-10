@@ -31,16 +31,12 @@ export class Debugger extends PIXI.Container {
     let frameTimeSum = this._frameTimes.reduce((p, c) => p + c);
     let frameAvg = frameTimeSum / this._frameTimes.length;
     let fps = frameAvg === 0 ? 0 : 1000 / frameAvg;
-    // Show time of day/night
-    let timeType = game.timeKeeper.isDay ? 'day:    ' : 'night:  ';
-    let timePercent = game.timeKeeper.time * 100;
     // Update text display
     this._text.text =
       `FPS:     ${fps.toFixed(0)}\n` +
       `r:       ${game.player.pos.r.toFixed(0)}\n` +
       `θ:       ${(game.player.pos.theta / Math.PI).toFixed(2)}π\n` +
-      `${timeType} ${timePercent.toFixed(0)}%\n` +
-      `enemies: ${game.enemySpawner.count}\n` +
+      `enemies: ${game.enemySpawner.numAlive}\n` +
       `render:  ${game.isWebGL() ? 'WebGL' : 'Canvas'}`;
     // Put text in bottom left
     this._text.x = 5;
