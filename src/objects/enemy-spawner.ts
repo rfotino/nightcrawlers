@@ -23,13 +23,23 @@ export class EnemySpawner {
    * Add a wave of enemies to spawn. The wave is of the form {enemyType: count}.
    */
   public addWave(wave: {[key: string]: number}): void {
+    // Get array of string enemy types from {enemyType: count}, so that
+    // {"bat": 3} would turn into ["bat", "bat", "bat"], for example.
+    let newEnemiesToSpawn: string[] = [];
     for (let type in wave) {
       if (wave.hasOwnProperty(type)) {
         let num = wave[type];
         for (let i = 0; i < num; i++) {
-          this._enemiesToSpawn.push(type);
+          newEnemiesToSpawn.push(type);
         }
       }
+    }
+    // Add the new enemies at random to the array of enemies to spawn
+    while (newEnemiesToSpawn.length > 0) {
+      let idx = Math.floor(Math.random() * newEnemiesToSpawn.length);
+      let enemy = newEnemiesToSpawn[idx];
+      newEnemiesToSpawn.splice(idx, 1);
+      this._enemiesToSpawn.push(enemy);
     }
   }
 

@@ -28,6 +28,10 @@ export class Enemy extends GameObject {
     return this._score;
   }
 
+  protected get _color(): string {
+    return 'green';
+  }
+
   public constructor(game: GameInstance) {
     super();
     this._maxHealth = 20;
@@ -114,7 +118,7 @@ export class Enemy extends GameObject {
     this._canvas.height = this.height + 2;
     // Draw enemy on the canvas
     let ctx = this._canvas.getContext('2d');
-    ctx.fillStyle = 'green';
+    ctx.fillStyle = this._color;
     ctx.fillRect(1, 1, this.width, this.height);
   }
 }
