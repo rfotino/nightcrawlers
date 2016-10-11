@@ -29,6 +29,13 @@ export class TimeKeeper {
   }
 
   /**
+   * Return true if we are currently transitioning between day and night.
+   */
+  public get transitioning(): boolean {
+    return this._transitioning;
+  }
+
+  /**
    * Updates the time of day for another frame.
    */
   public update() {

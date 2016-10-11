@@ -37,7 +37,7 @@ export class EnemySpawner {
    * Update the timer, maybe spawn some enemies.
    */
   public update(game: GameInstance): void {
-    if (game.timeKeeper.isDay) {
+    if (game.timeKeeper.isDay || game.timeKeeper.transitioning) {
       this._spawnCounter = 0;
     } else {
       this._spawnCounter++;
