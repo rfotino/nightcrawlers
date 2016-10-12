@@ -11,6 +11,14 @@ export class Enemy extends GameObject {
   private _onSolidGround: boolean = false;
   private _damageAmount: number = 0.25;
   protected _score: number = 50;
+  protected _shouldGoLeft: boolean = false;
+  protected _shouldGoRight: boolean = false;
+  protected _shouldJump: boolean = false;
+  protected _moveSpeed: number = 3;
+  protected _jumpSpeed: number = 15;
+  protected _flying: boolean = false;
+  protected _flapCounter: number = 0;
+  protected _maxFlapCounter: number = Infinity;
 
   public get width(): number {
     return 30;
@@ -51,23 +59,42 @@ export class Enemy extends GameObject {
 
   public team(): string { return 'enemy'; }
 
-  public update(game: GameInstance): void {
-    super.update(game);
-    // Make transparent if damaged
-    this.alpha = this._health / this._maxHealth;
-    // Handle turning
-    let speed = 3 / this.pos.r;
+  protected _updateBehavior(game: GameInstance): void {
     let diffTheta = (game.player.pos.theta - this.pos.theta) % (Math.PI * 2);
     let minDiffTheta = (
       0.3 *
       (game.player.width + this.width) /
       game.player.pos.r
     );
-    let goLeft = diffTheta < -minDiffTheta;
-    let goRight = diffTheta > minDiffTheta;
-    if (goLeft) {
+    this._shouldGoLeft = diffTheta < -minDiffTheta;
+    this._shouldGoRight = diffTheta > minDiffTheta;
+    this._shouldJump = game.player.pos.r > this.pos.r;
+  }
+
+  protected _canJump(): boolean {
+    return (
+      this._onSolidGround ||
+      (this._flying && this._flapCounter > this._maxFlapCounter)
+    );
+  }
+
+  public update(game: GameInstance): void {
+    super.update(game);
+    // Use AI heuristic to see if we should go left, go right, jump, etc
+    this._updateBehavior(game);
+    // Make transparent if damaged
+    this.alpha = this._health / this._maxHealth;
+    // Increment flap counter
+    if (this._onSolidGround) {
+      this._flapCounter = 0;
+    } else if (this._flying) {
+      this._flapCounter++;
+    }
+    // Handle turning
+    let speed = this._moveSpeed / this.pos.r;
+    if (this._shouldGoLeft) {
       this.vel.theta = -speed;
-    } else if (goRight) {
+    } else if (this._shouldGoRight) {
       this.vel.theta = speed;
     } else {
       this.vel.theta = 0;
@@ -75,11 +102,10 @@ export class Enemy extends GameObject {
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
     // Handle jumping if player is above this enemy
-    let jumpSpeed = 15;
-    let shouldJump = game.player.pos.r > this.pos.r;
-    if (shouldJump && this._onSolidGround) {
+    if (this._shouldJump && this._canJump()) {
       this._onSolidGround = false;
-      this.vel.r = jumpSpeed;
+      this.vel.r = this._jumpSpeed;
+      this._flapCounter = 0;
     }
     // Not on solid ground unless we collide with something this frame
     this._onSolidGround = false;
