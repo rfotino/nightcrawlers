@@ -119,7 +119,10 @@ export class GameInstance extends UIContainer {
         let prevBounds1 = this._previousCollisions.getBounds(obj1) || bounds1;
         let prevBounds2 = this._previousCollisions.getBounds(obj2) || bounds2;
         let prevResult = this._previousCollisions.getResult(obj1, obj2);
-        let relativeVel = obj2.vel.add(obj1.vel.mul(-1));
+        let relativeVel = new Polar.Coord(
+          obj2.vel.r - obj1.vel.r,
+          obj2.vel.theta - obj1.vel.theta
+        );
         let result = Collider.test(
           bounds1,
           bounds2,
@@ -224,6 +227,8 @@ export class GameInstance extends UIContainer {
     this._gameObjects.forEach((obj, index) => {
       this._innerViewStage.setChildIndex(obj, index);
     });
+    // Mirror sprite positions of game objects
+    this._gameObjects.forEach(obj => obj.mirror());
     // Roll over previous game object positions
     this._gameObjects.forEach(obj => obj.rollOver());
     // Update the debug text

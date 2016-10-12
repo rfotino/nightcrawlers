@@ -33,7 +33,7 @@ export class Item extends GameObject {
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
     this.addChild(this._sprite);
-    this.pos.mirror(this._sprite);
+    this._mirrorList.push(this._sprite);
   }
 
   public type(): string { return 'item'; }

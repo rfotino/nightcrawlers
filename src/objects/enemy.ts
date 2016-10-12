@@ -43,7 +43,7 @@ export class Enemy extends GameObject {
       game.player.pos.r + 300,
       game.player.pos.theta - 0.5 + Math.random()
     );
-    this.pos.mirror(this._sprite);
+    this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
   }
 

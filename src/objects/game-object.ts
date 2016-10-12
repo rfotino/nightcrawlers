@@ -14,6 +14,7 @@ export abstract class GameObject extends PIXI.Container {
   private _alive: boolean = true;
   protected _maxHealth: number = Infinity;
   protected _health: number = Infinity;
+  protected _mirrorList: PIXI.DisplayObject[] = [];
 
   public get id(): number {
     return this._id;
@@ -63,6 +64,14 @@ export abstract class GameObject extends PIXI.Container {
     this._prevPos = new Polar.Coord();
     this._vel = new Polar.Coord();
     this._accel = new Polar.Coord();
+  }
+
+  public mirror(): void {
+    this._mirrorList.forEach(obj => {
+      obj.position.x = this.pos.x;
+      obj.position.y = this.pos.y;
+      obj.rotation = (Math.PI / 2) + this.pos.theta;
+    });
   }
 
   public update(game: GameInstance): void {

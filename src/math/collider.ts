@@ -61,20 +61,16 @@ export module Collider {
    * A class used to store collisions from the previous frame.
    */
   export class Previous {
-    private _results: {[key: string]: Result};
-    private _bounds: {[key: number]: Polar.Rect};
-
-    public constructor() {
-      this._results = {};
-      this._bounds = {};
-    }
+    private _results: Result[][] = [];
+    private _bounds: Polar.Rect[] = [];
 
     public getBounds(obj: GameObject): Polar.Rect {
       return this._bounds[obj.id] || null;
     }
 
     public getResult(obj1: GameObject, obj2: GameObject): Result {
-      return this._results[`${obj1.id}+${obj2.id}`] || new Result();
+      let tier1 = this._results[obj1.id];
+      return (tier1 && tier1[obj2.id]) || new Result();
     }
 
     public setBounds(obj: GameObject, bounds: Polar.Rect): void {
@@ -82,7 +78,11 @@ export module Collider {
     }
 
     public setResult(obj1: GameObject, obj2: GameObject, result: Result): void {
-      this._results[`${obj1.id}+${obj2.id}`] = result;
+      let obj1Id = obj1.id;
+      if (!this._results[obj1Id]) {
+        this._results[obj1Id] = [];
+      }
+      this._results[obj1Id][obj2.id] = result;
     }
   }
 
@@ -116,18 +116,14 @@ export module Collider {
     }
     // Returns true if r1 intersects with r2
     function intersect(r1: Polar.Rect, r2: Polar.Rect): boolean {
-      let tl1 = r1.topLeft;
-      let tl2 = r2.topLeft;
-      let br1 = r1.bottomRight;
-      let br2 = r2.bottomRight;
-      if (rBetween(tl1.r, br2.r, tl2.r) ||
-          rBetween(br1.r, br2.r, tl2.r) ||
-          rBetween(tl2.r, br1.r, tl1.r) ||
-          rBetween(br2.r, br1.r, tl1.r)) {
-        if (thetaBetween(tl1.theta, tl2.theta, br2.theta) ||
-            thetaBetween(br1.theta, tl2.theta, br2.theta) ||
-            thetaBetween(tl2.theta, tl1.theta, br1.theta) ||
-            thetaBetween(br2.theta, tl1.theta, br1.theta)) {
+      if (rBetween(r1.r, r2.r - r2.height, r2.r) ||
+          rBetween(r1.r - r1.height, r2.r - r2.height, r2.r) ||
+          rBetween(r2.r, r1.r - r1.height, r1.r) ||
+          rBetween(r2.r - r2.height, r1.r - r1.height, r1.r)) {
+        if (thetaBetween(r1.theta, r2.theta, r2.theta + r2.width) ||
+            thetaBetween(r1.theta + r1.width, r2.theta, r2.theta + r2.width) ||
+            thetaBetween(r2.theta, r1.theta, r1.theta + r1.width) ||
+            thetaBetween(r2.theta + r2.width, r1.theta, r1.theta + r1.width)) {
               return true;
         }
       }
@@ -135,16 +131,11 @@ export module Collider {
     }
     // Returns true if r1 is above r2
     function above(r1: Polar.Rect, r2: Polar.Rect): boolean {
-      let tl2 = r2.topLeft;
-      let br1 = r1.bottomRight;
-      return br1.r >= tl2.r;
+      return r1.r - r1.height >= r2.r
     }
     // Returns true if r1 is to the right of r2
     function aside(r1: Polar.Rect, r2: Polar.Rect): boolean {
-      let tl1 = r1.topLeft;
-      let tl2 = r2.topLeft;
-      let br2 = r2.bottomRight;
-      return Polar.closestTheta(tl1.theta, tl2.theta) >= br2.theta;
+      return Polar.closestTheta(r1.theta, r2.theta) >= r2.theta + r2.width;
     }
     // Intersection is a prerequisite for collision
     if (intersect(bounds1, bounds2)) {

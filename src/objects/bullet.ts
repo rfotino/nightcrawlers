@@ -37,7 +37,7 @@ export class Bullet extends GameObject {
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
-    this.pos.mirror(this._sprite);
+    this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
   }
 

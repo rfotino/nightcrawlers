@@ -58,7 +58,7 @@ abstract class Terrain extends GameObject {
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
     this._sprite.anchor.x = 0.5;
     this._sprite.anchor.y = 1 / canvas.height;
-    this.pos.mirror(this._sprite);
+    this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
     this.rotation = width / 2;
   }
