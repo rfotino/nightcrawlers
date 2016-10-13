@@ -1,4 +1,5 @@
-/// <reference path="../typings/pixi.js/pixi.js.d.ts" />
+/// <reference path="../typings/pixi.d.ts" />
+/// <reference path="../typings/howler.d.ts" />
 
 import { GameInstance } from './game-instance';
 import { KeyState } from './input/keystate';

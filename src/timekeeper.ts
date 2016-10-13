@@ -5,6 +5,7 @@ export class TimeKeeper {
   protected _transitioning: boolean = false;
   protected _transition: number = 0;
   protected _transitionLength: number = 50;
+  protected _listeners: {[key: string]: Function[]} = {};
 
   /**
    * Returns true if it is currently day, false otherwise.
@@ -45,12 +46,18 @@ export class TimeKeeper {
         this._counter = 0;
         this._isDay = !this._isDay;
         this._transitioning = false;
+        if (this._isDay) {
+          this.trigger('daystart');
+        } else {
+          this.trigger('nightstart');
+        }
       }
       this._transition = this._counter / this._transitionLength;
     } else if (this._isDay) {
       if (this._counter > this._dayLength) {
         this._counter = 0;
         this._transitioning = true;
+        this.trigger('dayend');
       }
     }
   }
@@ -63,5 +70,27 @@ export class TimeKeeper {
     this._isDay = false;
     this._transitioning = true;
     this._transition = 0;
+    this.trigger('nightend');
+  }
+
+  /**
+   * Register event listener for daystart, dayend, nightstart, nightend.
+   */
+  public on(event: string, callback: Function): TimeKeeper {
+    if (!this._listeners[event]) {
+      this._listeners[event] = [];
+    }
+    this._listeners[event].push(callback);
+    return this;
+  }
+
+  /**
+   * Trigger callbacks for event with the given name.
+   */
+  public trigger(event: string) {
+    let listeners = this._listeners[event];
+    if (listeners) {
+      listeners.forEach(callback => callback());
+    }
   }
 }

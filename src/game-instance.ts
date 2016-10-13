@@ -37,6 +37,8 @@ export class GameInstance extends UIContainer {
   protected _healthBar: HealthBar;
   protected _scoreLabel: UILabel;
   protected _waveIndex: number;
+  protected _nightMusic: Howl;
+  protected _nightMusicId: number;
 
   public get score(): number {
     return this.player.score;
@@ -87,6 +89,26 @@ export class GameInstance extends UIContainer {
     // Set initial wave index to zero and seed initial wave of monsters
     this._waveIndex = 0;
     this.enemySpawner.addWave(this._level.getWave(0));
+    // Load background music
+    this._nightMusic = new Howl({
+      src: ['assets/music/night.mp3', 'assets/music/night.m4a'],
+      autoplay: false,
+      loop: true,
+    });
+    this._nightMusicId = this._nightMusic.play();
+    this._nightMusic.pause(this._nightMusicId);
+    // Add audio triggers to timekeeper
+    this.timeKeeper.on('dayend', () => {
+      this._nightMusic.play(this._nightMusicId);
+      this._nightMusic.fade(0, 1, 1000, this._nightMusicId);
+    });
+    this.timeKeeper.on('nightend', () => {
+      this._nightMusic.fade(1, 0, 1000, this._nightMusicId);
+      this._nightMusic.on('fade', () => {
+        this._nightMusic.pause(this._nightMusicId);
+        this._nightMusic.off('fade');
+      });
+    });
   }
 
   /**
@@ -240,22 +262,44 @@ export class GameInstance extends UIContainer {
     this._scoreLabel.title = `${this.score}`;
   }
 
+  /**
+   * Adds a new game object to the collision, updating, and drawing subsystems.
+   */
   public addGameObject(obj: GameObject): void {
     this._innerViewStage.addChild(obj);
     this._gameObjects.push(obj);
   }
 
+  /**
+   * Pause gameplay, or do nothing if already paused.
+   */
   public pause(): void {
     if (!this._paused) {
+      if (this.timeKeeper.isNight) {
+        this._nightMusic.pause(this._nightMusicId);
+      }
       this._paused = true;
       this.addComponent(this._pauseMenu);
     }
   }
 
+  /**
+   * Resume gameplay, or do nothing if not paused.
+   */
   public resume(): void {
     if (this._paused) {
+      if (this.timeKeeper.isNight) {
+        this._nightMusic.play(this._nightMusicId);
+      }
       this._paused = false;
       this.removeComponent(this._pauseMenu);
     }
+  }
+
+  /**
+   * Clean up resources from game instance.
+   */
+  public cleanup(): void {
+    this._nightMusic.unload();
   }
 }

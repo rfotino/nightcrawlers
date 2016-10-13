@@ -134,6 +134,7 @@ export class PauseMenu extends UIMenu {
       gameInstance.resume();
     }));
     this.addMenuItem(new UIButton(game, 'Quit').addListener('action', () => {
+      gameInstance.cleanup();
       game.activeScreen = game.mainMenu;
     }));
     this.bgcolor = new Color(0, 0, 0, 0.8);
