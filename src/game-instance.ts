@@ -104,9 +104,8 @@ export class GameInstance extends UIContainer {
     });
     this.timeKeeper.on('nightend', () => {
       this._nightMusic.fade(1, 0, 1000, this._nightMusicId);
-      this._nightMusic.on('fade', () => {
+      this._nightMusic.once('fade', () => {
         this._nightMusic.pause(this._nightMusicId);
-        this._nightMusic.off('fade');
       });
     });
   }
