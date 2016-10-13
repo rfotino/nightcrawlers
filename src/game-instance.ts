@@ -91,7 +91,7 @@ export class GameInstance extends UIContainer {
     this.enemySpawner.addWave(this._level.getWave(0));
     // Load background music
     this._nightMusic = new Howl({
-      src: ['assets/music/night.mp3'],
+      src: ['assets/music/night.mp3', 'assets/music/night.m4a'],
       autoplay: false,
       loop: true,
     });
@@ -299,6 +299,6 @@ export class GameInstance extends UIContainer {
    * Clean up resources from game instance.
    */
   public cleanup(): void {
-    this._nightMusic.unload();
+    this._nightMusic.stop();
   }
 }

@@ -7,11 +7,13 @@ import { MouseState } from './input/mousestate';
 import { TouchState } from './input/touchstate';
 import { UIContainer } from './ui/container';
 import { MainMenu } from './ui/menu';
+import { MainProgressScreen } from './ui/progress';
 
 export class Game {
   protected _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
   protected _activeScreen: UIContainer;
   protected _mainMenu: MainMenu;
+  protected _progressBar: MainProgressScreen;
   protected _keyState: KeyState;
   protected _mouseState: MouseState;
   protected _touchState: TouchState;
@@ -63,13 +65,21 @@ export class Game {
     )
     this._renderer.view.tabIndex = -1;
     this._renderer.view.oncontextmenu = () => false;
-    // Set the active view to be a game instance
+    // Create top level UI containers and set the initial active screen to
+    // be a progress bar.
     this._mainMenu = new MainMenu(this);
-    this._activeScreen = this._mainMenu;
+    this._progressBar = new MainProgressScreen(this);
+    this._activeScreen = this._progressBar;
     // Preload assets
-    PIXI.loader.add('planet', 'assets/images/planet.png');
-    PIXI.loader.add('player', 'assets/images/player.png');
-    PIXI.loader.load(() => this._updateDrawLoop());
+    let audioExt = Howler.codecs('mp3') ? 'mp3' : 'm4a';
+    PIXI.loader
+      .add('planet', 'assets/images/planet.png')
+      .add('player', 'assets/images/player.png')
+      .add('night-music', `assets/music/night.${audioExt}`)
+      .load(() => this.activeScreen = this._mainMenu)
+      .on('progress', loader => this._progressBar.progress = loader.progress);
+    // Start update/draw loop
+    this._updateDrawLoop();
   }
 
   public isWebGL(): boolean {

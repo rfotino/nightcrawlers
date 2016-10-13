@@ -29,13 +29,13 @@ export class UILabel extends UIContainer {
     this._sizer.height = height;
   }
 
-  public constructor(game: Game, title: string) {
+  public constructor(game: Game, title: string, textColor: string = 'white') {
     super(game);
     this._title = title;
     this._text = new PIXI.Text(this._title, {
       align: 'center',
       fontFamily: 'sans-serif',
-      fill: 'white',
+      fill: textColor,
     });
     this._text.anchor.x = this._text.anchor.y = 0.5;
     this.addChild(this._text);
