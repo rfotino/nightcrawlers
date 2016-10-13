@@ -140,6 +140,9 @@ export class GameInstance extends UIContainer {
         currentCollisions.setBounds(obj2, bounds2);
         currentCollisions.setResult(obj1, obj2, result);
         currentCollisions.setResult(obj2, obj1, reverse);
+        if (!obj1.alive) {
+          break;
+        }
       }
     }
     this._previousCollisions = currentCollisions;

@@ -5,28 +5,19 @@ import { Player } from './player';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 
+/**
+ * General enemy class, moves left and right towards the player but cannot
+ * fly or jump. Is affected by gravity by default.
+ */
 export class Enemy extends GameObject {
-  private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
-  private _onSolidGround: boolean = false;
-  private _damageAmount: number = 0.25;
+  protected _sprite: PIXI.Sprite;
+  protected _onSolidGround: boolean = false;
+  protected _damageAmount: number = 0.25;
   protected _score: number = 50;
   protected _shouldGoLeft: boolean = false;
   protected _shouldGoRight: boolean = false;
-  protected _shouldJump: boolean = false;
   protected _moveSpeed: number = 3;
-  protected _jumpSpeed: number = 15;
-  protected _flying: boolean = false;
-  protected _flapCounter: number = 0;
-  protected _maxFlapCounter: number = Infinity;
-
-  public get width(): number {
-    return 30;
-  }
-  
-  public get height(): number {
-    return 50;
-  }
 
   public get z(): number {
     return 40;
@@ -37,7 +28,7 @@ export class Enemy extends GameObject {
   }
 
   protected get _color(): string {
-    return 'green';
+    return 'white';
   }
 
   public constructor(game: GameInstance) {
@@ -51,6 +42,7 @@ export class Enemy extends GameObject {
       game.player.pos.r + 300,
       game.player.pos.theta - 0.5 + Math.random()
     );
+    this.accel.r = Terrain.GRAVITY;
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
   }
@@ -68,14 +60,6 @@ export class Enemy extends GameObject {
     );
     this._shouldGoLeft = diffTheta < -minDiffTheta;
     this._shouldGoRight = diffTheta > minDiffTheta;
-    this._shouldJump = game.player.pos.r > this.pos.r;
-  }
-
-  protected _canJump(): boolean {
-    return (
-      this._onSolidGround ||
-      (this._flying && this._flapCounter > this._maxFlapCounter)
-    );
   }
 
   public update(game: GameInstance): void {
@@ -84,12 +68,6 @@ export class Enemy extends GameObject {
     this._updateBehavior(game);
     // Make transparent if damaged
     this.alpha = this._health / this._maxHealth;
-    // Increment flap counter
-    if (this._onSolidGround) {
-      this._flapCounter = 0;
-    } else if (this._flying) {
-      this._flapCounter++;
-    }
     // Handle turning
     let speed = this._moveSpeed / this.pos.r;
     if (this._shouldGoLeft) {
@@ -99,16 +77,6 @@ export class Enemy extends GameObject {
     } else {
       this.vel.theta = 0;
     }
-    // Set acceleration due to gravity
-    this.accel.r = Terrain.GRAVITY;
-    // Handle jumping if player is above this enemy
-    if (this._shouldJump && this._canJump()) {
-      this._onSolidGround = false;
-      this.vel.r = this._jumpSpeed;
-      this._flapCounter = 0;
-    }
-    // Not on solid ground unless we collide with something this frame
-    this._onSolidGround = false;
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
@@ -146,5 +114,66 @@ export class Enemy extends GameObject {
     let ctx = this._canvas.getContext('2d');
     ctx.fillStyle = this._color;
     ctx.fillRect(1, 1, this.width, this.height);
+  }
+}
+
+/**
+ * Class of enemies that can move in all directions (up and down as well as
+ * left and right). Not affected by gravity, since they can fly.
+ */
+export class FlyingEnemy extends Enemy {
+  protected _shouldGoUp: boolean = false;
+  protected _shouldGoDown: boolean = false;
+
+  public constructor(game: GameInstance) {
+    super(game);
+    this.accel.r = 0;
+  }
+
+  protected _updateBehavior(game: GameInstance): void {
+    super._updateBehavior(game);
+    let diffR = game.player.pos.r - this.pos.r;
+    let minDiffR = 5;
+    this._shouldGoUp = diffR > minDiffR;
+    this._shouldGoDown = diffR < -minDiffR;
+  }
+
+  public update(game: GameInstance): void {
+    super.update(game);
+    // Go up or down
+    if (this._shouldGoUp) {
+      this.vel.r = this._moveSpeed;
+    } else if (this._shouldGoDown) {
+      this.vel.r = -this._moveSpeed;
+    } else {
+      this.vel.r = 0;
+    }
+    // Not on solid ground unless we collide with something this frame
+    this._onSolidGround = false;
+  }
+}
+
+/**
+ * Class of enemies that are affected by gravity and can only jump if they
+ * are on solid ground.
+ */
+export class JumpingEnemy extends Enemy {
+  protected _shouldJump: boolean = false;
+  protected _jumpSpeed: number = 15;
+
+  protected _updateBehavior(game: GameInstance): void {
+    super._updateBehavior(game);
+    this._shouldJump = game.player.pos.r > this.pos.r;
+  }
+
+  public update(game: GameInstance): void {
+    super.update(game);
+    // Handle jumping if player is above this enemy
+    if (this._shouldJump && this._onSolidGround) {
+      this._onSolidGround = false;
+      this.vel.r = this._jumpSpeed;
+    }
+    // Not on solid ground unless we collide with something this frame
+    this._onSolidGround = false;
   }
 }
