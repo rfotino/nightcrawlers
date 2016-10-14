@@ -104,64 +104,31 @@ export module Collider {
         top = false,
         bottom = false,
         middle = false;
-    // Returns true if a normalized value of theta in terms of min and max is
-    // between min and max.
-    function thetaBetween(theta: number, min: number, max: number): boolean {
-      theta = Polar.closestTheta(theta, (min + max) / 2);
-      return theta >= min && theta <= max;
-    }
-    // Returns true if the given value of r is between min and max.
-    function rBetween(r: number, min: number, max: number): boolean {
-      return r >= min && r <= max;
-    }
-    // Returns true if r1 intersects with r2
-    function intersect(r1: Polar.Rect, r2: Polar.Rect): boolean {
-      if (rBetween(r1.r, r2.r - r2.height, r2.r) ||
-          rBetween(r1.r - r1.height, r2.r - r2.height, r2.r) ||
-          rBetween(r2.r, r1.r - r1.height, r1.r) ||
-          rBetween(r2.r - r2.height, r1.r - r1.height, r1.r)) {
-        if (thetaBetween(r1.theta, r2.theta, r2.theta + r2.width) ||
-            thetaBetween(r1.theta + r1.width, r2.theta, r2.theta + r2.width) ||
-            thetaBetween(r2.theta, r1.theta, r1.theta + r1.width) ||
-            thetaBetween(r2.theta + r2.width, r1.theta, r1.theta + r1.width)) {
-              return true;
-        }
-      }
-      return false;
-    }
-    // Returns true if r1 is above r2
-    function above(r1: Polar.Rect, r2: Polar.Rect): boolean {
-      return r1.r - r1.height >= r2.r
-    }
-    // Returns true if r1 is to the right of r2
-    function aside(r1: Polar.Rect, r2: Polar.Rect): boolean {
-      return Polar.closestTheta(r1.theta, r2.theta) >= r2.theta + r2.width;
-    }
     // Intersection is a prerequisite for collision
-    if (intersect(bounds1, bounds2)) {
+    if (bounds1.intersects(bounds2)) {
       middle = true;
       // If prevBounds2 is above bounds1 or bounds2 is above prevBounds1,
       // bounds2 hit bounds1 on the top. If bounds2 previously hit bounds1 on
       // the top and bounds2 is moving down relative to bounds1, keep top
       // collision asserted. Do something similar for each other side.
       top = (
-        above(prevBounds2, bounds1) ||
-        above(bounds2, prevBounds1) ||
+        Polar.above(prevBounds2, bounds1) ||
+        Polar.above(bounds2, prevBounds1) ||
         (prevResult.top && relVel.r <= 0)
       );
       bottom = (
-        above(bounds1, prevBounds2) ||
-        above(prevBounds1, bounds2) ||
+        Polar.above(bounds1, prevBounds2) ||
+        Polar.above(prevBounds1, bounds2) ||
         (prevResult.bottom && relVel.r >= 0)
       );
       right = (
-        aside(prevBounds2, bounds1) ||
-        aside(bounds2, prevBounds1) ||
+        Polar.aside(prevBounds2, bounds1) ||
+        Polar.aside(bounds2, prevBounds1) ||
         (prevResult.right && relVel.theta <= 0)
       );
       left = (
-        aside(bounds1, prevBounds2) ||
-        aside(prevBounds1, bounds2) ||
+        Polar.aside(bounds1, prevBounds2) ||
+        Polar.aside(prevBounds1, bounds2) ||
         (prevResult.left && relVel.theta >= 0)
       );
       // Only allow one direction at a time, give preference to top/bottom

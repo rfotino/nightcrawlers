@@ -177,3 +177,59 @@ export class JumpingEnemy extends Enemy {
     this._onSolidGround = false;
   }
 }
+
+/**
+ * Class of enemies that spawn out of the ground instead of falling from the
+ * sky. If you spawn out of the ground, you probably jump, so this class
+ * naturally extends JumpingEnemy.
+ */
+export class GroundSpawnEnemy extends JumpingEnemy {
+  public constructor(game: GameInstance) {
+    super(game);
+    // Spawn the enemy on a block near to the player. First choose an angle
+    // to spawn at that is between minDist and maxDist radians away from the
+    // player.
+    let rand = Math.random();
+    let minDist = 0.2;
+    let maxDist = 0.4;
+    let theta: number;
+    if (rand < 0.5) {
+      theta = game.player.pos.theta - minDist - (rand * (maxDist - minDist));
+    } else {
+      theta = game.player.pos.theta + minDist + (rand * (maxDist - minDist));
+    }
+    // Then find all blocks that can be found at that angle and sort them by
+    // distance from the player.
+    let blockBounds = game.level.blocks.map(block => block.getPolarBounds());
+    let possibleRects = blockBounds.filter(rect => {
+      return Polar.thetaBetween(theta, rect.theta, rect.theta + rect.width);
+    }).sort((r1, r2) => {
+      return (
+        Math.abs(game.player.pos.r - r1.r) -
+        Math.abs(game.player.pos.r - r2.r)
+      );
+    });
+    // Find the closest possible rectangle with a spawn that doesn't make
+    // the spawned enemy intersect with a solid block. Spawn the enemy slightly
+    // above the block to prevent the enemy from falling into it due to failed
+    // collision detection.
+    let rEpsilon = Math.abs(Terrain.GRAVITY) + 0.1;
+    for (let i = 0; i < possibleRects.length; i++) {
+      let rect = possibleRects[i];
+      // Try to spawn enemy here
+      let r = rect.r + (this.height / 2) + rEpsilon;
+      this.pos.set(r, theta);
+      // Make sure enemy bounds don't intersect with any blocks
+      let enemyRect = this.getPolarBounds();
+      let intersects = false;
+      blockBounds.forEach(blockRect => {
+        if (enemyRect.intersects(blockRect)) {
+          intersects = true;
+        }
+      });
+      if (!intersects) {
+        break;
+      }
+    }
+  }
+}

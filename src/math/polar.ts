@@ -2,6 +2,39 @@
  * A 2D polar coordinate with easy translation to cartesian coordinates.
  */
 export module Polar {
+  /**
+   * Returns true if a normalized value of theta in terms of min and max is
+   * between min and max.
+   */
+  export function thetaBetween(theta: number, min: number, max: number): boolean {
+    theta = Polar.closestTheta(theta, (min + max) / 2);
+    return theta >= min && theta <= max;
+  }
+
+  /**
+   * Returns true if the given value of r is between min and max.
+   */
+  export function rBetween(r: number, min: number, max: number): boolean {
+    return r >= min && r <= max;
+  }
+
+  /**
+   * Returns true if r1 is above r2.
+   */
+  export function above(r1: Polar.Rect, r2: Polar.Rect): boolean {
+    return r1.r - r1.height >= r2.r
+  }
+
+  /**
+   * Returns true if r1 is to the right of r2.
+   */
+  export function aside(r1: Polar.Rect, r2: Polar.Rect): boolean {
+    return Polar.closestTheta(r1.theta, r2.theta) >= r2.theta + r2.width;
+  }
+
+  /**
+   * A class for 2D polar coordinates.
+   */
   export class Coord {
     public r: number;
     public theta: number;
@@ -63,6 +96,21 @@ export module Polar {
         let closest = closestTheta(p.theta, this.theta + (this.width / 2));
         if (closest >= this.theta && closest <= this.theta + this.width) {
           return true;
+        }
+      }
+      return false;
+    }
+
+    public intersects(rect: Polar.Rect): boolean {
+      if (rBetween(this.r, rect.r - rect.height, rect.r) ||
+          rBetween(this.r - this.height, rect.r - rect.height, rect.r) ||
+          rBetween(rect.r, this.r - this.height, this.r) ||
+          rBetween(rect.r - rect.height, this.r - this.height, this.r)) {
+        if (thetaBetween(this.theta, rect.theta, rect.theta + rect.width) ||
+            thetaBetween(this.theta + this.width, rect.theta, rect.theta + rect.width) ||
+            thetaBetween(rect.theta, this.theta, this.theta + this.width) ||
+            thetaBetween(rect.theta + rect.width, this.theta, this.theta + this.width)) {
+              return true;
         }
       }
       return false;

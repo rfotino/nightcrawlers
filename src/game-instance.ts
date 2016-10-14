@@ -24,7 +24,7 @@ export class GameInstance extends UIContainer {
   public timeKeeper: TimeKeeper;
   public enemySpawner: EnemySpawner;
   public itemSpawners: ItemSpawner[];
-  protected _level: Level;
+  public level: Level;
   protected _options: Options;
   protected _outerViewStage: PIXI.Container;
   protected _innerViewStage: PIXI.Container;
@@ -47,22 +47,22 @@ export class GameInstance extends UIContainer {
   public constructor(game: Game, options: Options) {
     super(game);
     this._options = options;
-    this._level = this._options.level;
+    this.level = this._options.level;
     this._outerViewStage = new PIXI.Container();
     this._innerViewStage = new PIXI.Container();
     this.addChild(this._outerViewStage);
     this._outerViewStage.addChild(this._innerViewStage);
     // Construct game objects
-    this.player = new Player(this._level);
+    this.player = new Player(this.level);
     this.timeKeeper = new TimeKeeper();
     this.enemySpawner = new EnemySpawner();
-    this.itemSpawners = this._level.getItemSpawners();
+    this.itemSpawners = this.level.getItemSpawners();
     this.background = new Background();
     this._gameObjects = [].concat(
       [
         this.player,
       ],
-      this._level.getObjects()
+      this.level.getObjects()
     );
     // Debugger
     this._debugger = new Debugger(this._options.debug);
@@ -70,7 +70,7 @@ export class GameInstance extends UIContainer {
     this._previousCollisions = new Collider.Previous();
     // Add game objects to scene
     this._innerViewStage.addChild(this.player);
-    this._level.getObjects().forEach(obj => {
+    this.level.getObjects().forEach(obj => {
       this._innerViewStage.addChild(obj);
     });
     this.addChildAt(this.background, 0);
@@ -88,7 +88,7 @@ export class GameInstance extends UIContainer {
     this.addComponent(this._scoreLabel);
     // Set initial wave index to zero and seed initial wave of monsters
     this._waveIndex = 0;
-    this.enemySpawner.addWave(this._level.getWave(0));
+    this.enemySpawner.addWave(this.level.getWave(0));
     // Load background music
     this._nightMusic = new Howl({
       src: ['assets/music/night.mp3', 'assets/music/night.m4a'],
@@ -186,7 +186,7 @@ export class GameInstance extends UIContainer {
     }
     this._playerView.r = Math.max(
       // Minimum view height
-      this._level.getCoreRadius() + (this.view.height / 4),
+      this.level.getCoreRadius() + (this.view.height / 4),
       // Weighted average of current view height and current player height
       (this.player.pos.r + (5 * this._playerView.r)) / 6
     );
@@ -244,7 +244,7 @@ export class GameInstance extends UIContainer {
         this.enemySpawner.numToSpawn === 0) {
       this.timeKeeper.endNight();
       this._waveIndex++;
-      this.enemySpawner.addWave(this._level.getWave(this._waveIndex));
+      this.enemySpawner.addWave(this.level.getWave(this._waveIndex));
     }
     // Sort game objects by depth
     this._gameObjects.sort((a, b) => a.z - b.z || a.id - b.id);

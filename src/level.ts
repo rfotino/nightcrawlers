@@ -11,6 +11,9 @@ export class Level {
   protected _itemSpawns: ItemSpawner[];
   protected _waves: {[key: string]: number}[];
 
+  public get blocks(): Terrain.Block[] { return this._blocks; }
+  public get platforms(): Terrain.Platform[] { return this._platforms; }
+
   /**
    * Construct a level from a JSON object saved to a file by the level editor.
    */
