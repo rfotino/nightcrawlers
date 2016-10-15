@@ -52,7 +52,8 @@ export class Enemy extends GameObject {
   public team(): string { return 'enemy'; }
 
   protected _updateBehavior(game: GameInstance): void {
-    let diffTheta = (game.player.pos.theta - this.pos.theta) % (Math.PI * 2);
+    let closestPos = Polar.closestTheta(this.pos.theta, game.player.pos.theta);
+    let diffTheta = game.player.pos.theta - closestPos;
     let minDiffTheta = (
       0.3 *
       (game.player.width + this.width) /
