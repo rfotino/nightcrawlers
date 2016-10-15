@@ -89,6 +89,17 @@ class OptionsMenu extends UIMenu {
       debugButton.title = `Debug ${this._options.debug ? 'On' : 'Off'}`;
     });
     this.addMenuItem(debugButton);
+    // Add sound on/off button
+    let soundButton = new UIButton(
+      game,
+      `Sound ${this._options.soundOn ? 'On' : 'Off'}`
+    );
+    soundButton.addListener('action', () => {
+      this._options.soundOn = !this._options.soundOn;
+      soundButton.title = `Sound ${this._options.soundOn ? 'On' : 'Off'}`;
+      Howler.mute(!this._options.soundOn);
+    });
+    this.addMenuItem(soundButton);
     // Add load level from file option
     let loadLevelButton = new UIButton(game, 'Load Level');
     loadLevelButton.addListener('action', () => {

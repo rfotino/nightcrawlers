@@ -3,7 +3,8 @@ import { Level } from './level';
 /// <reference path="../typings/require.d.ts" />
 
 export class Options {
-  public debug: boolean;
+  public debug: boolean = true;
+  public soundOn: boolean = true;
   protected _levelData: Object;
 
   public get level(): Level {
@@ -15,7 +16,6 @@ export class Options {
   }
 
   public constructor() {
-    this.debug = true;
     this._levelData = require('../assets/levels/survival.json');
   }
 }
