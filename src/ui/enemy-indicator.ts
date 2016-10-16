@@ -174,6 +174,10 @@ export class EnemyIndicator extends UIContainer {
         arrowToEnemy.y / arrowToEnemyDist
       );
       arrow.setDir(arrowToEnemyUnit);
+      // Shrink the arrow depending on its distance from the enemy
+      const maxDist = this._gameInst.level.getOuterRadius() * 2;
+      let scale = Math.max(0.5, (maxDist - arrowToEnemyDist) / maxDist);
+      arrow.scale.x = arrow.scale.y = scale;
     });
     // Clean up arrows pointing to dead enemies
     for (let id in this._arrows) {
