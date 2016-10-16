@@ -15,6 +15,10 @@ export class Color {
   private _b: number;
   private _a: number;
 
+  public static get white(): Color {
+    return new Color(255, 255, 255);
+  }
+
   public get r(): number {
     return this._r;
   }
@@ -55,6 +59,18 @@ export class Color {
     this._g = g;
     this._b = b;
     this._a = a;
+  }
+
+  /**
+   * Generates a 1x1 PIXI.Texture object with the given color.
+   */
+  public genTexture(): PIXI.Texture {
+    let canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    let ctx = canvas.getContext('2d');
+    ctx.fillStyle = this.toString();
+    ctx.fillRect(0, 0, 1, 1);
+    return PIXI.Texture.fromCanvas(canvas);
   }
 
   /**

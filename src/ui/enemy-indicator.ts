@@ -1,7 +1,7 @@
 import { UIContainer } from './container';
 import { Game } from '../game';
 import { GameInstance } from '../game-instance';
-import { Color } from '../math/color';
+import { Color } from '../graphics/color';
 import { Polar } from '../math/polar';
 
 function getCenter(rect: PIXI.Rectangle): PIXI.Point {

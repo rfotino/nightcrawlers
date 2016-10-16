@@ -1,18 +1,7 @@
 import { UIContainer } from './container';
 import { Player } from '../objects/player';
 import { Game } from '../game';
-import { Color } from '../math/color';
-
-// Returns a 1x1 pixel sprite of a particular color
-function getPixelSprite(color: Color): PIXI.Sprite {
-  let canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 1;
-  let ctx = canvas.getContext('2d');
-  ctx.fillStyle = color.toString();
-  ctx.fillRect(0, 0, 1, 1);
-  let sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
-  return sprite;
-}
+import { Color } from '../graphics/color';
 
 export class HealthBar extends UIContainer {
   protected _player: Player;
@@ -22,8 +11,8 @@ export class HealthBar extends UIContainer {
   public constructor(game: Game, player: Player) {
     super(game);
     this._player = player;
-    this._greenSprite = getPixelSprite(new Color(0, 200, 75));
-    this._redSprite = getPixelSprite(new Color(255, 50, 50));
+    this._greenSprite = new PIXI.Sprite(new Color(0, 200, 75).genTexture());
+    this._redSprite = new PIXI.Sprite(new Color(255, 50, 50).genTexture());
     this.addChild(this._greenSprite);
     this.addChild(this._redSprite);
     this.bgcolor = new Color(150, 150, 150);

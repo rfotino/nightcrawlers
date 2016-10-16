@@ -1,7 +1,7 @@
 import { UIContainer } from './container';
 import { UILabel } from './label';
 import { Game } from '../game';
-import { Color } from '../math/color';
+import { Color } from '../graphics/color';
 
 export class UIProgressBar extends UIContainer {
   protected _percentLabel: UILabel;
@@ -19,12 +19,7 @@ export class UIProgressBar extends UIContainer {
     super(game);
     this.bgcolor = new Color(200, 200, 200);
     // Create 1px sprite for loaded area
-    let canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 1;
-    let ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'green';
-    ctx.fillRect(0, 0, 1, 1);
-    this._loadedBar = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
+    this._loadedBar = new PIXI.Sprite(new Color(0, 200, 0).genTexture());
     this.addChild(this._loadedBar);
     // Add percent text label
     this._percentLabel = new UILabel(game, '0%', 'black');

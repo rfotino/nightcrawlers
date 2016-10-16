@@ -1,7 +1,7 @@
 import { GameObject } from './game-object';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
-import { Color } from '../math/color';
+import { Color } from '../graphics/color';
 import { Collider } from '../math/collider';
 
 abstract class Terrain extends GameObject {

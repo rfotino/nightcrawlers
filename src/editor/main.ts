@@ -1,5 +1,5 @@
 import { Polar } from '../math/polar';
-import { Color } from '../math/color';
+import { Color } from '../graphics/color';
 import { KeyState } from '../input/keystate';
 import { MouseState } from '../input/mousestate';
 

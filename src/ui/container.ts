@@ -2,7 +2,7 @@ import { Game } from '../game';
 import { KeyState } from '../input/keystate';
 import { MouseState } from '../input/mousestate';
 import { TouchState } from '../input/touchstate';
-import { Color } from '../math/color';
+import { Color } from '../graphics/color';
 
 export abstract class UIContainer extends PIXI.Container {
   protected _game: Game;

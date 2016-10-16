@@ -5,7 +5,7 @@ import { Game } from '../game';
 import { GameInstance } from '../game-instance';
 import { Level } from '../level';
 import { MouseState } from '../input/mousestate';
-import { Color } from '../math/color';
+import { Color } from '../graphics/color';
 import { Options } from '../options';
 
 export class UIMenu extends UIContainer {

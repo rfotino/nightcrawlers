@@ -1,14 +1,12 @@
 import { GameInstance } from '../game-instance';
-import { Color } from '../math/color';
+import { Color } from '../graphics/color';
 
 export class Background extends PIXI.Container {
   private _sprite: PIXI.Sprite;
-  private _canvas: HTMLCanvasElement;
 
   public constructor() {
     super();
-    this._draw();
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
+    this._sprite = new PIXI.Sprite(Color.white.genTexture());
     this.addChild(this._sprite);
   }
 
@@ -27,13 +25,5 @@ export class Background extends PIXI.Container {
       bgColor.blend(dayColor, transition);
     }
     this._sprite.tint = bgColor.toPixi();
-  }
-
-  private _draw(): void {
-    this._canvas = document.createElement('canvas');
-    this._canvas.width = this._canvas.height = 1;
-    let ctx = this._canvas.getContext('2d');
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, 1, 1);
   }
 }
