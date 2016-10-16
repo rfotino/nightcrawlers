@@ -17,6 +17,7 @@ import { UIContainer } from './ui/container';
 import { UILabel } from './ui/label';
 import { PauseMenu } from './ui/menu';
 import { HealthBar } from './ui/healthbar';
+import { EnemyIndicator } from './ui/enemy-indicator';
 
 export class GameInstance extends UIContainer {
   public player: Player;
@@ -25,15 +26,16 @@ export class GameInstance extends UIContainer {
   public enemySpawner: EnemySpawner;
   public itemSpawners: ItemSpawner[];
   public level: Level;
+  public gameObjects: GameObject[];
   protected _options: Options;
   protected _outerViewStage: PIXI.Container;
   protected _innerViewStage: PIXI.Container;
-  protected _gameObjects: GameObject[];
   protected _playerView: Polar.Coord;
   protected _debugger: Debugger;
   protected _previousCollisions: Collider.Previous;
   protected _pauseMenu: PauseMenu;
   protected _paused: boolean;
+  protected _enemyIndicator: EnemyIndicator;
   protected _healthBar: HealthBar;
   protected _scoreLabel: UILabel;
   protected _waveIndex: number;
@@ -58,7 +60,7 @@ export class GameInstance extends UIContainer {
     this.enemySpawner = new EnemySpawner();
     this.itemSpawners = this.level.getItemSpawners();
     this.background = new Background();
-    this._gameObjects = [].concat(
+    this.gameObjects = [].concat(
       [
         this.player,
       ],
@@ -80,6 +82,9 @@ export class GameInstance extends UIContainer {
     // Create the pause menu for later
     this._pauseMenu = new PauseMenu(game, this);
     this._paused = false;
+    // Add enemy indicator
+    this._enemyIndicator = new EnemyIndicator(game, this);
+    this.addComponent(this._enemyIndicator);
     // Add the health bar
     this._healthBar = new HealthBar(game, this.player);
     this.addComponent(this._healthBar);
@@ -122,13 +127,13 @@ export class GameInstance extends UIContainer {
    */
   private _collide(): void {
     let currentCollisions = new Collider.Previous();
-    for (let i = 0; i < this._gameObjects.length; i++) {
-      let obj1 = this._gameObjects[i];
+    for (let i = 0; i < this.gameObjects.length; i++) {
+      let obj1 = this.gameObjects[i];
       if (!obj1.alive) {
         continue;
       }
-      for (let j = i + 1; j < this._gameObjects.length; j++) {
-        let obj2 = this._gameObjects[j];
+      for (let j = i + 1; j < this.gameObjects.length; j++) {
+        let obj2 = this.gameObjects[j];
         if (!obj2.alive) {
           continue;
         }
@@ -195,6 +200,11 @@ export class GameInstance extends UIContainer {
     this._outerViewStage.y = this.view.height / 2;
     this._innerViewStage.rotation = -(Math.PI / 2) - this._playerView.theta;
     this._innerViewStage.y = this._playerView.r;
+    // Update enemy indicator position, should cover the whole game instance
+    this._enemyIndicator.x = 0;
+    this._enemyIndicator.y = 0;
+    this._enemyIndicator.width = this.view.width;
+    this._enemyIndicator.height = this.view.height;
     // Update health bar position
     this._healthBar.width = this.view.width / 3.5;
     this._healthBar.height = this._healthBar.width / 12;
@@ -228,16 +238,16 @@ export class GameInstance extends UIContainer {
     // Update the background for the time of day
     this.background.update(this);
     // Call each game object's update function
-    this._gameObjects.forEach(obj => obj.update(this));
+    this.gameObjects.forEach(obj => obj.update(this));
     // Collide objects
     this._collide();
     // Remove dead game objects
-    this._gameObjects.forEach(obj => {
+    this.gameObjects.forEach(obj => {
       if (!obj.alive) {
         this._innerViewStage.removeChild(obj);
       }
     });
-    this._gameObjects = this._gameObjects.filter(obj => obj.alive);
+    this.gameObjects = this.gameObjects.filter(obj => obj.alive);
     // End the night if all enemies in the wave were defeated
     if (this.timeKeeper.isNight &&
         this.enemySpawner.numAlive === 0 &&
@@ -247,14 +257,14 @@ export class GameInstance extends UIContainer {
       this.enemySpawner.addWave(this.level.getWave(this._waveIndex));
     }
     // Sort game objects by depth
-    this._gameObjects.sort((a, b) => a.z - b.z || a.id - b.id);
-    this._gameObjects.forEach((obj, index) => {
+    this.gameObjects.sort((a, b) => a.z - b.z || a.id - b.id);
+    this.gameObjects.forEach((obj, index) => {
       this._innerViewStage.setChildIndex(obj, index);
     });
     // Mirror sprite positions of game objects
-    this._gameObjects.forEach(obj => obj.mirror());
+    this.gameObjects.forEach(obj => obj.mirror());
     // Roll over previous game object positions
-    this._gameObjects.forEach(obj => obj.rollOver());
+    this.gameObjects.forEach(obj => obj.rollOver());
     // Update the debug text
     this._debugger.update(this);
     // Update the score label
@@ -266,7 +276,7 @@ export class GameInstance extends UIContainer {
    */
   public addGameObject(obj: GameObject): void {
     this._innerViewStage.addChild(obj);
-    this._gameObjects.push(obj);
+    this.gameObjects.push(obj);
   }
 
   /**
