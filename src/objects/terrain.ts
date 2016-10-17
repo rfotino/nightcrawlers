@@ -165,6 +165,18 @@ export class Block extends Terrain {
   }
 
   public type(): string { return 'block'; }
+
+  public collide(other: GameObject, result: Collider.Result): void {
+    super.collide(other, result);
+    if (!other.movable) {
+      return;
+    } else if (!result.left && !result.right && !result.top && !result.bottom) {
+      // If no directional collision, default to pushing to to the top
+      let prevMin = this.pos.r + (other.getPolarBounds().height / 2);
+      other.pos.r = prevMin;
+      other.vel.r = Math.max(0, other.vel.r);
+    }
+  }
 }
 
 export class Decoration extends Terrain {

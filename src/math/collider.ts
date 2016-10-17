@@ -12,6 +12,7 @@ export module Collider {
     private _right: boolean;
     private _top: boolean;
     private _bottom: boolean;
+    private _middle: boolean;
 
     public get left(): boolean {
       return this._left;
@@ -30,15 +31,19 @@ export module Collider {
     }
 
     public get any(): boolean {
-      return this._left || this._right || this._top || this._bottom;
+      return (
+        this._left || this._right || this._top || this._bottom || this._middle
+      );
     }
 
     public constructor(left: boolean = false, right: boolean = false,
-                       top: boolean = false, bottom: boolean = false) {
+                       top: boolean = false, bottom: boolean = false,
+                       middle: boolean = false) {
       this._left = left;
       this._right = right;
       this._top = top;
       this._bottom = bottom;
+      this._middle = middle;
     }
 
     public reverse(): Result {
@@ -46,7 +51,8 @@ export module Collider {
         this._right,
         this._left,
         this._bottom,
-        this._top
+        this._top,
+        this._middle
       );
     }
   }
@@ -96,9 +102,11 @@ export module Collider {
     let left = false,
         right = false,
         top = false,
-        bottom = false;
+        bottom = false,
+        middle = false;
     // Intersection is a prerequisite for collision
     if (bounds1.intersects(bounds2)) {
+      middle = true;
       // If prevBounds2 is above bounds1 or bounds2 is above prevBounds1,
       // bounds2 hit bounds1 on the top. If bounds2 previously hit bounds1 on
       // the top and bounds2 is moving down relative to bounds1, keep top
@@ -131,11 +139,7 @@ export module Collider {
       if (right && (top || bottom)) {
         right = false;
       }
-      // If there was no directional collision, default to top
-      if (!left && !right && !top && !bottom) {
-        top = true;
-      }
     }
-    return new Result(left, right, top, bottom);
+    return new Result(left, right, top, bottom, middle);
   }
 }
