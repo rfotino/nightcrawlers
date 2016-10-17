@@ -5,6 +5,12 @@ import { Player } from './player';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 
+const enum EnemyState {
+  Chasing,
+  Knockback,
+  Stunned,
+}
+
 /**
  * General enemy class, moves left and right towards the player but cannot
  * fly or jump. Is affected by gravity by default.
@@ -18,6 +24,12 @@ export class Enemy extends GameObject {
   protected _shouldGoLeft: boolean = false;
   protected _shouldGoRight: boolean = false;
   protected _moveSpeed: number = 3;
+  protected _knockbackVel: number;
+  protected _knockbackCounter: number;
+  protected _knockbackCounterMax: number;
+  protected _stunnedCounter: number;
+  protected _stunnedCounterMax: number;
+  protected _state: EnemyState = EnemyState.Chasing;
 
   public get z(): number {
     return 40;
@@ -51,7 +63,8 @@ export class Enemy extends GameObject {
 
   public team(): string { return 'enemy'; }
 
-  protected _updateBehavior(game: GameInstance): void {
+  protected _updateChasing(game: GameInstance): void {
+    // Decide if we should go left or right
     let closestPos = Polar.closestTheta(this.pos.theta, game.player.pos.theta);
     let diffTheta = game.player.pos.theta - closestPos;
     let minDiffTheta = (
@@ -61,15 +74,7 @@ export class Enemy extends GameObject {
     );
     this._shouldGoLeft = diffTheta < -minDiffTheta;
     this._shouldGoRight = diffTheta > minDiffTheta;
-  }
-
-  public update(game: GameInstance): void {
-    super.update(game);
-    // Use AI heuristic to see if we should go left, go right, jump, etc
-    this._updateBehavior(game);
-    // Make transparent if damaged
-    this.alpha = this._health / this._maxHealth;
-    // Handle turning
+    // Handle going left or right
     let speed = this._moveSpeed / this.pos.r;
     if (this._shouldGoLeft) {
       this.vel.theta = -speed;
@@ -77,6 +82,43 @@ export class Enemy extends GameObject {
       this.vel.theta = speed;
     } else {
       this.vel.theta = 0;
+    }
+  }
+
+  protected _updateKnockback(game: GameInstance): void {
+    if (this._knockbackCounter >= this._knockbackCounterMax) {
+      this._stunnedCounter = 0;
+      this._state = EnemyState.Stunned;
+      this.vel.theta = 0;
+    } else {
+      this._knockbackCounter++;
+      this.vel.theta = this._knockbackVel;
+    }
+  }
+
+  protected _updateStunned(game: GameInstance): void {
+    if (this._stunnedCounter >= this._stunnedCounterMax) {
+      this._state = EnemyState.Chasing;
+    } else {
+      this._stunnedCounter++;
+    }
+  }
+
+  public update(game: GameInstance): void {
+    super.update(game);
+    // Make transparent if damaged
+    this.alpha = this._health / this._maxHealth;
+    // Do something different depending on the enemy state
+    switch (this._state) {
+      case EnemyState.Chasing:
+        this._updateChasing(game);
+        break;
+      case EnemyState.Knockback:
+        this._updateKnockback(game);
+        break;
+      case EnemyState.Stunned:
+        this._updateStunned(game);
+        break;
     }
   }
 
@@ -92,6 +134,17 @@ export class Enemy extends GameObject {
           this._onSolidGround = true;
           this.vel.theta += other.vel.theta;
         }
+        break;
+      case 'bullet':
+        // Bullets knock the enemy back - in the future we will probably want
+        // different bullets to knock the enemy back more or less, and stun
+        // them for longer/shorter, so we will want customizable values of
+        // the following for each bullet object
+        this._state = EnemyState.Knockback;
+        this._knockbackCounter = 0;
+        this._knockbackCounterMax = 5;
+        this._stunnedCounterMax = 7;
+        this._knockbackVel = other.vel.theta;
         break;
     }
   }
@@ -131,16 +184,13 @@ export class FlyingEnemy extends Enemy {
     this.accel.r = 0;
   }
 
-  protected _updateBehavior(game: GameInstance): void {
-    super._updateBehavior(game);
+  protected _updateChasing(game: GameInstance): void {
+    super._updateChasing(game);
+    // Decide if we should go up or down
     let diffR = game.player.pos.r - this.pos.r;
     let minDiffR = 5;
     this._shouldGoUp = diffR > minDiffR;
     this._shouldGoDown = diffR < -minDiffR;
-  }
-
-  public update(game: GameInstance): void {
-    super.update(game);
     // Go up or down
     if (this._shouldGoUp) {
       this.vel.r = this._moveSpeed;
@@ -149,8 +199,6 @@ export class FlyingEnemy extends Enemy {
     } else {
       this.vel.r = 0;
     }
-    // Not on solid ground unless we collide with something this frame
-    this._onSolidGround = false;
   }
 }
 
@@ -162,18 +210,19 @@ export class JumpingEnemy extends Enemy {
   protected _shouldJump: boolean = false;
   protected _jumpSpeed: number = 15;
 
-  protected _updateBehavior(game: GameInstance): void {
-    super._updateBehavior(game);
+  protected _updateChasing(game: GameInstance): void {
+    super._updateChasing(game);
+    // Decide if we should jump
     this._shouldJump = game.player.pos.r > this.pos.r;
-  }
-
-  public update(game: GameInstance): void {
-    super.update(game);
     // Handle jumping if player is above this enemy
     if (this._shouldJump && this._onSolidGround) {
       this._onSolidGround = false;
       this.vel.r = this._jumpSpeed;
     }
+  }
+
+  public update(game: GameInstance): void {
+    super.update(game);
     // Not on solid ground unless we collide with something this frame
     this._onSolidGround = false;
   }
