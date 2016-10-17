@@ -211,13 +211,27 @@ export class GroundSpawnEnemy extends JumpingEnemy {
         Math.abs(game.player.pos.r - r2.r)
       );
     });
-    // Find the closest possible rectangle with a spawn that doesn't make
-    // the spawned enemy intersect with a solid block. Spawn the enemy slightly
-    // above the block to prevent the enemy from falling into it due to failed
-    // collision detection.
+    // Choose the closest possible rectangle, if available, and then push the
+    // enemy up until it isn't intersecting any blocks
     if (possibleRects.length > 0) {
       let rect = possibleRects[0];
       this.pos.r = rect.r + (this.height / 2);
     }
+    let enemyRect = this.getPolarBounds();
+    for (let i = 0; i < blockBounds.length; i++) {
+      let blockRect = blockBounds[i];
+      if (enemyRect.intersects(blockRect) &&
+          !Polar.above(enemyRect, blockRect) &&
+          !Polar.above(blockRect, enemyRect)) {
+        // Push this enemy above the block and update bounds
+        this.pos.r = blockRect.r + (this.height / 2);
+        enemyRect = this.getPolarBounds();
+        // start loop over, i === 0 next iteration
+        i = -1;
+      }
+    }
+    // Push the enemy up a bit so that it doesn't fall through the block below
+    // it in the first frame after it spawns
+    this.pos.r += Math.abs(Terrain.GRAVITY) + 0.1;
   }
 }
