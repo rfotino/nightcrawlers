@@ -14,7 +14,8 @@ export class UIButton extends UILabel {
       'touchstart',
     ].forEach(eventType => {
       this.addListener(eventType, () => {
-        if (this._game.mouseState.isDown(MouseState.LEFT)) {
+        if ('touchstart' === eventType ||
+            this._game.mouseState.isDown(MouseState.LEFT)) {
           this._mouseDown = true;
         }
       });
