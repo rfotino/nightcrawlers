@@ -199,6 +199,7 @@ export class GroundSpawnEnemy extends JumpingEnemy {
     } else {
       theta = game.player.pos.theta + minDist + (rand * (maxDist - minDist));
     }
+    this.pos.theta = theta;
     // Then find all blocks that can be found at that angle and sort them by
     // distance from the player.
     let blockBounds = game.level.blocks.map(block => block.getPolarBounds());
@@ -214,23 +215,9 @@ export class GroundSpawnEnemy extends JumpingEnemy {
     // the spawned enemy intersect with a solid block. Spawn the enemy slightly
     // above the block to prevent the enemy from falling into it due to failed
     // collision detection.
-    let rEpsilon = Math.abs(Terrain.GRAVITY) + 0.1;
-    for (let i = 0; i < possibleRects.length; i++) {
-      let rect = possibleRects[i];
-      // Try to spawn enemy here
-      let r = rect.r + (this.height / 2) + rEpsilon;
-      this.pos.set(r, theta);
-      // Make sure enemy bounds don't intersect with any blocks
-      let enemyRect = this.getPolarBounds();
-      let intersects = false;
-      blockBounds.forEach(blockRect => {
-        if (enemyRect.intersects(blockRect)) {
-          intersects = true;
-        }
-      });
-      if (!intersects) {
-        break;
-      }
+    if (possibleRects.length > 0) {
+      let rect = possibleRects[0];
+      this.pos.r = rect.r + (this.height / 2);
     }
   }
 }
