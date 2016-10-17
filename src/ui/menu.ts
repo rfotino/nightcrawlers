@@ -1,6 +1,7 @@
 import { UIContainer } from './container';
 import { UIButton } from './button';
 import { UILabel } from './label';
+import { UISliderWithLabel } from './slider';
 import { Game } from '../game';
 import { GameInstance } from '../game-instance';
 import { Level } from '../level';
@@ -89,17 +90,13 @@ class OptionsMenu extends UIMenu {
       debugButton.title = `Debug ${this._options.debug ? 'On' : 'Off'}`;
     });
     this.addMenuItem(debugButton);
-    // Add sound on/off button
-    let soundButton = new UIButton(
-      game,
-      `Sound ${this._options.soundOn ? 'On' : 'Off'}`
-    );
-    soundButton.addListener('action', () => {
-      this._options.soundOn = !this._options.soundOn;
-      soundButton.title = `Sound ${this._options.soundOn ? 'On' : 'Off'}`;
-      Howler.mute(!this._options.soundOn);
+    // Add volume slider
+    let volumeSlider = new UISliderWithLabel(game, 'Volume');
+    volumeSlider.addListener('change', () => {
+      Howler.volume(volumeSlider.value);
+      console.log(volumeSlider.value);
     });
-    this.addMenuItem(soundButton);
+    this.addMenuItem(volumeSlider);
     // Add load level from file option
     let loadLevelButton = new UIButton(game, 'Load Level');
     loadLevelButton.addListener('action', () => {
