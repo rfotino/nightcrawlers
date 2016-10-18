@@ -1,0 +1,9 @@
+rename-session nightcrawlers
+rename-window shell
+new-window -n daemons
+send "python -m SimpleHTTPServer 9000" C-m
+split-window -v
+send "tsc --watch" C-m
+split-window -h
+send "watchify --outfile build/build.js build/main.js" C-m
+next-window

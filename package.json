@@ -1,0 +1,16 @@
+{
+  "name": "nightcrawlers",
+  "productName": "Nightcrawlers",
+  "version": "0.1.0",
+  "main": "electron.js",
+  "author": {
+    "name": "Robert Fotino",
+    "email": "robert@fotino.me",
+    "url": "fotino.me"
+  },
+  "dependencies": {
+    "electron": "^1.4.3"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
