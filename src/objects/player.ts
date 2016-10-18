@@ -6,14 +6,22 @@ import { Level } from '../level';
 import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
+import { Weapon } from '../weapons/weapon';
+import { BaseballBat } from '../weapons/baseball-bat';
+import { Pistol } from '../weapons/pistol';
+import { Shotgun } from '../weapons/shotgun';
+import { AssaultRifle } from '../weapons/assault-rifle';
 
 export class Player extends GameObject {
   private _sprite: PIXI.Sprite;
   private _canvas: HTMLCanvasElement;
   private _onSolidGround: boolean = false;
-  private _dirLeft: boolean = true;
   private _ground: GameObject = null;
+  protected _baseballBat: BaseballBat;
+  public facingLeft: boolean = true;
   public score: number = 0;
+  public weapons: Weapon[];
+  public equippedWeapon: Weapon;
 
   public get width(): number {
     return 25;
@@ -31,6 +39,15 @@ export class Player extends GameObject {
     super();
     this._maxHealth = 100;
     this._health = this._maxHealth;
+    // Set up weapons
+    this.weapons = [
+      new BaseballBat(),
+      new Pistol(),
+      new Shotgun(),
+      new AssaultRifle(),
+    ];
+    this._baseballBat = this.equippedWeapon = this.weapons[0];
+    // Draw and add sprite
     this._canvas = document.createElement('canvas');
     this._draw();
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
@@ -61,10 +78,10 @@ export class Player extends GameObject {
     let rightArrow = game.keyState.isDown(KeyState.RIGHTARROW);
     if (leftArrow && !rightArrow) {
       this.vel.theta -= speed;
-      this._dirLeft = true;
+      this.facingLeft = true;
     } else if (rightArrow && !leftArrow) {
       this.vel.theta += speed;
-      this._dirLeft = false;
+      this.facingLeft = false;
     }
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
@@ -74,11 +91,24 @@ export class Player extends GameObject {
       this._onSolidGround = false;
       this.vel.r = jumpSpeed;
     }
-    // Handle firing bullets due to user input
-    if (game.keyState.isPressed(KeyState.SPACEBAR)) {
-      let bullet = new Bullet(this, this._dirLeft);
-      game.addGameObject(bullet);
+    // Change weapons if we pressed the button to do so and the corresponding
+    // weapon has ammo left
+    for (let i = 0; i < this.weapons.length; i++) {
+      let key = KeyState.ONE + i;
+      if (game.keyState.isPressed(key)) {
+        let weapon = this.weapons[i];
+        if (weapon.ammo > 0) {
+          this.equippedWeapon = weapon;
+        }
+      }
     }
+    // Check if the currently equipped weapon is out of ammo, and if so default
+    // back to the baseball bat
+    if (this.equippedWeapon.ammo <= 0) {
+      this.equippedWeapon = this._baseballBat;
+    }
+    // Try to fire the equipped weapon if the user pressed the space bar
+    this.equippedWeapon.maybeFire(game);
     // Not on solid ground unless we collide with something this frame
     this._onSolidGround = false;
     this._ground = null;

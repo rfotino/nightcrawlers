@@ -2,8 +2,10 @@ import { GameInstance } from '../game-instance';
 import { GameObject } from './game-object';
 import * as Terrain from './terrain';
 import { Player } from './player';
+import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
+import { Counter } from '../math/counter';
 
 const enum EnemyState {
   Chasing,
@@ -24,11 +26,9 @@ export class Enemy extends GameObject {
   protected _shouldGoLeft: boolean = false;
   protected _shouldGoRight: boolean = false;
   protected _moveSpeed: number = 3;
-  protected _knockbackVel: number;
-  protected _knockbackCounter: number;
-  protected _knockbackCounterMax: number;
-  protected _stunnedCounter: number;
-  protected _stunnedCounterMax: number;
+  protected _knockbackVel: number = 0;
+  protected _knockbackCounter: Counter = new Counter(0);
+  protected _stunnedCounter: Counter = new Counter(0);
   protected _state: EnemyState = EnemyState.Chasing;
 
   public get z(): number {
@@ -86,21 +86,20 @@ export class Enemy extends GameObject {
   }
 
   protected _updateKnockback(game: GameInstance): void {
-    if (this._knockbackCounter >= this._knockbackCounterMax) {
-      this._stunnedCounter = 0;
+    if (this._knockbackCounter.done()) {
       this._state = EnemyState.Stunned;
       this.vel.theta = 0;
     } else {
-      this._knockbackCounter++;
+      this._knockbackCounter.next();
       this.vel.theta = this._knockbackVel;
     }
   }
 
   protected _updateStunned(game: GameInstance): void {
-    if (this._stunnedCounter >= this._stunnedCounterMax) {
+    if (this._stunnedCounter.done()) {
       this._state = EnemyState.Chasing;
     } else {
-      this._stunnedCounter++;
+      this._stunnedCounter.next();
     }
   }
 
@@ -136,15 +135,14 @@ export class Enemy extends GameObject {
         }
         break;
       case 'bullet':
-        // Bullets knock the enemy back - in the future we will probably want
-        // different bullets to knock the enemy back more or less, and stun
-        // them for longer/shorter, so we will want customizable values of
-        // the following for each bullet object
+        // Bullets knock the enemy back
+        let bullet = <Bullet>other;
         this._state = EnemyState.Knockback;
-        this._knockbackCounter = 0;
-        this._knockbackCounterMax = 5;
-        this._stunnedCounterMax = 7;
-        this._knockbackVel = other.vel.theta;
+        this._knockbackVel = bullet.knockbackVel;
+        this._knockbackCounter.reset();
+        this._knockbackCounter.max = bullet.knockbackTime;
+        this._stunnedCounter.reset();
+        this._stunnedCounter.max = bullet.stunTime;
         break;
     }
   }

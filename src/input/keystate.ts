@@ -17,6 +17,7 @@ export class KeyState {
   public static get UPARROW(): number { return 38; }
   public static get RIGHTARROW(): number { return 39; }
   public static get DOWNARROW(): number { return 40; }
+  public static get ONE(): number { return 49; }
 
   public addListeners(elem: HTMLElement,
                       trigger?: (string, x: number, y: number) => void): void {
