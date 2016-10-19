@@ -125,7 +125,11 @@ class OptionsMenu extends UIMenu {
 class CreditsMenu extends UIMenu {
   public constructor(game: Game, previous: UIMenu) {
     super(game, 'Credits');
-    let contributors = ['Robert Fotino', 'Joe Calvi', 'Chris Sweeney'].sort();
+    let contributors = [
+      'Robert Fotino',
+      'Joe Calvi',
+      'Nikolas Verlennich',
+    ].sort();
     contributors.forEach(name => {
       this.addMenuItem(new UILabel(game, name));
     });
