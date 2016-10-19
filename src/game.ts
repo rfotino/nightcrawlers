@@ -102,6 +102,7 @@ export class Game {
     // Roll over input states
     this._keyState.rollOver();
     this._mouseState.rollOver();
+    this._touchState.rollOver();
     // Draw everything
     this._renderer.render(this._activeScreen);
   }
