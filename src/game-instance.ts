@@ -15,7 +15,7 @@ import { Debugger } from './debug';
 import { Collider } from './math/collider';
 import { UIContainer } from './ui/container';
 import { UILabel } from './ui/label';
-import { PauseMenu } from './ui/menu';
+import { PauseMenu, GameOverMenu } from './ui/menu';
 import { HealthBar } from './ui/healthbar';
 import { EnemyIndicator } from './ui/enemy-indicator';
 
@@ -33,6 +33,7 @@ export class GameInstance extends UIContainer {
   protected _playerView: Polar.Coord;
   protected _debugger: Debugger;
   protected _previousCollisions: Collider.Previous;
+  protected _gameOverMenu: GameOverMenu;
   protected _pauseMenu: PauseMenu;
   protected _paused: boolean;
   protected _enemyIndicator: EnemyIndicator;
@@ -41,6 +42,10 @@ export class GameInstance extends UIContainer {
   protected _waveIndex: number;
   protected _nightMusic: Howl;
   protected _nightMusicId: number;
+
+  public get options(): Options {
+    return this._options;
+  }
 
   public get score(): number {
     return this.player.score;
@@ -79,6 +84,8 @@ export class GameInstance extends UIContainer {
     this.addChild(this._debugger);
     // Initialize the player view
     this._playerView = this.player.pos.clone();
+    // Create the game over menu for later
+    this._gameOverMenu = new GameOverMenu(game, this);
     // Create the pause menu for later
     this._pauseMenu = new PauseMenu(game, this);
     this._paused = false;
@@ -221,12 +228,20 @@ export class GameInstance extends UIContainer {
    */
   public update(): void {
     super.update();
-    // Pause if the player hit escape
-    if (this.keyState.isPressed(KeyState.ESCAPE)) {
-      this.pause();
-    }
     // Do not update anything if paused
     if (this._paused) {
+      return;
+    }
+    // Pause if the player hit escape
+    if (this.keyState.isPressed(KeyState.ESCAPE)) {
+      this.addComponent(this._pauseMenu);
+      this.pause();
+      return;
+    }
+    // Show the game over screen if the player has died
+    if (!this.player.alive) {
+      this.addComponent(this._gameOverMenu);
+      this.pause();
       return;
     }
     // Update time of day
@@ -288,7 +303,6 @@ export class GameInstance extends UIContainer {
         this._nightMusic.pause(this._nightMusicId);
       }
       this._paused = true;
-      this.addComponent(this._pauseMenu);
     }
   }
 

@@ -27,7 +27,7 @@ export class UIMenu extends UIContainer {
     // First set heights of menu components
     let marginTop = this.height * 0.1;
     let innerHeight = this.height - (marginTop * 2);
-    let titleHeight = 1.1 * innerHeight / this._menuItems.length;
+    let titleHeight = 1.05 * innerHeight / this._menuItems.length;
     let itemHeight = (innerHeight - titleHeight) / this._menuItems.length;
     this._menuTitle.height = titleHeight;
     this._menuTitle.y = marginTop;
@@ -145,6 +145,29 @@ export class PauseMenu extends UIMenu {
       gameInstance.cleanup();
       game.activeScreen = game.mainMenu;
     }));
+    this.bgcolor = new Color(0, 0, 0, 0.8);
+  }
+}
+
+export class GameOverMenu extends UIMenu {
+  public constructor(game: Game, gameInstance: GameInstance) {
+    super(game, 'Game Over');
+    // Add button to start a new game
+    let playAgainBtn = new UIButton(game, 'Play Again');
+    playAgainBtn.addListener('action', () => {
+      let options = gameInstance.options;
+      gameInstance = null;
+      game.activeScreen = new GameInstance(game, options);
+    });
+    this.addMenuItem(playAgainBtn);
+    // Add button to quit to main menu
+    let mainMenuBtn = new UIButton(game, 'Main Menu');
+    mainMenuBtn.addListener('action', () => {
+      gameInstance = null;
+      game.activeScreen = game.mainMenu;
+    });
+    this.addMenuItem(mainMenuBtn);
+    // Make background semi transparent
     this.bgcolor = new Color(0, 0, 0, 0.8);
   }
 }
