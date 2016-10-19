@@ -11,24 +11,24 @@ import { BaseballBat } from '../weapons/baseball-bat';
 import { Pistol } from '../weapons/pistol';
 import { Shotgun } from '../weapons/shotgun';
 import { AssaultRifle } from '../weapons/assault-rifle';
+import { SpriteSheet } from '../graphics/spritesheet';
 
 export class Player extends GameObject {
-  private _sprite: PIXI.Sprite;
-  private _canvas: HTMLCanvasElement;
+  private _sprite: SpriteSheet;
   private _onSolidGround: boolean = false;
   private _ground: GameObject = null;
   protected _baseballBat: BaseballBat;
-  public facingLeft: boolean = true;
+  public facingLeft: boolean = false;
   public score: number = 0;
   public weapons: Weapon[];
   public equippedWeapon: Weapon;
 
   public get width(): number {
-    return 25;
+    return 18;
   }
 
   public get height(): number {
-    return 50;
+    return 32;
   }
 
   public get z(): number {
@@ -47,10 +47,19 @@ export class Player extends GameObject {
       new AssaultRifle(),
     ];
     this._baseballBat = this.equippedWeapon = this.weapons[0];
-    // Draw and add sprite
-    this._canvas = document.createElement('canvas');
-    this._draw();
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
+    // Add spritesheet
+    this._sprite = new SpriteSheet(
+      PIXI.loader.resources['player'].texture,
+      4, // images wide
+      1, // images high
+      0, // default frame
+      {
+        walk: {
+          frames: [1, 2, 3, 0],
+          speed: 10,
+        }
+      }
+    );
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
@@ -70,6 +79,8 @@ export class Player extends GameObject {
 
   public update(game: GameInstance): void {
     super.update(game);
+    // Update sprite animation
+    this._sprite.nextFrame();
     // Add relative velocity from the ground
     this.vel.theta = this._ground ? this._ground.vel.theta : 0;
     // Handle turning due to user input
@@ -79,9 +90,19 @@ export class Player extends GameObject {
     if (leftArrow && !rightArrow) {
       this.vel.theta -= speed;
       this.facingLeft = true;
+      if (this._sprite.nowPlaying() !== 'walk') {
+        this._sprite.playAnim('walk');
+      }
+      this._sprite.scale.x = -1;
     } else if (rightArrow && !leftArrow) {
       this.vel.theta += speed;
       this.facingLeft = false;
+      if (this._sprite.nowPlaying() !== 'walk') {
+        this._sprite.playAnim('walk');
+      }
+      this._sprite.scale.x = 1;
+    } else {
+      this._sprite.stopAnim();
     }
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
@@ -135,17 +156,5 @@ export class Player extends GameObject {
       this.height,
       widthTheta
     );
-  }
-
-  private _draw(): void {
-    // Resize the canvas
-    this._canvas.width = this.width + 2;
-    this._canvas.height = this.height + 2;
-    // Draw a rectangle
-    let ctx = this._canvas.getContext('2d');
-    ctx.save();
-    ctx.fillStyle = 'red';
-    ctx.fillRect(1, 1, this.width, this.height);
-    ctx.restore();
   }
 }

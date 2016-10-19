@@ -73,7 +73,6 @@ export class Game {
     // Preload assets
     let audioExt = Howler.codecs('mp3') ? 'mp3' : 'm4a';
     PIXI.loader
-      .add('planet', 'assets/images/planet.png')
       .add('player', 'assets/images/player.png')
       .add('night-music', `assets/music/night.${audioExt}`)
       .load(() => this.activeScreen = this._mainMenu)
