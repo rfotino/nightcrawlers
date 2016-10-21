@@ -16,6 +16,5 @@ export class Pistol extends Weapon {
       this.ammo--;
       game.addGameObject(new Bullet(game.player));
     }
-    console.log(this.type());
   }
 }
