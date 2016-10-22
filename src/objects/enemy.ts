@@ -7,6 +7,14 @@ import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
 
+const enum Direction {
+  None,
+  Left,
+  Right,
+  Up,
+  Down,
+}
+
 const enum EnemyState {
   Searching,
   Chasing,
@@ -30,7 +38,8 @@ export class Enemy extends GameObject {
   protected _knockbackVel: number = 0;
   protected _knockbackCounter: Counter = new Counter(0);
   protected _stunnedCounter: Counter = new Counter(0);
-  protected _state: EnemyState = EnemyState.Chasing;
+  protected _state: EnemyState = EnemyState.Searching;
+  protected _searchDir: Direction = Direction.None;
 
   public get z(): number {
     return 40;
@@ -97,13 +106,27 @@ export class Enemy extends GameObject {
     // Switch to chasing if we can see the player
     if (this._canSeePlayer(game)) {
       this._state = EnemyState.Chasing;
+      this._searchDir = Direction.None;
       return;
     }
-    // Otherwise stop moving left or right, and stop moving up and down too
-    // unless affected by gravity. TODO: implement searching
-    this.vel.theta = 0;
-    if (this.accel.r == 0) {
-      this.vel.r = 0;
+    // Otherwise, if we are not moving left or right, then choose a new
+    // direction
+    let moveDist = Math.abs((this.pos.theta - this.prevPos.theta) * this.pos.r);
+    if (moveDist < this._moveSpeed / 2 ||
+        this._searchDir === Direction.None) {
+      if (Math.random() < 0.5) {
+        this._searchDir = Direction.Left;
+      } else {
+        this._searchDir = Direction.Right;
+      }
+    }
+    // Update the theta velocity based on the current direction. Search speed
+    // is slower than normal movement speed
+    let searchSpeed = 0.6 * this._moveSpeed / this.pos.r;
+    if (this._searchDir === Direction.Left) {
+      this.vel.theta = -searchSpeed;
+    } else {
+      this.vel.theta = searchSpeed;
     }
   }
 
@@ -255,6 +278,16 @@ export class FlyingEnemy extends Enemy {
     this.accel.r = 0;
   }
 
+  protected _updateSearching(game: GameInstance): void {
+    super._updateSearching(game);
+    if (this._state !== EnemyState.Searching) {
+      return;
+    }
+    // Stop going up or down for now. Maybe later on add going up or down
+    // to the list of possible search directions instead of just left and right
+    this.vel.r = 0;
+  }
+
   protected _updateChasing(game: GameInstance): void {
     super._updateChasing(game);
     if (this._state !== EnemyState.Chasing) {
@@ -281,8 +314,42 @@ export class FlyingEnemy extends Enemy {
  * are on solid ground.
  */
 export class JumpingEnemy extends Enemy {
+  private _jumpCounter: Counter;
   protected _shouldJump: boolean = false;
   protected _jumpSpeed: number = 15;
+
+  private _getNewJumpCounterInterval(): number {
+    return 60 + (90 * Math.random());
+  }
+
+  protected _updateSearching(game: GameInstance): void {
+    super._updateSearching(game);
+    if (this._state !== EnemyState.Searching) {
+      this._jumpCounter = null;
+      return;
+    }
+    // Make sure the jump counter has been initialized
+    if (!this._jumpCounter) {
+      this._jumpCounter = new Counter(this._getNewJumpCounterInterval());
+    }
+    // Update the jump counter, jump if it has expired
+    if (this._onSolidGround) {
+      if (this._jumpCounter.done()) {
+        // Jump
+        this._onSolidGround = false;
+        this.vel.r = this._jumpSpeed;
+        // Reset jump counter with another randomized interval
+        this._jumpCounter.max = this._getNewJumpCounterInterval();
+        this._jumpCounter.reset();
+      } else {
+        // Increment jump counter
+        this._jumpCounter.next();
+      }
+    } else {
+      // Not on solid ground, reset the jump counter
+      this._jumpCounter.reset();
+    }
+  }
 
   protected _updateChasing(game: GameInstance): void {
     super._updateChasing(game);
