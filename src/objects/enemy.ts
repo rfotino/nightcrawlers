@@ -64,24 +64,35 @@ export class Enemy extends GameObject {
 
   public team(): string { return 'enemy'; }
 
+  /**
+   * Returns true if a polar line from the center of the enemy to the center
+   * of the player intersects no more than 1 horizontal line and no more than
+   * 1 vertical line taken from the block bounds.
+   */
   protected _canSeePlayer(game: GameInstance): boolean {
-    //return game.player.pos.dist(this.pos) < 500;
     let line = new Polar.Line(
-      this.pos.r + (this.height / 2),
+      this.pos.r,
       this.pos.theta,
-      game.player.pos.r + (game.player.height / 2),
+      game.player.pos.r,
       game.player.pos.theta
     );
-    let blocks = game.level.blocks;
-    for (let i = 0; i < blocks.length; i++) {
-      let block = blocks[i];
-      if (line.inLineOfSight(block.getPolarBounds())) {
-        return false;
-      }
-    }
-    return true;
+    let numHor = 0, numVer = 0;
+    game.level.blocks.forEach(block => {
+      let bounds = block.getPolarBounds();
+      let result = line.intersectsRect(bounds);
+      if (result.top) { numHor++; }
+      if (result.bottom) { numHor++; }
+      if (result.left) { numVer++; }
+      if (result.right) { numVer++; }
+    });
+    return numHor <= 1 && numVer <= 1;
   }
 
+  /**
+   * Update the enemy if it is in the "searching" state, where it can't
+   * see the player. Wander around until the player comes in sight, then
+   * transition to the "chasing" state.
+   */
   protected _updateSearching(game: GameInstance): void {
     // Switch to chasing if we can see the player
     if (this._canSeePlayer(game)) {
@@ -96,6 +107,10 @@ export class Enemy extends GameObject {
     }
   }
 
+  /**
+   * Update the enemy if it is in the "chasing" state. Try to get to the
+   * player, and if they go out of sight then go back to the "searching" state.
+   */
   protected _updateChasing(game: GameInstance): void {
     // If we can't see the player, switch to searching
     if (!this._canSeePlayer(game)) {
@@ -123,6 +138,11 @@ export class Enemy extends GameObject {
     }
   }
 
+  /**
+   * Update the enemy if it is in the "knockback" state. Move by some constant
+   * knockback velocity for a certain number of frames, then transition to
+   * the "stunned" state.
+   */
   protected _updateKnockback(game: GameInstance): void {
     if (this._knockbackCounter.done()) {
       this._state = EnemyState.Stunned;
@@ -133,6 +153,11 @@ export class Enemy extends GameObject {
     }
   }
 
+  /**
+   * Update the enemy if it is in the "stunned" state. Wait a certain number
+   * of frames and do not move, then transition to the "chasing" or "searching"
+   * state depending on if we can see the player.
+   */
   protected _updateStunned(game: GameInstance): void {
     if (this._stunnedCounter.done()) {
       if (this._canSeePlayer(game)) {
@@ -145,6 +170,9 @@ export class Enemy extends GameObject {
     }
   }
 
+  /**
+   * Update the enemy behavior based on its current state.
+   */
   public update(game: GameInstance): void {
     super.update(game);
     // Make transparent if damaged
@@ -229,6 +257,9 @@ export class FlyingEnemy extends Enemy {
 
   protected _updateChasing(game: GameInstance): void {
     super._updateChasing(game);
+    if (this._state !== EnemyState.Chasing) {
+      return;
+    }
     // Decide if we should go up or down
     let diffR = game.player.pos.r - this.pos.r;
     let minDiffR = 5;
@@ -255,6 +286,9 @@ export class JumpingEnemy extends Enemy {
 
   protected _updateChasing(game: GameInstance): void {
     super._updateChasing(game);
+    if (this._state !== EnemyState.Chasing) {
+      return;
+    }
     // Decide if we should jump
     this._shouldJump = game.player.pos.r > this.pos.r;
     // Handle jumping if player is above this enemy

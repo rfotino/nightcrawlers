@@ -1,3 +1,5 @@
+import { Collider } from './collider';
+
 /**
  * A 2D polar coordinate with easy translation to cartesian coordinates.
  */
@@ -111,7 +113,7 @@ export module Polar {
      * Returns true if this line segment intersects with the given horizontal
      * line segment, or false otherwise.
      */
-    private _inLineOfSightHor(r: number, theta: number, w: number): boolean {
+    private _intersectsHor(r: number, theta: number, w: number): boolean {
       // First make sure that the other line has positive width, which is a
       // requirement for intersection
       if (w <= 0) {
@@ -144,7 +146,7 @@ export module Polar {
      * Returns true if this line segment intersects with the given vertical
      * line segment, or false otherwise.
      */
-    private _inLineOfSightVer(r: number, theta: number, h: number): boolean {
+    private _intersectsVer(r: number, theta: number, h: number): boolean {
       // First make sure that the other line has nonzero height, which is a
       // requirement for intersection
       if (h <= 0) {
@@ -175,14 +177,14 @@ export module Polar {
 
     /**
      * Returns true if the line segment intersects with the given polar
-     * rectangle, or false otherwise.
+     * rectangle through (the top and bottom) or (the left and right).
      */
-    public inLineOfSight(r: Rect): boolean {
-      return (
-        this._inLineOfSightHor(r.r, r.theta, r.width) ||
-        this._inLineOfSightHor(r.r - r.height, r.theta, r.width) ||
-        this._inLineOfSightVer(r.r - r.height, r.theta, r.height) ||
-        this._inLineOfSightVer(r.r - r.height, r.theta + r.width, r.height)
+    public intersectsRect(r: Rect): Collider.Result {
+      return new Collider.Result(
+        this._intersectsVer(r.r - r.height, r.theta, r.height),
+        this._intersectsVer(r.r - r.height, r.theta + r.width, r.height),
+        this._intersectsHor(r.r, r.theta, r.width),
+        this._intersectsHor(r.r - r.height, r.theta, r.width)
       );
     }
   }
