@@ -3,6 +3,20 @@
  */
 export module Polar {
   /**
+   * Returns theta + 2*n*PI for some integer value of n to minimize
+   * the distance between theta and the reference angle ref.
+   */
+  export function closestTheta(theta: number, ref: number): number {
+    theta = (theta - ref) % (Math.PI * 2);
+    if (theta < -Math.PI) {
+      theta += Math.PI * 2;
+    } else if (theta > Math.PI) {
+      theta -= Math.PI * 2;
+    }
+    return theta + ref;
+  }
+
+  /**
    * Returns true if a normalized value of theta in terms of min and max is
    * between min and max.
    */
@@ -75,6 +89,105 @@ export module Polar {
   }
 
   /**
+   * A polar line, linearly interpolated from one Coord to another. Not
+   * straight in cartesian terms, lines will curve unless they have equal
+   * theta parts.
+   */
+  export class Line {
+    public r1: number;
+    public theta1: number;
+    public r2: number;
+    public theta2: number;
+
+    public constructor(r1: number = 0, theta1: number = 0,
+                       r2: number = 0, theta2: number = 0) {
+      this.r1 = r1;
+      this.theta1 = theta1;
+      this.r2 = r2;
+      this.theta2 = theta2;
+    }
+
+    /**
+     * Returns true if this line segment intersects with the given horizontal
+     * line segment, or false otherwise.
+     */
+    private _inLineOfSightHor(r: number, theta: number, w: number): boolean {
+      // First make sure that the other line has positive width, which is a
+      // requirement for intersection
+      if (w <= 0) {
+        return false;
+      }
+      // Then check if this line is horizontal, in that case we only intersect
+      // if it lies on the other line
+      if (this.r1 === this.r2) {
+        return this.r1 === r;
+      }
+      // Get the closest theta2 and theta to this.theta1 as possible,
+      // so that we do closest line of sight intersection
+      let theta1 = this.theta1;
+      let theta2 = closestTheta(this.theta2, theta1);
+      theta = closestTheta(theta, theta1);
+      // Solve for t1 and t2 in the parametric equations for each line of the
+      // form p(t) = a + t(b - a) for a line segment ab and 0 < t < 1
+      let t1 = (r - this.r1) / (this.r2 - this.r1);
+      if (t1 <= 0 || t1 >= 1) {
+        return false;
+      }
+      let t2 = (theta1 - theta + (t1 * (theta2 - theta1))) / w;
+      if (t2 <= 0 || t2 >= 1) {
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Returns true if this line segment intersects with the given vertical
+     * line segment, or false otherwise.
+     */
+    private _inLineOfSightVer(r: number, theta: number, h: number): boolean {
+      // First make sure that the other line has nonzero height, which is a
+      // requirement for intersection
+      if (h <= 0) {
+        return false;
+      }
+      // Get the closest theta2 and theta to this.theta1 as possible,
+      // so that we do closest line of sight intersection
+      let theta1 = this.theta1;
+      let theta2 = closestTheta(this.theta2, theta1);
+      theta = closestTheta(theta, theta1);
+      // Then check if this line is vertical, in that case we only intersect
+      // if it lies on the other line
+      if (theta1 === theta2) {
+        return theta1 === theta;
+      }
+      // Solve for t1 and t2 in the parametric equations for each line of the
+      // form p(t) = a + t(b - a) for a line segmnet ab and 0 < t < 1
+      let t1 = (theta - theta1) / (theta2 - theta1);
+      if (t1 <= 0 || t1 >= 1) {
+        return false;
+      }
+      let t2 = (this.r1 - r + (t1 * (this.r2 - this.r1))) / h;
+      if (t2 <= 0 || t2 >= 1) {
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Returns true if the line segment intersects with the given polar
+     * rectangle, or false otherwise.
+     */
+    public inLineOfSight(r: Rect): boolean {
+      return (
+        this._inLineOfSightHor(r.r, r.theta, r.width) ||
+        this._inLineOfSightHor(r.r - r.height, r.theta, r.width) ||
+        this._inLineOfSightVer(r.r - r.height, r.theta, r.height) ||
+        this._inLineOfSightVer(r.r - r.height, r.theta + r.width, r.height)
+      );
+    }
+  }
+
+  /**
    * A polar rectangle, used for bounds checking.
    */
   export class Rect {
@@ -115,19 +228,5 @@ export module Polar {
       }
       return false;
     }
-  }
-
-  /**
-   * Returns theta + 2*n*PI for some integer value of n to minimize
-   * the distance between theta and the reference angle ref.
-   */
-  export function closestTheta(theta: number, ref: number): number {
-    theta = (theta - ref) % (Math.PI * 2);
-    if (theta < -Math.PI) {
-      theta += Math.PI * 2;
-    } else if (theta > Math.PI) {
-      theta -= Math.PI * 2;
-    }
-    return theta + ref;
   }
 }

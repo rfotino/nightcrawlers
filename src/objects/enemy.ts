@@ -8,6 +8,7 @@ import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
 
 const enum EnemyState {
+  Searching,
   Chasing,
   Knockback,
   Stunned,
@@ -63,7 +64,44 @@ export class Enemy extends GameObject {
 
   public team(): string { return 'enemy'; }
 
+  protected _canSeePlayer(game: GameInstance): boolean {
+    //return game.player.pos.dist(this.pos) < 500;
+    let line = new Polar.Line(
+      this.pos.r + (this.height / 2),
+      this.pos.theta,
+      game.player.pos.r + (game.player.height / 2),
+      game.player.pos.theta
+    );
+    let blocks = game.level.blocks;
+    for (let i = 0; i < blocks.length; i++) {
+      let block = blocks[i];
+      if (line.inLineOfSight(block.getPolarBounds())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  protected _updateSearching(game: GameInstance): void {
+    // Switch to chasing if we can see the player
+    if (this._canSeePlayer(game)) {
+      this._state = EnemyState.Chasing;
+      return;
+    }
+    // Otherwise stop moving left or right, and stop moving up and down too
+    // unless affected by gravity. TODO: implement searching
+    this.vel.theta = 0;
+    if (this.accel.r == 0) {
+      this.vel.r = 0;
+    }
+  }
+
   protected _updateChasing(game: GameInstance): void {
+    // If we can't see the player, switch to searching
+    if (!this._canSeePlayer(game)) {
+      this._state = EnemyState.Searching;
+      return;
+    }
     // Decide if we should go left or right
     let closestPos = Polar.closestTheta(this.pos.theta, game.player.pos.theta);
     let diffTheta = game.player.pos.theta - closestPos;
@@ -97,7 +135,11 @@ export class Enemy extends GameObject {
 
   protected _updateStunned(game: GameInstance): void {
     if (this._stunnedCounter.done()) {
-      this._state = EnemyState.Chasing;
+      if (this._canSeePlayer(game)) {
+        this._state = EnemyState.Chasing;
+      } else {
+        this._state = EnemyState.Searching;
+      }
     } else {
       this._stunnedCounter.next();
     }
@@ -109,6 +151,9 @@ export class Enemy extends GameObject {
     this.alpha = this._health / this._maxHealth;
     // Do something different depending on the enemy state
     switch (this._state) {
+      case EnemyState.Searching:
+        this._updateSearching(game);
+        break;
       case EnemyState.Chasing:
         this._updateChasing(game);
         break;
