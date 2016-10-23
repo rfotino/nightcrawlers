@@ -48,6 +48,10 @@ class BaseballBatBullet extends Bullet {
 }
 
 export class BaseballBat extends Weapon {
+  public constructor() {
+    super(Infinity);
+  }
+
   public type(): string { return 'baseball-bat'; }
 
   public maybeFire(game: GameInstance): void {

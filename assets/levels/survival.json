@@ -17,25 +17,31 @@
     {
       "r": 900,
       "theta": -2.48,
-      "rate": 1800,
-      "type": "mines"
+      "rate": 2100,
+      "type": "pistol"
     },
     {
       "r": 950,
       "theta": 0.9,
-      "rate": 1800,
+      "rate": 3600,
       "type": "shotgun"
     },
     {
       "r": 1300,
       "theta": 0.125,
       "rate": 1800,
-      "type": "armor"
+      "type": "health"
+    },
+    {
+      "r": 1330,
+      "theta": 1.25,
+      "rate": 2600,
+      "type": "assault"
     },
     {
       "r": 1400,
       "theta": 2.875,
-      "rate": 1800,
+      "rate": 3000,
       "type": "armor"
     }
   ],

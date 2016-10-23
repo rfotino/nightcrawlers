@@ -22,13 +22,19 @@ export class Item extends GameObject {
     let canvas = document.createElement('canvas');
     canvas.width = this.width + 2;
     canvas.height = this.height + 2;
-    // Draw a circle on the canvas
+    // Draw a purple circle on the canvas
     let radius = this.width / 2;
     let ctx = canvas.getContext('2d');
     ctx.fillStyle = 'purple';
     ctx.beginPath();
     ctx.arc(1 + radius, 1 + radius, radius, 0, Math.PI * 2);
     ctx.fill();
+    // Add the type of the weapon in black text on top of the circle
+    ctx.fillStyle = 'black';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(this._type, canvas.width / 2, canvas.height / 2, this.width);
     // Create a sprite with this texture
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
@@ -61,8 +67,34 @@ export class Item extends GameObject {
   }
 
   protected _addToPlayer(player: Player): void {
-    // To be implemented by subclasses, or implemented by switching on _type.
-    // Just add some health for now.
-    player.heal(20);
+    switch (this._type) {
+      case 'health':
+        player.health += 20;
+        break;
+      case 'armor':
+        player.armor = player.maxArmor;
+        break;
+      case 'pistol':
+        player.weapons.forEach(weapon => {
+          if (weapon.type() === 'pistol') {
+            weapon.ammo += 8;
+          }
+        });
+        break;
+      case 'shotgun':
+        player.weapons.forEach(weapon => {
+          if (weapon.type() === 'shotgun') {
+            weapon.ammo += 5;
+          }
+        });
+        break;
+      case 'assault':
+        player.weapons.forEach(weapon => {
+          if (weapon.type() === 'assault') {
+            weapon.ammo += 10;
+          }
+        });
+        break;
+    }
   }
 }

@@ -18,6 +18,8 @@ export class Player extends GameObject {
   private _onSolidGround: boolean = false;
   private _ground: GameObject = null;
   protected _baseballBat: BaseballBat;
+  protected _armor: number = 0;
+  protected _maxArmor: number = 50;
   public facingLeft: boolean = false;
   public score: number = 0;
   public weapons: Weapon[];
@@ -33,6 +35,18 @@ export class Player extends GameObject {
 
   public get z(): number {
     return 30;
+  }
+
+  public get armor(): number {
+    return this._armor;
+  }
+
+  public get maxArmor(): number {
+    return this._maxArmor;
+  }
+
+  public set armor(armor: number) {
+    this._armor = Math.min(this._maxArmor, armor);
   }
 
   public constructor(level: Level) {
@@ -73,8 +87,19 @@ export class Player extends GameObject {
 
   public team(): string { return 'player'; }
 
-  public heal(amount: number): void {
-    this._health = Math.min(this._maxHealth, this._health + amount);
+  /**
+   * Damage armor before health.
+   */
+  public damage(amount: number): void {
+    if (amount <= this._armor) {
+      this.armor -= amount;
+    } else {
+      this.health -= amount - this._armor;
+      this.armor = 0;
+    }
+    if (this.health <= 0) {
+      this.kill();
+    }
   }
 
   public update(game: GameInstance): void {

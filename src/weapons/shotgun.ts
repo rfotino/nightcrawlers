@@ -4,11 +4,6 @@ import { GameInstance } from '../game-instance';
 import { KeyState } from '../input/keystate';
 
 export class Shotgun extends Weapon {
-  public constructor() {
-    super();
-    this.ammo = 5;
-  }
-
   public type(): string { return 'shotgun'; }
 
   public maybeFire(game: GameInstance): void {

@@ -48,6 +48,13 @@ export abstract class GameObject extends PIXI.Container {
     return this._health;
   }
 
+  /**
+   * Don't let health go above max health or below zero.
+   */
+  public set health(health: number) {
+    this._health = Math.max(0, Math.min(this._maxHealth, health));
+  }
+
   public get maxHealth(): number {
     return this._maxHealth;
   }
@@ -86,8 +93,8 @@ export abstract class GameObject extends PIXI.Container {
   }
 
   public damage(amount: number): void {
-    this._health = Math.max(0, this._health - amount);
-    if (this._health === 0) {
+    this.health -= amount;
+    if (this.health <= 0) {
       this.kill();
     }
   }

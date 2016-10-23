@@ -5,15 +5,9 @@ import { KeyState } from '../input/keystate';
 import { Counter } from '../math/counter';
 
 export class AssaultRifle extends Weapon {
-  public _cooldownCounter: Counter;
+  public _cooldownCounter: Counter = new Counter(5);
 
-  public constructor() {
-    super();
-    this.ammo = 50;
-    this._cooldownCounter = new Counter(5);
-  }
-
-  public type(): string { return 'assault-rifle'; }
+  public type(): string { return 'assault'; }
 
   public maybeFire(game: GameInstance): void {
     if (this.ammo > 0 &&
