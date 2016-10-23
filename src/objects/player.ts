@@ -56,9 +56,9 @@ export class Player extends GameObject {
     // Set up weapons
     this.weapons = [
       new BaseballBat(),
-      new Pistol(),
-      new Shotgun(),
-      new AssaultRifle(),
+      new Pistol(8),
+      new Shotgun(5),
+      new AssaultRifle(10),
     ];
     this._baseballBat = this.equippedWeapon = this.weapons[0];
     // Add spritesheet

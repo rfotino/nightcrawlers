@@ -37,11 +37,9 @@ export class Debugger extends PIXI.Container {
       `r:       ${game.player.pos.r.toFixed(0)}\n` +
       `θ:       ${(game.player.pos.theta / Math.PI).toFixed(2)}π\n` +
       `enemies: ${game.enemySpawner.numAlive}\n` +
-      `weapon:  ${game.player.equippedWeapon.type()}\n` +
-      `ammo:    ${game.player.equippedWeapon.ammo}\n` +
       `render:  ${game.isWebGL() ? 'WebGL' : 'Canvas'}`;
-    // Put text in bottom left
-    this._text.x = 5;
+    // Put text in bottom right
+    this._text.x = game.view.width - this.width;
     this._text.y = game.view.height - this.height;
   }
 }

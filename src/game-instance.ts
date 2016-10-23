@@ -17,6 +17,7 @@ import { UIContainer } from './ui/container';
 import { UILabel } from './ui/label';
 import { PauseMenu, GameOverMenu } from './ui/menu';
 import { HealthBar } from './ui/healthbar';
+import { CurrentWeaponIndicator } from './ui/current-weapon';
 import { EnemyIndicator } from './ui/enemy-indicator';
 
 export class GameInstance extends UIContainer {
@@ -38,6 +39,7 @@ export class GameInstance extends UIContainer {
   protected _paused: boolean;
   protected _enemyIndicator: EnemyIndicator;
   protected _healthBar: HealthBar;
+  protected _currentWeaponIndicator: CurrentWeaponIndicator;
   protected _scoreLabel: UILabel;
   protected _waveIndex: number;
   protected _nightMusic: Howl;
@@ -95,6 +97,11 @@ export class GameInstance extends UIContainer {
     // Add the health bar
     this._healthBar = new HealthBar(game, this.player);
     this.addComponent(this._healthBar);
+    // Add current weapon indicator
+    this._currentWeaponIndicator = new CurrentWeaponIndicator(
+      game, this.player
+    );
+    this.addComponent(this._currentWeaponIndicator);
     // Add score label
     this._scoreLabel = new UILabel(game, '0');
     this.addComponent(this._scoreLabel);
@@ -221,6 +228,12 @@ export class GameInstance extends UIContainer {
     this._scoreLabel.x = this.view.width * 0.05;
     this._scoreLabel.y = this.view.height * 0.02;
     this._scoreLabel.height = this.view.height * 0.15;
+    // Update current weapon indicator position
+    this._currentWeaponIndicator.x = this.view.width * 0.05;
+    this._currentWeaponIndicator.y = (
+      (this.view.height * 0.95) -
+      this._currentWeaponIndicator.height
+    );
   }
 
   /**
