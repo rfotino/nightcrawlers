@@ -91,9 +91,15 @@ class OptionsMenu extends UIMenu {
     });
     this.addMenuItem(debugButton);
     // Add volume slider
-    let volumeSlider = new UISliderWithLabel(game, 'Volume');
+    let volumeSlider = new UISliderWithLabel(
+      game,
+      'Volume',
+      this._options.volume
+    );
+    Howler.volume(this._options.volume);
     volumeSlider.addListener('change', () => {
       Howler.volume(volumeSlider.value);
+      this._options.volume = volumeSlider.value;
     });
     this.addMenuItem(volumeSlider);
     // Add load level from file option
