@@ -2,9 +2,29 @@ import { Level } from './level';
 
 /// <reference path="../typings/require.d.ts" />
 
+/**
+ * Key used to store options JSON in local storage. Notice that we prefix the
+ * key to make it unique to this application.
+ */
+const optionsLocalStorageKey = 'nightcrawlers.options';
+
+/**
+ * Check if local storage is available in a cross-browser manner.
+ */
+function localStorageAvailable(): boolean {
+  try {
+    let test = '__storage_test__';
+    localStorage.setItem(test, test);
+    localStorage.removeItem(test);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export class Options {
   // Default values for options
-  protected _debug: boolean = false;
+  protected _debug: boolean = true;
   protected _volume: number = 1;
   protected _levelData: Object;
 
@@ -40,8 +60,8 @@ export class Options {
     this._levelData = require('../assets/levels/survival.json');
     // Load options from local storage, if local storage is available and we
     // have saved options
-    if (window['localStorage']) {
-      let savedOptionsJson = localStorage.getItem('options');
+    if (localStorageAvailable()) {
+      let savedOptionsJson = localStorage.getItem(optionsLocalStorageKey);
       if (savedOptionsJson !== null) {
         let savedOptions = JSON.parse(savedOptionsJson);
         this._debug = savedOptions.debug;
@@ -55,8 +75,8 @@ export class Options {
    * key.
    */
   protected _saveOptions(): void {
-    if (window['localStorage']) {
-      localStorage.setItem('options', JSON.stringify({
+    if (localStorageAvailable()) {
+      localStorage.setItem(optionsLocalStorageKey, JSON.stringify({
         debug: this._debug,
         volume: this._volume,
       }));
