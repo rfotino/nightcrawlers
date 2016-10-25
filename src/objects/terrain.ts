@@ -4,6 +4,25 @@ import { Polar } from '../math/polar';
 import { Color } from '../graphics/color';
 import { Collider } from '../math/collider';
 
+/**
+ * Draws resource on a canvas and returns an ImageData object representing the
+ * pixel data, memoizing the result for later.
+ */
+let cachedImageData: {[key: string]: ImageData} = {};
+function getImageData(resourceName: string): ImageData {
+  if (!cachedImageData[resourceName]) {
+    let texture = PIXI.loader.resources[resourceName].texture;
+    let canvas = document.createElement('canvas');
+    canvas.width = texture.width;
+    canvas.height = texture.height;
+    let ctx = canvas.getContext('2d');
+    ctx.drawImage(texture.baseTexture.source, 0, 0);
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    cachedImageData[resourceName] = imageData;
+  }
+  return cachedImageData[resourceName];
+}
+
 abstract class Terrain extends GameObject {
   protected _size: Polar.Coord;
   protected _solidLeft: boolean;
@@ -23,7 +42,7 @@ abstract class Terrain extends GameObject {
   public get movable(): boolean { return false; }
 
   public constructor(r: number, theta: number, height: number, width: number,
-                     color: Color | string) {
+                     pattern: ImageData) {
     super();
     // Set up dimensions
     this.pos.r = r;
@@ -35,25 +54,56 @@ abstract class Terrain extends GameObject {
     width += 1.5 / r;
     // Create canvas to use as sprite texture
     let canvas = document.createElement('canvas');
-    // Resize canvas
     let w = 2 * r * Math.sin(width / 2);
     let h = r - ((r - height) * Math.cos(width / 2));
     canvas.width = w + 2;
     canvas.height = h + 2;
-    // Draw platform
+    // Draw platform, mapping rectangular textures to curved platforms one
+    // pixel at a time
     let ctx = canvas.getContext('2d');
-    ctx.translate(1, 1);
-    ctx.strokeStyle = color.toString();
-    ctx.lineWidth = height;
-    ctx.beginPath();
-    let startAngle = -(Math.PI / 2) - (width / 2);
-    ctx.arc(
-      w / 2, r,
-      r - (height / 2),
-      startAngle,
-      startAngle + width
-    );
-    ctx.stroke();
+    let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    // Min/max r and theta for telling if we are inside the polar rectangle
+    let minR = r - height;
+    let maxR = r;
+    let minTheta = -(Math.PI / 2) - (width / 2);
+    let maxTheta = minTheta + width;
+    // Center of circles we are drawing
+    let cx = 1 + (w / 2);
+    let cy = 1 + r;
+    for (let x = 0; x < pixels.width; x++) {
+      for (let y = 0; y < pixels.height; y++) {
+        // Coordinates of position we are drawing in cartesian circle space
+        let px = x - cx;
+        let py = y - cy;
+        // Coordinates of position we are drawing in polar circle space
+        let pr = Math.sqrt(px*px + py*py);
+        let ptheta = Math.atan2(py, px);
+        // If we are inside the polar rectangle of this terrain piece, draw
+        // a pixel from the pattern
+        if (Polar.rBetween(pr, minR, maxR) &&
+            Polar.thetaBetween(ptheta, minTheta, maxTheta)) {
+          // Determine radial and angular offsets into the pattern texture
+          let dtheta = (ptheta - minTheta) % (Math.PI * 2);
+          if (dtheta < 0) {
+            dtheta += Math.PI * 2;
+          }
+          let dr = (pr - minR) % pattern.height;
+          if (dr < 0) {
+            dr += pattern.height;
+          }
+          // Pattern coordinates
+          let qx = Math.floor((dtheta * maxR) % pattern.width);
+          let qy = Math.floor(dr);
+          // Copy pattern color over to image data
+          for (let i = 0; i < 4; i++) {
+            let pixelIdx = (y*pixels.width + x)*4 + i;
+            let patternIdx = (qy*pattern.width + qx)*4 + i;
+            pixels.data[pixelIdx] = pattern.data[patternIdx];
+          }
+        }
+      }
+    }
+    ctx.putImageData(pixels, 0, 0);
     // Create sprite from canvas
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
     this._sprite.anchor.x = 0.5;
@@ -114,7 +164,7 @@ export class Platform extends Terrain {
                      rate: number = 0,
                      rPrime: number = r,
                      thetaPrime: number = theta) {
-    super(r, theta, height, width, new Color(255, 255, 255));
+    super(r, theta, height, width, getImageData('game/platform'));
     // Assign animation characteristics for moving between r and rPrime and
     // theta and thetaPrime every rate frames
     if (moves && rate > 0) {
@@ -146,7 +196,7 @@ export class Platform extends Terrain {
 export class Block extends Terrain {
   public constructor(r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(r, theta, height, width, Block._getColor(blockType));
+    super(r, theta, height, width, Block._getImageData(blockType));
     // Blocks can't be entered from any side, unlike platforms
     this._solidLeft = true;
     this._solidRight = true;
@@ -154,13 +204,13 @@ export class Block extends Terrain {
     this._solidTop = true;
   }
 
-  private static _getColor(type: string): Color {
+  private static _getImageData(type: string): ImageData {
     switch (type) {
       case 'grass':
-        return new Color(50, 255, 100);
+        return getImageData('game/grass');
       case 'stone':
       default:
-        return new Color(150, 150, 150);
+        return getImageData('game/stone');
     }
   }
 
@@ -172,7 +222,7 @@ export class Decoration extends Terrain {
 
   public constructor(r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(r, theta, height, width, Decoration._getColor(blockType));
+    super(r, theta, height, width, Decoration._getImageData(blockType));
     // Decorations don't collide with other objects
     this._solidLeft = false;
     this._solidRight = false;
@@ -180,11 +230,11 @@ export class Decoration extends Terrain {
     this._solidTop = false;
   }
 
-  private static _getColor(type: string): Color {
+  private static _getImageData(type: string): ImageData {
     switch(type) {
       case 'underground':
       default:
-        return new Color(100, 100, 100);
+        return getImageData('game/underground');
     }
   }
 
