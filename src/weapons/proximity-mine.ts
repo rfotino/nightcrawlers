@@ -74,7 +74,6 @@ class ProximityMineInstance extends Bullet {
       .filter(obj => obj.type() === 'enemy')
       .map(obj => <Enemy>obj);
     let blockBounds = game.level.blocks.map(block => block.getPolarBounds());
-    let shouldExplode = false;
     for (let i = 0; i < enemies.length; i++) {
       let enemy = enemies[i];
       let proximity = this.pos.dist(enemy.pos);
