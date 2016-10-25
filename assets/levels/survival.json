@@ -27,6 +27,12 @@
       "type": "shotgun"
     },
     {
+      "r": 1200,
+      "theta": -1.625,
+      "rate": 2800,
+      "type": "mine"
+    },
+    {
       "r": 1300,
       "theta": 0.125,
       "rate": 1800,

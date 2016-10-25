@@ -95,6 +95,13 @@ export class Item extends GameObject {
           }
         });
         break;
+      case 'mine':
+        player.weapons.forEach(weapon => {
+          if (weapon.type() === 'mine') {
+            weapon.ammo += 3;
+          }
+        });
+        break;
     }
   }
 }

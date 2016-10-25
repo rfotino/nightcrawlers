@@ -41,7 +41,7 @@ class ProximityMineInstance extends Bullet {
   public constructor(owner: Player) {
     super(owner);
     // Change default bullet texture
-    this._sprite.texture = PIXI.loader.resources['game/proximity-mine'].texture;
+    this._sprite.texture = PIXI.loader.resources['game/mine'].texture;
     // Drops to ground and stays there
     this._killedByTerrain = false;
     this.accel.r = Terrain.GRAVITY;
@@ -129,7 +129,7 @@ class ProximityMineInstance extends Bullet {
 }
 
 export class ProximityMine extends Weapon {
-  public type(): string { return 'proximity-mine'; }
+  public type(): string { return 'mine'; }
 
   public maybeFire(game: GameInstance): void {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {

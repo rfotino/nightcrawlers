@@ -75,12 +75,13 @@ export class Game {
     PIXI.loader
       .add('game/player', 'assets/images/game/spaceman.png')
       .add('game/bullet', 'assets/images/game/bullet.png')
-      .add('game/proximity-mine', 'assets/images/game/proximity-mine.png')
+      .add('game/mine', 'assets/images/game/mine.png')
+      .add('game/bricks', 'assets/images/game/bricks.png')
       .add('ui/baseball-bat', 'assets/images/ui/baseball-bat.png')
       .add('ui/pistol', 'assets/images/ui/pistol.png')
       .add('ui/shotgun', 'assets/images/ui/shotgun.png')
       .add('ui/assault', 'assets/images/ui/assault.png')
-      .add('ui/proximity-mine', 'assets/images/ui/proximity-mine.png')
+      .add('ui/mine', 'assets/images/ui/mine.png')
       .add('music/night', `assets/music/night.${audioExt}`)
       .load(() => this.activeScreen = this._mainMenu)
       .on('progress', loader => this._progressBar.progress = loader.progress);
