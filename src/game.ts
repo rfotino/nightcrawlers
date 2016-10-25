@@ -73,12 +73,15 @@ export class Game {
     // Preload assets
     let audioExt = Howler.codecs('mp3') ? 'mp3' : 'm4a';
     PIXI.loader
-      .add('player', 'assets/images/spaceman.png')
-      .add('baseball-bat', 'assets/images/weapons/baseball-bat.png')
-      .add('pistol', 'assets/images/weapons/pistol.png')
-      .add('shotgun', 'assets/images/weapons/shotgun.png')
-      .add('assault', 'assets/images/weapons/assault.png')
-      .add('night-music', `assets/music/night.${audioExt}`)
+      .add('game/player', 'assets/images/game/spaceman.png')
+      .add('game/bullet', 'assets/images/game/bullet.png')
+      .add('game/proximity-mine', 'assets/images/game/proximity-mine.png')
+      .add('ui/baseball-bat', 'assets/images/ui/baseball-bat.png')
+      .add('ui/pistol', 'assets/images/ui/pistol.png')
+      .add('ui/shotgun', 'assets/images/ui/shotgun.png')
+      .add('ui/assault', 'assets/images/ui/assault.png')
+      .add('ui/proximity-mine', 'assets/images/ui/proximity-mine.png')
+      .add('music/night', `assets/music/night.${audioExt}`)
       .load(() => this.activeScreen = this._mainMenu)
       .on('progress', loader => this._progressBar.progress = loader.progress);
     // Start update/draw loop

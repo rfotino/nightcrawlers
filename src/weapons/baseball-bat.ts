@@ -5,6 +5,8 @@ import { GameInstance } from '../game-instance';
 import { KeyState } from '../input/keystate';
 
 class BaseballBatBullet extends Bullet {
+  private static _texture: PIXI.Texture;
+
   public get width(): number { return 80; }
   public get height(): number { return 50; }
 
@@ -13,6 +15,8 @@ class BaseballBatBullet extends Bullet {
 
   public constructor(owner: Player) {
     super(owner);
+    // Change from default bullet texture to transparent red hitbox
+    this._sprite.texture = this._getTexture();
     // Don't want the bat hitbox to get cleaned up when it immediately impacts
     // terrain upon spawning
     this._killedByTerrain = false;

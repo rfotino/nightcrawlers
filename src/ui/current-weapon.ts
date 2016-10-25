@@ -27,7 +27,8 @@ export class CurrentWeaponIndicator extends UIContainer {
     // Change the texture of the weapon sprite based on the currently equipped
     // weapon type
     let weapon = this._player.equippedWeapon;
-    this._weaponSprite.texture = PIXI.loader.resources[weapon.type()].texture;
+    let texture = PIXI.loader.resources[`ui/${weapon.type()}`].texture;
+    this._weaponSprite.texture = texture;
     // Update the ammo text
     if (weapon.ammo === Infinity) {
       this._ammoText.text = '';

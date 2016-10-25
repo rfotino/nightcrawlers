@@ -64,7 +64,6 @@ export class Enemy extends GameObject {
       game.player.pos.r + 300,
       game.player.pos.theta - 0.5 + Math.random()
     );
-    this.accel.r = Terrain.GRAVITY;
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
   }
@@ -200,6 +199,8 @@ export class Enemy extends GameObject {
     super.update(game);
     // Make transparent if damaged
     this.alpha = this._health / this._maxHealth;
+    // All enemies are affected by gravity by default
+    this.accel.r = Terrain.GRAVITY;
     // Do something different depending on the enemy state
     switch (this._state) {
       case EnemyState.Searching:
@@ -217,6 +218,16 @@ export class Enemy extends GameObject {
     }
   }
 
+  public knockback(knockbackVel: number, knockbackTime: number,
+                   stunTime: number) {
+    this._state = EnemyState.Knockback;
+    this._knockbackVel = knockbackVel;
+    this._knockbackCounter.reset();
+    this._knockbackCounter.max = knockbackTime;
+    this._stunnedCounter.reset();
+    this._stunnedCounter.max = stunTime;
+  }
+
   public collide(other: GameObject, result: Collider.Result): void {
     if (other.team() === 'player') {
       other.damage(this._damageAmount);
@@ -229,16 +240,6 @@ export class Enemy extends GameObject {
           this._onSolidGround = true;
           this.vel.theta += other.vel.theta;
         }
-        break;
-      case 'bullet':
-        // Bullets knock the enemy back
-        let bullet = <Bullet>other;
-        this._state = EnemyState.Knockback;
-        this._knockbackVel = bullet.knockbackVel;
-        this._knockbackCounter.reset();
-        this._knockbackCounter.max = bullet.knockbackTime;
-        this._stunnedCounter.reset();
-        this._stunnedCounter.max = bullet.stunTime;
         break;
     }
   }
@@ -283,6 +284,8 @@ export class FlyingEnemy extends Enemy {
     if (this._state !== EnemyState.Searching) {
       return;
     }
+    // Flying enemies aren't affected by gravity while searching
+    this.accel.r = 0;
     // Stop going up or down for now. Maybe later on add going up or down
     // to the list of possible search directions instead of just left and right
     this.vel.r = 0;
@@ -293,6 +296,8 @@ export class FlyingEnemy extends Enemy {
     if (this._state !== EnemyState.Chasing) {
       return;
     }
+    // Flying enemies aren't affected by gravity while chasing
+    this.accel.r = 0;
     // Decide if we should go up or down
     let diffR = game.player.pos.r - this.pos.r;
     let minDiffR = 5;

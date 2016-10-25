@@ -6,23 +6,18 @@ import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 
 export class Bullet extends GameObject {
-  private _owner: Player;
-  private _sprite: PIXI.Sprite;
-  private _damageAmount: number = 10;
+  protected _owner: Player;
+  protected _sprite: PIXI.Sprite;
+  protected _damageAmount: number = 10;
   protected _lifespan: number = 60;
   protected _killedByTerrain: boolean = true;
   protected _knockbackVel: number;
-  protected static _texture: PIXI.Texture;
 
-  public get knockbackVel(): number {
-    return this._knockbackVel;
-  }
-
-  public get knockbackTime(): number {
+  protected get _knockbackTime(): number {
     return 5;
   }
 
-  public get stunTime(): number {
+  protected get _stunTime(): number {
     return 7;
   }
 
@@ -49,7 +44,7 @@ export class Bullet extends GameObject {
       this.vel.theta = speed;
     }
     this._knockbackVel = this.vel.theta;
-    this._sprite = new PIXI.Sprite(this._getTexture());
+    this._sprite = new PIXI.Sprite(PIXI.loader.resources['game/bullet'].texture);
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
@@ -65,7 +60,9 @@ export class Bullet extends GameObject {
 
   public collide(other: GameObject, result: Collider.Result): void {
     if (other.team() === 'enemy') {
-      other.damage(this._damageAmount);
+      let enemy = <Enemy>other;
+      enemy.damage(this._damageAmount);
+      enemy.knockback(this._knockbackVel, this._knockbackTime, this._stunTime);
       if (!other.alive) {
         this._owner.score += (<Enemy>other).score;
       }
@@ -93,20 +90,5 @@ export class Bullet extends GameObject {
     if (this._lifespan <= 0) {
       this.kill();
     }
-  }
-
-  protected _getTexture(): PIXI.Texture {
-    if (!Bullet._texture) {
-      let canvas = document.createElement('canvas');
-      canvas.width = this.width + 2;
-      canvas.height = this.height + 2;
-      let ctx = canvas.getContext('2d');
-      ctx.fillStyle = 'black';
-      ctx.fillRect(1, 1, this.width / 2, this.height);
-      ctx.fillStyle = 'white';
-      ctx.fillRect(1 + (this.width / 2), 1, this.width / 2, this.height);
-      Bullet._texture = PIXI.Texture.fromCanvas(canvas);
-    }
-    return Bullet._texture;
   }
 }

@@ -11,6 +11,7 @@ import { BaseballBat } from '../weapons/baseball-bat';
 import { Pistol } from '../weapons/pistol';
 import { Shotgun } from '../weapons/shotgun';
 import { AssaultRifle } from '../weapons/assault-rifle';
+import { ProximityMine } from '../weapons/proximity-mine';
 import { SpriteSheet } from '../graphics/spritesheet';
 
 export class Player extends GameObject {
@@ -59,11 +60,12 @@ export class Player extends GameObject {
       new Pistol(8),
       new Shotgun(5),
       new AssaultRifle(10),
+      new ProximityMine(3),
     ];
     this._baseballBat = this.equippedWeapon = this.weapons[0];
     // Add spritesheet
     this._sprite = new SpriteSheet(
-      PIXI.loader.resources['player'].texture,
+      PIXI.loader.resources['game/player'].texture,
       4, // images wide
       1, // images high
       0, // default frame
