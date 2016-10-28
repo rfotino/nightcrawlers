@@ -1,10 +1,69 @@
 import { Counter } from '../math/counter';
 
-export interface SpriteSheetAnimation {
-  frames: number[];
-  speed: number;
+/**
+ * A cache of texture frames so that we don't have to split the same texture
+ * up for each e.g. zombie that uses its animations.
+ */
+let textureFramesCache: {[key: string]: PIXI.Texture[]} = {};
+
+/**
+ * Helper function for splitting a texture into frames when we don't have it
+ * in the cache.
+ */
+function getTextureFrames(texture: PIXI.Texture,
+                          cols: number, rows: number): PIXI.Texture[] {
+  let frames = [];
+  let frameWidth = texture.width / cols;
+  let frameHeight = texture.height / rows;
+  for (let numX = 0; numX < cols; numX++) {
+    for (let numY = 0; numY < rows; numY++) {
+      let frameRect = new PIXI.Rectangle(
+        Math.floor(numX * frameWidth),
+        Math.floor(numY * frameHeight),
+        Math.floor(frameWidth),
+        Math.floor(frameHeight)
+      );
+      frames.push(new PIXI.Texture(texture, frameRect));
+    }
+  }
+  return frames;
 }
 
+/**
+ * Memoizes textures of the same name previously split up into the same number
+ * of rows and columns. Returns a cached version of the split up texture or
+ * splits the texture up if called for the first time.
+ */
+function getCachedTextureFrames(texture: string | PIXI.Texture,
+                                cols: number, rows: number): PIXI.Texture[] {
+  // Can't use cache unless we have a string name
+  if (texture instanceof PIXI.Texture) {
+    return getTextureFrames(texture, cols, rows);
+  }
+  // Try to get cached version
+  let textureKey = `${texture}@${cols}x${rows}`;
+  if (!textureFramesCache[textureKey]) {
+    textureFramesCache[textureKey] = getTextureFrames(
+      PIXI.loader.resources[texture].texture,
+      cols, rows
+    );
+  }
+  return textureFramesCache[textureKey];
+}
+
+/**
+ * A simple animation that loops through the given frame indices with each
+ * index lasting ticksPerFrame ticks.
+ */
+export interface SpriteSheetAnimation {
+  frames: number[];
+  ticksPerFrame: number;
+}
+
+/**
+ * Generalized class for supporting spritesheet animations while retaining
+ * all of the functionality of a PIXI sprite.
+ */
 export class SpriteSheet extends PIXI.Sprite {
   protected _frames: PIXI.Texture[];
   protected _anims: {[key: string]: SpriteSheetAnimation};
@@ -20,25 +79,14 @@ export class SpriteSheet extends PIXI.Sprite {
    * < numWide*numHigh. All of the frames in anims must be in the same range
    * of possibilities as defaultFrame.
    */
-  public constructor(sheet: PIXI.Texture, numWide: number, numHigh: number,
+  public constructor(texture: string | PIXI.Texture,
+                     cols: number = 1,
+                     rows: number = 1,
                      defaultFrame: number = 0,
                      anims: {[key: string]: SpriteSheetAnimation} = {}) {
     super();
     // Split sheet up into different frames
-    let frameWidth = sheet.width / numWide;
-    let frameHeight = sheet.height / numHigh;
-    this._frames = [];
-    for (let numX = 0; numX < numWide; numX++) {
-      for (let numY = 0; numY < numHigh; numY++) {
-        let frameRect = new PIXI.Rectangle(
-          Math.floor(numX * frameWidth),
-          Math.floor(numY * frameHeight),
-          Math.floor(frameWidth),
-          Math.floor(frameHeight)
-        );
-        this._frames.push(new PIXI.Texture(sheet, frameRect));
-      }
-    }
+    this._frames = getCachedTextureFrames(texture, cols, rows);
     // Add animations
     this._anims = anims;
     // Set default frame
@@ -53,22 +101,22 @@ export class SpriteSheet extends PIXI.Sprite {
   public addAnim(name: string, frames: number[], speed: number): void {
     this._anims[name] = {
       frames: frames,
-      speed: speed,
+      ticksPerFrame: speed,
     };
   }
 
   /**
    * Starts playing the named animation, or does nothing if an animation
-   * with the given name has not started yet.
+   * with the given name is already playing or is not found.
    */
   public playAnim(name: string): void {
     let anim = this._anims[name];
-    if (!anim) {
+    if (!anim || this._current === anim) {
       return;
     }
     this._current = anim;
     this._currentName = name;
-    this._currentCounter = new Counter(this._current.speed);
+    this._currentCounter = new Counter(this._current.ticksPerFrame);
     this._currentFrameIndex = 0;
     this.texture = this._frames[this._current.frames[this._currentFrameIndex]];
   }

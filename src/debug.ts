@@ -36,7 +36,7 @@ export class Debugger extends PIXI.Container {
       `FPS:     ${fps.toFixed(0)}\n` +
       `r:       ${game.player.pos.r.toFixed(0)}\n` +
       `θ:       ${(game.player.pos.theta / Math.PI).toFixed(2)}π\n` +
-      `enemies: ${game.enemySpawner.numAlive}\n` +
+      `objects: ${game.gameObjects.length}\n` +
       `render:  ${game.isWebGL() ? 'WebGL' : 'Canvas'}`;
     // Put text in bottom right
     this._text.x = game.view.width - this.width;

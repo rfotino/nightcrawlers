@@ -6,6 +6,7 @@ import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
+import { SpriteSheet } from '../graphics/spritesheet';
 
 const enum Direction {
   None,
@@ -27,8 +28,7 @@ const enum EnemyState {
  * fly or jump. Is affected by gravity by default.
  */
 export class Enemy extends GameObject {
-  private _canvas: HTMLCanvasElement;
-  protected _sprite: PIXI.Sprite;
+  protected _sprite: SpriteSheet;
   protected _onSolidGround: boolean = false;
   protected _damageAmount: number = 0.25;
   protected _score: number = 50;
@@ -53,12 +53,23 @@ export class Enemy extends GameObject {
     return 'white';
   }
 
+  protected _createSprite(): SpriteSheet {
+    // Create canvas of appropriate size
+    let canvas = document.createElement('canvas');
+    canvas.width = this.width + 2;
+    canvas.height = this.height + 2;
+    // Draw enemy on the canvas
+    let ctx = canvas.getContext('2d');
+    ctx.fillStyle = this._color;
+    ctx.fillRect(1, 1, this.width, this.height);
+    return new SpriteSheet(PIXI.Texture.fromCanvas(canvas));
+  }
+
   public constructor(game: GameInstance) {
     super();
     this._maxHealth = 20;
     this._health = this._maxHealth;
-    this._draw();
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(this._canvas));
+    this._sprite = this._createSprite();
     this._sprite.anchor.set(0.5, 0.5);
     this.pos.set(
       game.player.pos.r + 300,
@@ -115,8 +126,10 @@ export class Enemy extends GameObject {
         this._searchDir === Direction.None) {
       if (Math.random() < 0.5) {
         this._searchDir = Direction.Left;
+        this._sprite.scale.x = -1;
       } else {
         this._searchDir = Direction.Right;
+        this._sprite.scale.x = 1;
       }
     }
     // Update the theta velocity based on the current direction. Search speed
@@ -153,8 +166,10 @@ export class Enemy extends GameObject {
     let speed = this._moveSpeed / this.pos.r;
     if (this._shouldGoLeft) {
       this.vel.theta = -speed;
+      this._sprite.scale.x = -1;
     } else if (this._shouldGoRight) {
       this.vel.theta = speed;
+      this._sprite.scale.x = 1;
     } else {
       this.vel.theta = 0;
     }
@@ -166,6 +181,9 @@ export class Enemy extends GameObject {
    * the "stunned" state.
    */
   protected _updateKnockback(game: GameInstance): void {
+    // Flip the enemy over while knocked back and stunned
+    this._sprite.scale.y = -1;
+    // Wait for counter to go to stunned state
     if (this._knockbackCounter.done()) {
       this._state = EnemyState.Stunned;
       this.vel.theta = 0;
@@ -182,6 +200,9 @@ export class Enemy extends GameObject {
    */
   protected _updateStunned(game: GameInstance): void {
     if (this._stunnedCounter.done()) {
+      // Flip rightside up when done being stunned
+      this._sprite.scale.y = 1;
+      // Either chase or search depending on if the player is in sight
       if (this._canSeePlayer(game)) {
         this._state = EnemyState.Chasing;
       } else {
@@ -216,6 +237,8 @@ export class Enemy extends GameObject {
         this._updateStunned(game);
         break;
     }
+    // Update current animation
+    this._sprite.nextFrame();
   }
 
   public knockback(knockbackVel: number, knockbackTime: number,
@@ -252,17 +275,6 @@ export class Enemy extends GameObject {
       this.height,
       widthTheta
     );
-  }
-
-  private _draw(): void {
-    // Create canvas of appropriate size
-    this._canvas = document.createElement('canvas');
-    this._canvas.width = this.width + 2;
-    this._canvas.height = this.height + 2;
-    // Draw enemy on the canvas
-    let ctx = this._canvas.getContext('2d');
-    ctx.fillStyle = this._color;
-    ctx.fillRect(1, 1, this.width, this.height);
   }
 }
 

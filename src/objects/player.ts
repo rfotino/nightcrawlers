@@ -72,7 +72,7 @@ export class Player extends GameObject {
       {
         walk: {
           frames: [1, 2, 3, 0],
-          speed: 10,
+          ticksPerFrame: 10,
         }
       }
     );

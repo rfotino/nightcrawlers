@@ -1,28 +1,51 @@
 import { FlyingEnemy } from './enemy';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
+import { SpriteSheet} from '../graphics/spritesheet';
 
 /**
  * A bat-like enemy that flies around and chases the player, biting them if
  * it gets close enough.
  */
 export class FlyingBat extends FlyingEnemy {
-  protected _flapCounter: number = 0;
-  protected _flapHeight: number = 15;
+  public get width(): number { return 50; }
+  public get height(): number { return 50; }
 
-  public get width(): number { return 40; }
-  public get height(): number { return 40; }
-  protected get _color(): string { return 'purple'; }
-
-  public mirror(): void {
-    super.mirror();
-    // Move the sprite up and down to "flap".
-    this._flapCounter += 0.1;
-    let flapDir = new Polar.Coord(
-      (Math.abs(Math.sin(this._flapCounter)) - 0.5) * this._flapHeight,
-      this.pos.theta
+  protected _createSprite(): SpriteSheet {
+    return new SpriteSheet(
+      'game/flying-bat',
+      3, 1, // width, height
+      0, // default frame
+      { // animations
+        walk: {
+          frames: [ 0, 1, 2 ],
+          ticksPerFrame: 10,
+        },
+        run: {
+          frames: [ 0, 1, 2 ],
+          ticksPerFrame: 6,
+        },
+      }
     );
-    this._sprite.x += flapDir.x;
-    this._sprite.y += flapDir.y;
+  }
+
+  protected _updateChasing(game: GameInstance): void {
+    super._updateChasing(game);
+    this._sprite.playAnim('run');
+  }
+
+  protected _updateSearching(game: GameInstance): void {
+    super._updateSearching(game);
+    this._sprite.playAnim('walk');
+  }
+
+  protected _updateKnockback(game: GameInstance): void {
+    super._updateKnockback(game);
+    this._sprite.stopAnim();
+  }
+
+  protected _updateStunned(game: GameInstance): void {
+    super._updateStunned(game);
+    this._sprite.stopAnim();
   }
 }
