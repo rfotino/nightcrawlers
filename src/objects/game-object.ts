@@ -12,6 +12,9 @@ export abstract class GameObject extends PIXI.Container {
   private _vel: Polar.Coord;
   private _accel: Polar.Coord;
   private _alive: boolean = true;
+  private _onSolidGround: boolean = false;
+  private _groundVel: number = 0;
+  private _ground: GameObject = null;
   protected _maxHealth: number = Infinity;
   protected _health: number = Infinity;
   protected _mirrorList: PIXI.DisplayObject[] = [];
@@ -86,6 +89,8 @@ export abstract class GameObject extends PIXI.Container {
     this.vel.theta += this.accel.theta;
     this.pos.r += this.vel.r;
     this.pos.theta += this.vel.theta;
+    this.pos.theta += this._groundVel;
+    this._groundVel = 0;
   }
 
   public kill(): void {
@@ -101,6 +106,12 @@ export abstract class GameObject extends PIXI.Container {
 
   public rollOver(): void {
     this._prevPos = this._pos.clone();
+    this._onSolidGround = !!this._ground;
+    this._ground = null;
+  }
+
+  protected _isOnSolidGround(): boolean {
+    return this._onSolidGround;
   }
 
   /**
@@ -116,9 +127,20 @@ export abstract class GameObject extends PIXI.Container {
   public team(): string { return 'neutral'; }
 
   /**
-   * Respond to collision with another GameObject.
+   * Respond to collision with another GameObject. Default is to set to true
+   * that we're on the ground if we touch a platform or block from the bottom.
    */
-  public abstract collide(other: GameObject, result: Collider.Result): void;
+  public collide(other: GameObject, result: Collider.Result): void {
+    switch (other.type()) {
+      case 'platform':
+      case 'block':
+        if (result.bottom) {
+          this._ground = other;
+          this._groundVel = other.vel.theta;
+        }
+        break;
+    }
+  }
 
   /**
    * Get the bounds of this object as a polar rectangle.

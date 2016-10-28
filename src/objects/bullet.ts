@@ -59,6 +59,7 @@ export class Bullet extends GameObject {
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
+    super.collide(other, result);
     if (other.team() === 'enemy') {
       let enemy = <Enemy>other;
       enemy.damage(this._damageAmount);

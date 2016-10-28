@@ -29,7 +29,6 @@ const enum EnemyState {
  */
 export class Enemy extends GameObject {
   protected _sprite: SpriteSheet;
-  protected _onSolidGround: boolean = false;
   protected _damageAmount: number = 0.25;
   protected _score: number = 50;
   protected _shouldGoLeft: boolean = false;
@@ -252,18 +251,9 @@ export class Enemy extends GameObject {
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
+    super.collide(other, result);
     if (other.team() === 'player') {
       other.damage(this._damageAmount);
-    }
-    switch (other.type()) {
-      case 'planet':
-      case 'platform':
-      case 'block':
-        if (result.bottom) {
-          this._onSolidGround = true;
-          this.vel.theta += other.vel.theta;
-        }
-        break;
     }
   }
 
@@ -350,10 +340,9 @@ export class JumpingEnemy extends Enemy {
       this._jumpCounter = new Counter(this._getNewJumpCounterInterval());
     }
     // Update the jump counter, jump if it has expired
-    if (this._onSolidGround) {
+    if (this._isOnSolidGround()) {
       if (this._jumpCounter.done()) {
         // Jump
-        this._onSolidGround = false;
         this.vel.r = this._jumpSpeed;
         // Reset jump counter with another randomized interval
         this._jumpCounter.max = this._getNewJumpCounterInterval();
@@ -376,16 +365,9 @@ export class JumpingEnemy extends Enemy {
     // Decide if we should jump
     this._shouldJump = game.player.pos.r > this.pos.r;
     // Handle jumping if player is above this enemy
-    if (this._shouldJump && this._onSolidGround) {
-      this._onSolidGround = false;
+    if (this._shouldJump && this._isOnSolidGround()) {
       this.vel.r = this._jumpSpeed;
     }
-  }
-
-  public update(game: GameInstance): void {
-    super.update(game);
-    // Not on solid ground unless we collide with something this frame
-    this._onSolidGround = false;
   }
 }
 

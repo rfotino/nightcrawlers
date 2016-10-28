@@ -2,6 +2,7 @@ import { GameInstance } from '../game-instance';
 import { GameObject } from './game-object';
 import { Player } from './player';
 import { Polar } from '../math/polar';
+import { Collider } from '../math/collider';
 import * as Terrain from './terrain';
 
 export class Item extends GameObject {
@@ -54,7 +55,8 @@ export class Item extends GameObject {
     );
   }
 
-  public collide(other: GameObject): void {
+  public collide(other: GameObject, result: Collider.Result): void {
+    super.collide(other, result);
     if ('player' === other.type()) {
       this._addToPlayer(<Player>other);
       this.kill();

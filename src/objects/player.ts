@@ -16,8 +16,6 @@ import { SpriteSheet } from '../graphics/spritesheet';
 
 export class Player extends GameObject {
   private _sprite: SpriteSheet;
-  private _onSolidGround: boolean = false;
-  private _ground: GameObject = null;
   protected _baseballBat: BaseballBat;
   protected _armor: number = 0;
   protected _maxArmor: number = 50;
@@ -108,35 +106,29 @@ export class Player extends GameObject {
     super.update(game);
     // Update sprite animation
     this._sprite.nextFrame();
-    // Add relative velocity from the ground
-    this.vel.theta = this._ground ? this._ground.vel.theta : 0;
     // Handle turning due to user input
     let speed = 7 / this.pos.r;
     let leftArrow = game.keyState.isDown(KeyState.LEFTARROW);
     let rightArrow = game.keyState.isDown(KeyState.RIGHTARROW);
     if (leftArrow && !rightArrow) {
-      this.vel.theta -= speed;
+      this.vel.theta = -speed;
       this.facingLeft = true;
-      if (this._sprite.nowPlaying() !== 'walk') {
-        this._sprite.playAnim('walk');
-      }
+      this._sprite.playAnim('walk');
       this._sprite.scale.x = -1;
     } else if (rightArrow && !leftArrow) {
-      this.vel.theta += speed;
+      this.vel.theta = speed;
       this.facingLeft = false;
-      if (this._sprite.nowPlaying() !== 'walk') {
-        this._sprite.playAnim('walk');
-      }
+      this._sprite.playAnim('walk');
       this._sprite.scale.x = 1;
     } else {
+      this.vel.theta = 0;
       this._sprite.stopAnim();
     }
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
     // Handle jumping due to user input
     let jumpSpeed = 17;
-    if (game.keyState.isPressed(KeyState.UPARROW) && this._onSolidGround) {
-      this._onSolidGround = false;
+    if (game.keyState.isPressed(KeyState.UPARROW) && this._isOnSolidGround()) {
       this.vel.r = jumpSpeed;
     }
     // Change weapons if we pressed the button to do so and the corresponding
@@ -157,22 +149,6 @@ export class Player extends GameObject {
     }
     // Try to fire the equipped weapon if the user pressed the space bar
     this.equippedWeapon.maybeFire(game);
-    // Not on solid ground unless we collide with something this frame
-    this._onSolidGround = false;
-    this._ground = null;
-  }
-
-  public collide(other: GameObject, result: Collider.Result): void {
-    switch (other.type()) {
-      case 'planet':
-      case 'platform':
-      case 'block':
-        if (result.bottom) {
-          this._onSolidGround = true;
-          this._ground = other;
-        }
-        break;
-    }
   }
 
   public getPolarBounds(): Polar.Rect {

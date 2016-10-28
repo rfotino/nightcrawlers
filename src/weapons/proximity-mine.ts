@@ -51,17 +51,6 @@ class ProximityMineInstance extends Bullet {
     this.vel.theta = 0;
   }
 
-  public collide(other: GameObject, result: Collider.Result): void {
-    switch(other.type()) {
-      case 'platform':
-        // If we're on a moving platform, move with the platform
-        if (result.bottom) {
-          this.vel.theta = other.vel.theta;
-        }
-        break;
-    }
-  }
-
   public update(game: GameInstance): void {
     super.update(game);
     // Update setup counter, if it is not finished then do not explode)
