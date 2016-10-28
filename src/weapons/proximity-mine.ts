@@ -121,6 +121,10 @@ class ProximityMineInstance extends Bullet {
       }
       enemy.vel.r = enemyVel.r;
       enemy.knockback(enemyVel.theta, this._knockbackTime, this._stunTime);
+      // If the enemy is dead, add points to owner's score
+      if (!enemy.alive) {
+        this._owner.score += enemy.score;
+      }
     });
     // Mines can only be used once
     this.kill();
