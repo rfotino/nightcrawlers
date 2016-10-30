@@ -60,6 +60,7 @@ abstract class Terrain extends GameObject {
     this._size = new Polar.Coord(height, width);
     // Increase visual height and width by 1 pixel to prevent seams between
     // adjacent terrain elements.
+    r += topPadding;
     height += topPadding + 1.5;
     width += 1.5 / r;
     // Create canvas to use as sprite texture

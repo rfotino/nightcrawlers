@@ -284,8 +284,12 @@ export class GameInstance extends UIContainer {
       this._waveIndex++;
       this.enemySpawner.addWave(this.level.getWave(this._waveIndex));
     }
-    // Sort game objects by depth
-    this.gameObjects.sort((a, b) => a.z - b.z || a.id - b.id);
+    // Sort game objects by depth, then radial position so that lower objects
+    // are on top of higher objects of the same type, then sort by ID so that
+    // the sorting is deterministic
+    this.gameObjects.sort((a, b) => {
+      return a.z - b.z || b.pos.r - a.pos.r || a.id - b.id;
+    });
     this.gameObjects.forEach((obj, index) => {
       this._innerViewStage.setChildIndex(obj, index);
     });

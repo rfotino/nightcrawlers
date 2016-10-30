@@ -63,7 +63,14 @@
       "r": 900,
       "theta": -1.5,
       "height": 50,
-      "width": 5.2,
+      "width": 0.125,
+      "type": "grass"
+    },
+    {
+      "r": 900,
+      "theta": -1.375,
+      "height": 50,
+      "width": 5.075,
       "type": "stone"
     },
     {
@@ -75,16 +82,37 @@
     },
     {
       "r": 950,
+      "theta": -1.375,
+      "height": 50,
+      "width": 0.1,
+      "type": "grass"
+    },
+    {
+      "r": 950,
+      "theta": -1.275,
+      "height": 50,
+      "width": 1.7,
+      "type": "stone"
+    },
+    {
+      "r": 950,
       "theta": 3.9,
       "height": 50,
       "width": 0.75,
       "type": "stone"
     },
     {
-      "r": 950,
-      "theta": 4.9,
+      "r": 1000,
+      "theta": -1.275,
       "height": 50,
-      "width": 1.8,
+      "width": 0.075,
+      "type": "grass"
+    },
+    {
+      "r": 1000,
+      "theta": -1.2,
+      "height": 50,
+      "width": 1.825,
       "type": "stone"
     },
     {
@@ -92,42 +120,35 @@
       "theta": 3.75,
       "height": 50,
       "width": 1,
-      "type": "stone"
-    },
-    {
-      "r": 1000,
-      "theta": 5,
-      "height": 50,
-      "width": 1.9,
-      "type": "stone"
+      "type": "grass"
     },
     {
       "r": 1050,
       "theta": -1.2,
       "height": 50,
       "width": 2,
-      "type": "stone"
+      "type": "grass"
     },
     {
       "r": 1050,
       "theta": 1,
       "height": 50,
       "width": 0.9,
-      "type": "stone"
+      "type": "grass"
     },
     {
       "r": 1050,
       "theta": 2,
       "height": 100,
       "width": 1.25,
-      "type": "stone"
+      "type": "grass"
     },
     {
       "r": 1050,
       "theta": 3.25,
       "height": 50,
       "width": 0.35,
-      "type": "stone"
+      "type": "grass"
     },
     {
       "r": 1100,
