@@ -23,6 +23,16 @@ function getImageData(resourceName: string): ImageData {
   return cachedImageData[resourceName];
 }
 
+/**
+ * Number of extra pixels at the top of the grass texture, where there is
+ * texture but should be no collision.
+ */
+const GRASS_PADDING = 8;
+
+/**
+ * Terrain class used to map rectangular textures to rounded blocks and
+ * platforms, also used for shared collision/bounds functionality.
+ */
 abstract class Terrain extends GameObject {
   protected _size: Polar.Coord;
   protected _solidLeft: boolean;
@@ -42,7 +52,7 @@ abstract class Terrain extends GameObject {
   public get movable(): boolean { return false; }
 
   public constructor(r: number, theta: number, height: number, width: number,
-                     pattern: ImageData) {
+                     pattern: ImageData, topPadding: number = 0) {
     super();
     // Set up dimensions
     this.pos.r = r;
@@ -50,7 +60,7 @@ abstract class Terrain extends GameObject {
     this._size = new Polar.Coord(height, width);
     // Increase visual height and width by 1 pixel to prevent seams between
     // adjacent terrain elements.
-    height += 1.5;
+    height += topPadding + 1.5;
     width += 1.5 / r;
     // Create canvas to use as sprite texture
     let canvas = document.createElement('canvas');
@@ -87,7 +97,7 @@ abstract class Terrain extends GameObject {
           if (dtheta < 0) {
             dtheta += Math.PI * 2;
           }
-          let dr = (pr - minR) % pattern.height;
+          let dr = (maxR - pr) % pattern.height;
           if (dr < 0) {
             dr += pattern.height;
           }
@@ -107,7 +117,7 @@ abstract class Terrain extends GameObject {
     // Create sprite from canvas
     this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
     this._sprite.anchor.x = 0.5;
-    this._sprite.anchor.y = 1 / canvas.height;
+    this._sprite.anchor.y = (1 + topPadding) / canvas.height;
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
     this.rotation = width / 2;
@@ -164,7 +174,10 @@ export class Platform extends Terrain {
                      rate: number = 0,
                      rPrime: number = r,
                      thetaPrime: number = theta) {
-    super(r, theta, height, width, getImageData('game/platform'));
+    super(
+      r, theta, height, width,
+      getImageData('game/platform'), GRASS_PADDING
+    );
     // Assign animation characteristics for moving between r and rPrime and
     // theta and thetaPrime every rate frames
     if (moves && rate > 0) {
@@ -196,7 +209,10 @@ export class Platform extends Terrain {
 export class Block extends Terrain {
   public constructor(r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(r, theta, height, width, Block._getImageData(blockType));
+    super(
+      r, theta, height, width,
+      Block._getImageData(blockType), Block._getTopPadding(blockType)
+    );
     // Blocks can't be entered from any side, unlike platforms
     this._solidLeft = true;
     this._solidRight = true;
@@ -211,6 +227,16 @@ export class Block extends Terrain {
       case 'stone':
       default:
         return getImageData('game/stone');
+    }
+  }
+
+  private static _getTopPadding(type: string): number {
+    switch(type) {
+      case 'grass':
+        return GRASS_PADDING;
+      case 'stone':
+      default:
+        return 0;
     }
   }
 
