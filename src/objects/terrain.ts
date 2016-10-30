@@ -52,73 +52,84 @@ abstract class Terrain extends GameObject {
   public get movable(): boolean { return false; }
 
   public constructor(r: number, theta: number, height: number, width: number,
-                     pattern: ImageData, topPadding: number = 0) {
+                     pattern: ImageData | PIXI.Texture,
+                     topPadding: number = 0) {
     super();
     // Set up dimensions
     this.pos.r = r;
     this.pos.theta = theta;
     this._size = new Polar.Coord(height, width);
-    // Increase visual height and width by 1 pixel to prevent seams between
-    // adjacent terrain elements.
-    r += topPadding;
-    height += topPadding + 1.5;
-    width += 1.5 / r;
-    // Create canvas to use as sprite texture
-    let canvas = document.createElement('canvas');
-    let w = 2 * r * Math.sin(width / 2);
-    let h = r - ((r - height) * Math.cos(width / 2));
-    canvas.width = w + 2;
-    canvas.height = h + 2;
-    // Draw platform, mapping rectangular textures to curved platforms one
-    // pixel at a time
-    let ctx = canvas.getContext('2d');
-    let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    // Min/max r and theta for telling if we are inside the polar rectangle
-    let minR = r - height;
-    let maxR = r;
-    let minTheta = -(Math.PI / 2) - (width / 2);
-    let maxTheta = minTheta + width;
-    // Center of circles we are drawing
-    let cx = 1 + (w / 2);
-    let cy = 1 + r;
-    for (let x = 0; x < pixels.width; x++) {
-      for (let y = 0; y < pixels.height; y++) {
-        // Coordinates of position we are drawing in cartesian circle space
-        let px = x - cx;
-        let py = y - cy;
-        // Coordinates of position we are drawing in polar circle space
-        let pr = Math.sqrt(px*px + py*py);
-        let ptheta = Math.atan2(py, px);
-        // If we are inside the polar rectangle of this terrain piece, draw
-        // a pixel from the pattern
-        if (Polar.rBetween(pr, minR, maxR) &&
-            Polar.thetaBetween(ptheta, minTheta, maxTheta)) {
-          // Determine radial and angular offsets into the pattern texture
-          let dtheta = (ptheta - minTheta) % (Math.PI * 2);
-          if (dtheta < 0) {
-            dtheta += Math.PI * 2;
-          }
-          let dr = (maxR - pr) % pattern.height;
-          if (dr < 0) {
-            dr += pattern.height;
-          }
-          // Pattern coordinates
-          let qx = Math.floor((dtheta * maxR) % pattern.width);
-          let qy = Math.floor(dr);
-          // Copy pattern color over to image data
-          for (let i = 0; i < 4; i++) {
-            let pixelIdx = (y*pixels.width + x)*4 + i;
-            let patternIdx = (qy*pattern.width + qx)*4 + i;
-            pixels.data[pixelIdx] = pattern.data[patternIdx];
+    // Generate curved block from rectangular pattern if this constructor
+    // was passed image data
+    if (pattern instanceof ImageData) {
+      // Increase visual height and width by 1 pixel to prevent seams between
+      // adjacent terrain elements.
+      r += topPadding;
+      height += topPadding + 1.5;
+      width += 1.5 / r;
+      // Create canvas to use as sprite texture
+      let canvas = document.createElement('canvas');
+      let w = 2 * r * Math.sin(width / 2);
+      let h = r - ((r - height) * Math.cos(width / 2));
+      canvas.width = w + 2;
+      canvas.height = h + 2;
+      // Draw platform, mapping rectangular textures to curved platforms one
+      // pixel at a time
+      let ctx = canvas.getContext('2d');
+      let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      // Min/max r and theta for telling if we are inside the polar rectangle
+      let minR = r - height;
+      let maxR = r;
+      let minTheta = -(Math.PI / 2) - (width / 2);
+      let maxTheta = minTheta + width;
+      // Center of circles we are drawing
+      let cx = 1 + (w / 2);
+      let cy = 1 + r;
+      for (let x = 0; x < pixels.width; x++) {
+        for (let y = 0; y < pixels.height; y++) {
+          // Coordinates of position we are drawing in cartesian circle space
+          let px = x - cx;
+          let py = y - cy;
+          // Coordinates of position we are drawing in polar circle space
+          let pr = Math.sqrt(px*px + py*py);
+          let ptheta = Math.atan2(py, px);
+          // If we are inside the polar rectangle of this terrain piece, draw
+          // a pixel from the pattern
+          if (Polar.rBetween(pr, minR, maxR) &&
+              Polar.thetaBetween(ptheta, minTheta, maxTheta)) {
+            // Determine radial and angular offsets into the pattern texture
+            let dtheta = (ptheta - minTheta) % (Math.PI * 2);
+            if (dtheta < 0) {
+              dtheta += Math.PI * 2;
+            }
+            let dr = (maxR - pr) % pattern.height;
+            if (dr < 0) {
+              dr += pattern.height;
+            }
+            // Pattern coordinates
+            let qx = Math.floor((dtheta * maxR) % pattern.width);
+            let qy = Math.floor(dr);
+            // Copy pattern color over to image data
+            for (let i = 0; i < 4; i++) {
+              let pixelIdx = (y*pixels.width + x)*4 + i;
+              let patternIdx = (qy*pattern.width + qx)*4 + i;
+              pixels.data[pixelIdx] = pattern.data[patternIdx];
+            }
           }
         }
       }
+      ctx.putImageData(pixels, 0, 0);
+      // Create sprite from canvas
+      this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
+      this._sprite.anchor.x = 0.5;
+      this._sprite.anchor.y = (1 + topPadding) / canvas.height;
+    } else {
+      // We were not given image data, so just make a non-curved sprite
+      // from the given texture
+      this._sprite = new PIXI.Sprite(pattern);
+      this._sprite.anchor.x = 0.5;
+      this._sprite.anchor.y = 0.95;
     }
-    ctx.putImageData(pixels, 0, 0);
-    // Create sprite from canvas
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
-    this._sprite.anchor.x = 0.5;
-    this._sprite.anchor.y = (1 + topPadding) / canvas.height;
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
     this.rotation = width / 2;
@@ -249,7 +260,10 @@ export class Decoration extends Terrain {
 
   public constructor(r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(r, theta, height, width, Decoration._getImageData(blockType));
+    super(
+      r, theta, height, width,
+      Decoration._getImageDataOrTexture(blockType)
+    );
     // Decorations don't collide with other objects
     this._solidLeft = false;
     this._solidRight = false;
@@ -257,8 +271,18 @@ export class Decoration extends Terrain {
     this._solidTop = false;
   }
 
-  private static _getImageData(type: string): ImageData {
-    switch(type) {
+  /**
+   * Returns an ImageData object if we want to map a rectangular image to a
+   * curved surface, or returns a PIXI.Texture if we want to just use the
+   * texture without modification.
+   */
+  private static _getImageDataOrTexture(type: string): ImageData | PIXI.Texture {
+    switch (type) {
+      case 'gravestone1':
+      case 'gravestone2':
+      case 'tree1':
+      case 'tree2':
+        return PIXI.loader.resources[`game/${type}`].texture;
       case 'underground':
       default:
         return getImageData('game/underground');

@@ -31,6 +31,10 @@ class LevelObject {
         return 15;
       case 'player-spawn':
       case 'item-spawn':
+      case 'gravestone1':
+      case 'gravestone2':
+      case 'tree1':
+      case 'tree2':
         return 20;
     }
   }
@@ -73,6 +77,11 @@ class LevelObject {
         return new Color(50, 100, 255);
       case 'item-spawn':
         return new Color(150, 200, 255);
+      case 'gravestone1':
+      case 'gravestone2':
+      case 'tree1':
+      case 'tree2':
+        return new Color(50, 200, 150);
     }
   }
 
@@ -92,6 +101,10 @@ class LevelObject {
           ctx.closePath();
         }
         break;
+      case 'gravestone1':
+      case 'gravestone2':
+      case 'tree1':
+      case 'tree2':
       case 'player-spawn':
       case 'item-spawn':
         ctx.arc(
@@ -113,6 +126,10 @@ class LevelObject {
       case 'platform':
       case 'underground':
         return this.toRect().contains(coord);
+      case 'gravestone1':
+      case 'gravestone2':
+      case 'tree1':
+      case 'tree2':
       case 'player-spawn':
       case 'item-spawn':
         let thisX = this.r * Math.cos(this.theta);
@@ -134,6 +151,10 @@ class LevelObject {
       case 'platform':
       case 'underground':
         return this.r > 0 && this.height > 0 && this.width > 0;
+      case 'gravestone1':
+      case 'gravestone2':
+      case 'tree1':
+      case 'tree2':
       case 'player-spawn':
       case 'item-spawn':
         return true;
@@ -517,14 +538,25 @@ elem('save').addEventListener('click', () => {
       }
       return ret;
     }),
-    decorations: objects.filter(obj => obj.type === 'underground').map(obj => {
-      return {
+    decorations: objects.filter(obj => {
+      return [
+        'underground',
+        'gravestone1',
+        'gravestone2',
+        'tree1',
+        'tree2',
+      ].indexOf(obj.type) !== -1;
+    }).map(obj => {
+      let ret = {
         r: Math.round(obj.r),
         theta: Math.round(obj.theta * 1000) / 1000,
-        height: Math.round(obj.height),
-        width: Math.round(obj.width * 1000) / 1000,
-        type: obj.type,
       };
+      if (obj.width && obj.height) {
+        ret['height'] = Math.round(obj.height);
+        ret['width'] = Math.round(obj.width * 1000) / 1000;
+      }
+      ret['type'] = obj.type;
+      return ret;
     }),
     waves: waves
   }
