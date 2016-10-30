@@ -3,6 +3,7 @@ import { Level } from './level';
 import { Options } from './options';
 import { GameObject } from './objects/game-object';
 import { Player } from './objects/player';
+import { Fog } from './objects/fog';
 import * as Terrain from './objects/terrain';
 import { Enemy } from './objects/enemy';
 import { EnemySpawner } from './objects/enemy-spawner';
@@ -26,6 +27,7 @@ export class GameInstance extends UIContainer {
   public timeKeeper: TimeKeeper;
   public enemySpawner: EnemySpawner;
   public itemSpawners: ItemSpawner[];
+  public fog: Fog;
   public level: Level;
   public gameObjects: GameObject[];
   protected _options: Options;
@@ -67,9 +69,11 @@ export class GameInstance extends UIContainer {
     this.enemySpawner = new EnemySpawner();
     this.itemSpawners = this.level.getItemSpawners();
     this.background = new Background();
+    this.fog = new Fog(4);
     this.gameObjects = [].concat(
       [
         this.player,
+        this.fog,
       ],
       this.level.getObjects()
     );
@@ -78,8 +82,7 @@ export class GameInstance extends UIContainer {
     // Empty previous collisions tracker
     this._previousCollisions = new Collider.Previous();
     // Add game objects to scene
-    this._innerViewStage.addChild(this.player);
-    this.level.getObjects().forEach(obj => {
+    this.gameObjects.forEach(obj => {
       this._innerViewStage.addChild(obj);
     });
     this.addChildAt(this.background, 0);

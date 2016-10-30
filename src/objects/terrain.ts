@@ -256,7 +256,17 @@ export class Block extends Terrain {
 }
 
 export class Decoration extends Terrain {
-  public get z(): number { return 5; }
+  private static _backgroundTypes: string[] = [
+    'gravestone1',
+    'gravestone2',
+    'tree1',
+    'tree2',
+  ];
+  protected _z: number;
+
+  public get z(): number {
+    return this._z;
+  }
 
   public constructor(r: number, theta: number, height: number, width: number,
                      blockType: string) {
@@ -269,6 +279,12 @@ export class Decoration extends Terrain {
     this._solidRight = false;
     this._solidBottom = false;
     this._solidTop = false;
+    // Set z depth based on block type
+    if (Decoration._backgroundTypes.indexOf(blockType) === -1) {
+      this._z = 5;
+    } else {
+      this._z = 0;
+    }
   }
 
   /**
@@ -277,15 +293,10 @@ export class Decoration extends Terrain {
    * texture without modification.
    */
   private static _getImageDataOrTexture(type: string): ImageData | PIXI.Texture {
-    switch (type) {
-      case 'gravestone1':
-      case 'gravestone2':
-      case 'tree1':
-      case 'tree2':
-        return PIXI.loader.resources[`game/${type}`].texture;
-      case 'underground':
-      default:
-        return getImageData('game/underground');
+    if (Decoration._backgroundTypes.indexOf(type) === -1) {
+      return getImageData('game/underground');
+    } else {
+      return PIXI.loader.resources[`game/${type}`].texture;
     }
   }
 

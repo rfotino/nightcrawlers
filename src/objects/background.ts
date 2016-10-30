@@ -15,7 +15,7 @@ export class Background extends PIXI.Container {
     // Update the background to be the appropriate colors based on time of day
     var bgColor: Color;
     let dayColor = new Color(135, 206, 250);
-    let nightColor = new Color(0, 0, 50);
+    let nightColor = new Color(100, 160, 200);
     let transition = game.timeKeeper.transition;
     if (game.timeKeeper.isDay) {
       bgColor = dayColor.clone();
