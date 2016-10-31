@@ -35,33 +35,37 @@ export class Moon extends GameObject {
    */
   public update(game: GameInstance): void {
     super.update(game);
-    const RADIAL_SPEED = 20;
     const FAST_TANGENTIAL_SPEED = 0.01;
     const SLOW_TANGENTIAL_SPEED = 0.0005;
     const THETA_OFFSET = -0.5;
+    const MIN_R = game.level.getCoreRadius() - Moonlight.RADIUS;
     const MAX_R = game.level.getOuterRadius();
     switch (this._state) {
       case MoonState.WAITING_DAY:
         if (game.timeKeeper.transitioning) {
           this.pos.theta = game.player.pos.theta + THETA_OFFSET;
-          this.vel.set(RADIAL_SPEED, FAST_TANGENTIAL_SPEED);
+          this.vel.theta = FAST_TANGENTIAL_SPEED;
           this._state = MoonState.RISING;
         }
         break;
       case MoonState.RISING:
-        if (this.pos.r >= MAX_R) {
+        if (game.timeKeeper.transitioning) {
+          this.pos.r = MIN_R + ((MAX_R - MIN_R) * game.timeKeeper.transition);
+        } else {
           this.vel.set(0, SLOW_TANGENTIAL_SPEED);
           this._state = MoonState.WAITING_NIGHT;
         }
         break;
       case MoonState.WAITING_NIGHT:
         if (game.timeKeeper.transitioning) {
-          this.vel.set(-RADIAL_SPEED, FAST_TANGENTIAL_SPEED);
+          this.vel.theta = FAST_TANGENTIAL_SPEED;
           this._state = MoonState.SETTING;
         }
         break;
       case MoonState.SETTING:
-        if (this.pos.r <= 0) {
+        if (game.timeKeeper.transitioning) {
+          this.pos.r = MAX_R + ((MIN_R - MAX_R) * game.timeKeeper.transition);
+        } else {
           this.pos.r = 0;
           this.vel.set(0, 0);
           this._state = MoonState.WAITING_DAY;
@@ -87,6 +91,11 @@ export class Moonlight extends GameObject {
   public get z(): number { return 4; }
 
   public get movable(): boolean { return false; }
+
+  public static get RADIUS(): number {
+    let texture = PIXI.loader.resources['game/moonlight'].texture.baseTexture;
+    return Math.max(texture.width, texture.height) / 2;
+  }
 
   public constructor(moon: Moon) {
     super();
