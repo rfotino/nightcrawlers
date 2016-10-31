@@ -4,6 +4,7 @@ import { Options } from './options';
 import { GameObject } from './objects/game-object';
 import { Player } from './objects/player';
 import { Fog } from './objects/fog';
+import { Moon, Moonlight} from './objects/moon';
 import * as Terrain from './objects/terrain';
 import { Enemy } from './objects/enemy';
 import { EnemySpawner } from './objects/enemy-spawner';
@@ -28,6 +29,8 @@ export class GameInstance extends UIContainer {
   public enemySpawner: EnemySpawner;
   public itemSpawners: ItemSpawner[];
   public fog: Fog;
+  public moon: Moon;
+  public moonlight: Moonlight;
   public level: Level;
   public gameObjects: GameObject[];
   protected _options: Options;
@@ -70,10 +73,14 @@ export class GameInstance extends UIContainer {
     this.itemSpawners = this.level.getItemSpawners();
     this.background = new Background();
     this.fog = new Fog(4);
+    this.moon = new Moon();
+    this.moonlight = new Moonlight(this.moon);
     this.gameObjects = [].concat(
       [
         this.player,
         this.fog,
+        this.moon,
+        this.moonlight,
       ],
       this.level.getObjects()
     );

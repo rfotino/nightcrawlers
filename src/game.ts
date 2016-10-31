@@ -86,6 +86,8 @@ export class Game {
       .add('game/tree1', 'assets/images/game/tree1.png')
       .add('game/tree2', 'assets/images/game/tree2.png')
       .add('game/clouds', 'assets/images/game/clouds.png')
+      .add('game/moon', 'assets/images/game/moon.png')
+      .add('game/moonlight', 'assets/images/game/moonlight.png')
       .add('ui/baseball-bat', 'assets/images/ui/baseball-bat.png')
       .add('ui/pistol', 'assets/images/ui/pistol.png')
       .add('ui/shotgun', 'assets/images/ui/shotgun.png')
