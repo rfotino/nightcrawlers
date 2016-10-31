@@ -13,6 +13,7 @@ const enum MoonState {
  * A moon behind the fog and decoration objects.
  */
 export class Moon extends GameObject {
+  protected _moonlight: Moonlight;
   protected _sprite: PIXI.Sprite;
   protected _state: MoonState = MoonState.WAITING_DAY;
 
@@ -20,13 +21,13 @@ export class Moon extends GameObject {
 
   public get movable(): boolean { return false; }
 
-  public constructor() {
+  public constructor(moonlight: Moonlight) {
     super();
+    this._moonlight = moonlight;
     this._sprite = new PIXI.Sprite(
       PIXI.loader.resources['game/moon'].texture
     );
     this._sprite.anchor.set(0.5);
-    this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
   }
 
@@ -35,10 +36,11 @@ export class Moon extends GameObject {
    */
   public update(game: GameInstance): void {
     super.update(game);
+    // Update state machine for handling moonrise and moonset
     const FAST_TANGENTIAL_SPEED = 0.01;
     const SLOW_TANGENTIAL_SPEED = 0.0005;
     const THETA_OFFSET = -0.5;
-    const MIN_R = game.level.getCoreRadius() - Moonlight.RADIUS;
+    const MIN_R = game.level.getCoreRadius() - this._moonlight.radius;
     const MAX_R = game.level.getOuterRadius();
     switch (this._state) {
       case MoonState.WAITING_DAY:
@@ -72,6 +74,20 @@ export class Moon extends GameObject {
         }
         break;
     }
+    // Update the position of the moon and moonlight sprites, with parallax
+    // so that the moon seems to follow the player
+    let parallaxR = 0.25;
+    let parallaxTheta = 0.5;
+    let r = this.pos.r + (parallaxR * (game.playerView.r - this.pos.r));
+    let theta = (
+      this.pos.theta +
+      (parallaxTheta * (game.playerView.theta - this.pos.theta))
+    );
+    this._sprite.position.x = r * Math.cos(theta);
+    this._sprite.position.y = r * Math.sin(theta);
+    this._sprite.rotation = (Math.PI / 2) + theta;
+    this._moonlight.pos.r = r;
+    this._moonlight.pos.theta = theta;
   }
 
   public type(): string { return 'moon'; }
@@ -85,36 +101,24 @@ export class Moon extends GameObject {
  * A glowy halo that follows the moon, overlayed on top of the fog.
  */
 export class Moonlight extends GameObject {
-  protected _moon: Moon;
   protected _sprite: PIXI.Sprite;
 
   public get z(): number { return 4; }
 
   public get movable(): boolean { return false; }
 
-  public static get RADIUS(): number {
-    let texture = PIXI.loader.resources['game/moonlight'].texture.baseTexture;
-    return Math.max(texture.width, texture.height) / 2;
+  public get radius(): number {
+    return Math.max(this._sprite.width, this._sprite.height) / 2;
   }
 
-  public constructor(moon: Moon) {
+  public constructor() {
     super();
-    this._moon = moon;
     this._sprite = new PIXI.Sprite(
       PIXI.loader.resources['game/moonlight'].texture
     );
     this._sprite.anchor.set(0.5);
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
-    this.pos.set(1500, 0);
-  }
-
-  /**
-   * Set position to be the same as the moon's.
-   */
-  public update(game: GameInstance): void {
-    super.update(game);
-    this.pos.set(this._moon.pos.r, this._moon.pos.theta);
   }
 
   public type(): string { return 'moonlight'; }

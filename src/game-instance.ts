@@ -33,10 +33,10 @@ export class GameInstance extends UIContainer {
   public moonlight: Moonlight;
   public level: Level;
   public gameObjects: GameObject[];
+  public playerView: Polar.Coord;
   protected _options: Options;
   protected _outerViewStage: PIXI.Container;
   protected _innerViewStage: PIXI.Container;
-  protected _playerView: Polar.Coord;
   protected _debugger: Debugger;
   protected _previousCollisions: Collider.Previous;
   protected _gameOverMenu: GameOverMenu;
@@ -72,9 +72,9 @@ export class GameInstance extends UIContainer {
     this.enemySpawner = new EnemySpawner();
     this.itemSpawners = this.level.getItemSpawners();
     this.background = new Background();
-    this.fog = new Fog(4);
-    this.moon = new Moon();
-    this.moonlight = new Moonlight(this.moon);
+    this.fog = new Fog(5);
+    this.moonlight = new Moonlight();
+    this.moon = new Moon(this.moonlight);
     this.gameObjects = [].concat(
       [
         this.player,
@@ -95,7 +95,7 @@ export class GameInstance extends UIContainer {
     this.addChildAt(this.background, 0);
     this.addChild(this._debugger);
     // Initialize the player view
-    this._playerView = this.player.pos.clone();
+    this.playerView = this.player.pos.clone();
     // Create the game over menu for later
     this._gameOverMenu = new GameOverMenu(game, this);
     // Create the pause menu for later
@@ -208,22 +208,22 @@ export class GameInstance extends UIContainer {
     let diffTheta = viewableTheta / 3;
     let minTheta = this.player.pos.theta - diffTheta;
     let maxTheta = this.player.pos.theta + diffTheta;
-    if (this._playerView.theta < minTheta) {
-      this._playerView.theta = minTheta;
-    } else if (this._playerView.theta > maxTheta) {
-      this._playerView.theta = maxTheta;
+    if (this.playerView.theta < minTheta) {
+      this.playerView.theta = minTheta;
+    } else if (this.playerView.theta > maxTheta) {
+      this.playerView.theta = maxTheta;
     }
-    this._playerView.r = Math.max(
+    this.playerView.r = Math.max(
       // Minimum view height
       this.level.getCoreRadius() + (this.view.height / 4),
       // Weighted average of current view height and current player height
-      (this.player.pos.r + (5 * this._playerView.r)) / 6
+      (this.player.pos.r + (5 * this.playerView.r)) / 6
     );
     // Center the view on the player
     this._outerViewStage.x = this.view.width / 2;
     this._outerViewStage.y = this.view.height / 2;
-    this._innerViewStage.rotation = -(Math.PI / 2) - this._playerView.theta;
-    this._innerViewStage.y = this._playerView.r;
+    this._innerViewStage.rotation = -(Math.PI / 2) - this.playerView.theta;
+    this._innerViewStage.y = this.playerView.r;
     // Update enemy indicator position, should cover the whole game instance
     this._enemyIndicator.x = 0;
     this._enemyIndicator.y = 0;
