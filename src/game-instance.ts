@@ -5,6 +5,7 @@ import { GameObject } from './objects/game-object';
 import { Player } from './objects/player';
 import { Fog } from './objects/fog';
 import { Moon, Moonlight} from './objects/moon';
+import { Sun } from './objects/sun';
 import * as Terrain from './objects/terrain';
 import { Enemy } from './objects/enemy';
 import { EnemySpawner } from './objects/enemy-spawner';
@@ -31,6 +32,7 @@ export class GameInstance extends UIContainer {
   public fog: Fog;
   public moon: Moon;
   public moonlight: Moonlight;
+  public sun: Sun;
   public level: Level;
   public gameObjects: GameObject[];
   public playerView: Polar.Coord;
@@ -75,12 +77,14 @@ export class GameInstance extends UIContainer {
     this.fog = new Fog(5);
     this.moonlight = new Moonlight();
     this.moon = new Moon(this.moonlight);
+    this.sun = new Sun();
     this.gameObjects = [].concat(
       [
         this.player,
         this.fog,
         this.moon,
         this.moonlight,
+        this.sun,
       ],
       this.level.getObjects()
     );
