@@ -316,7 +316,7 @@
       "moves": true,
       "rate": 600,
       "rPrime": 1420,
-      "thetaPrime": 7.225
+      "thetaPrime": 6.7
     }
   ],
   "decorations": [
@@ -357,6 +357,16 @@
     },
     {
       "r": 1000,
+      "theta": -2.3,
+      "type": "gravestone1"
+    },
+    {
+      "r": 1000,
+      "theta": -2.15,
+      "type": "tree1"
+    },
+    {
+      "r": 1000,
       "theta": -1.55,
       "height": 50,
       "width": 0.275,
@@ -383,10 +393,35 @@
     },
     {
       "r": 1050,
+      "theta": -1,
+      "type": "gravestone2"
+    },
+    {
+      "r": 1050,
+      "theta": 0.125,
+      "type": "gravestone1"
+    },
+    {
+      "r": 1050,
+      "theta": 0.575,
+      "type": "gravestone2"
+    },
+    {
+      "r": 1050,
       "theta": 0.8,
       "height": 50,
       "width": 0.2,
       "type": "underground"
+    },
+    {
+      "r": 1050,
+      "theta": 1.225,
+      "type": "gravestone2"
+    },
+    {
+      "r": 1050,
+      "theta": 1.775,
+      "type": "gravestone1"
     },
     {
       "r": 1050,
@@ -396,11 +431,26 @@
       "type": "underground"
     },
     {
+      "r": 1050,
+      "theta": 3.025,
+      "type": "gravestone2"
+    },
+    {
       "r": 1080,
       "theta": -1.975,
       "height": 80,
       "width": 0.775,
       "type": "underground"
+    },
+    {
+      "r": 1100,
+      "theta": -0.4,
+      "type": "gravestone2"
+    },
+    {
+      "r": 1100,
+      "theta": 2.175,
+      "type": "gravestone2"
     },
     {
       "r": 1110,
@@ -410,24 +460,69 @@
       "type": "underground"
     },
     {
-      "r": 1300,
-      "theta": 5.2,
+      "r": 1250,
+      "theta": -3.025,
+      "type": "tree1"
+    },
+    {
+      "r": 1250,
+      "theta": 1.6,
+      "type": "tree2"
+    },
+    {
+      "r": 1250,
+      "theta": 2.6,
+      "type": "tree1"
+    },
+    {
+      "r": 1250,
+      "theta": 3.1,
       "type": "gravestone1"
     },
     {
-      "r": 1300,
-      "theta": 5.3,
+      "r": 1250,
+      "theta": 5.425,
       "type": "gravestone2"
     },
     {
+      "r": 1250,
+      "theta": 5.825,
+      "type": "tree2"
+    },
+    {
       "r": 1300,
-      "theta": 5.6,
+      "theta": 1.375,
       "type": "tree1"
     },
     {
       "r": 1300,
-      "theta": 5.7,
+      "theta": 5.25,
+      "type": "gravestone1"
+    },
+    {
+      "r": 1300,
+      "theta": 5.625,
+      "type": "tree1"
+    },
+    {
+      "r": 1350,
+      "theta": -1.775,
+      "type": "gravestone1"
+    },
+    {
+      "r": 1350,
+      "theta": 0.575,
       "type": "tree2"
+    },
+    {
+      "r": 1400,
+      "theta": 0.725,
+      "type": "gravestone2"
+    },
+    {
+      "r": 1400,
+      "theta": 0.825,
+      "type": "gravestone1"
     }
   ],
   "waves": [

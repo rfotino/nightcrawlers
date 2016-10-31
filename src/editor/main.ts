@@ -450,8 +450,8 @@ elem('load').addEventListener('click', () => {
           decoration.type,
           decoration.r,
           decoration.theta,
-          decoration.height,
-          decoration.width
+          decoration.height || 0,
+          decoration.width || 0
         );
         objects.push(obj);
       });

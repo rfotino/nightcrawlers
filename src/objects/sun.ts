@@ -85,8 +85,8 @@ export class Sun extends GameObject {
     }
     // Update the position of the moon and moonlight sprites, with parallax
     // so that the moon seems to follow the player
-    let parallaxR = 0.25;
-    let parallaxTheta = 0.5;
+    let parallaxR = 0.5;
+    let parallaxTheta = 0.75;
     let r = this.pos.r + (parallaxR * (game.playerView.r - this.pos.r));
     let theta = (
       this.pos.theta +
