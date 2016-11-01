@@ -44,7 +44,7 @@ export class Sun extends GameObject {
     const SLOW_TANGENTIAL_SPEED = 0.0005;
     const THETA_OFFSET = -0.5;
     const MIN_R = game.level.getCoreRadius() - this.radius;
-    const MAX_R = game.level.getOuterRadius();
+    const MAX_R = game.level.getOuterRadius() * 1.15;
     switch (this._state) {
       case SunState.INITIAL:
         this.pos.r = MAX_R;
