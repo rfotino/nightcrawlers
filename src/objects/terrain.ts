@@ -299,19 +299,28 @@ export class Decoration extends GameObject {
 
   public constructor(r: number, theta: number, blockType: string) {
     super();
-    this.pos.set(r, theta);
+    // Initialize sprites with different textures
     this._daySprite = new PIXI.Sprite(
       PIXI.loader.resources[`game/day/${blockType}`].texture
     );
     this._nightSprite = new PIXI.Sprite(
       PIXI.loader.resources[`game/night/${blockType}`].texture
     );
-    this._daySprite.anchor.set(0.5, 0.95);
-    this._nightSprite.anchor.set(0.5, 0.95);
+    // Get maximum dimensions of day/night sprites
+    let width = Math.max(this._daySprite.width, this._nightSprite.width);
+    let height = Math.max(this._nightSprite.height, this._nightSprite.height);
+    // Position the sprite 5% lower than requested since there's some
+    // transparency on the bottom and we don't want floating sprites
+    this.pos.set(r - (height * 0.05), theta);
+    this._daySprite.anchor.set(0.5, 1);
+    this._nightSprite.anchor.set(0.5, 1);
+    // Add sprites to mirrorlist for (x, y) positioning
     this._mirrorList.push(this._daySprite);
     this._mirrorList.push(this._nightSprite);
+    // Add sprites to this container
     this.addChild(this._daySprite);
     this.addChild(this._nightSprite);
+    // Use different transition types for different block types
     switch (blockType) {
       case 'gravestone1':
       case 'gravestone2':
@@ -322,6 +331,16 @@ export class Decoration extends GameObject {
         this._transitionType = TransitionType.FADE;
         break;
     }
+    // Set up some masking so that you can't see sprites that are hidden
+    // outside of the container (like gravestones/flower patches when they
+    // slide down into the ground)
+    let mask = new PIXI.Graphics();
+    mask.beginFill(0xffffff);
+    mask.drawRect(-width / 2, -height, width, height);
+    mask.endFill();
+    this._mirrorList.push(mask);
+    this.addChild(mask);
+    this.mask = mask;
   }
 
   /**
@@ -355,10 +374,8 @@ export class Decoration extends GameObject {
         this._nightSprite.alpha = night;
         break;
       case TransitionType.POPUP:
-        this._daySprite.anchor.y = day - 0.05;
-        this._daySprite.scale.y = day;
-        this._nightSprite.anchor.y = night - 0.05;
-        this._nightSprite.scale.y = night;
+        this._daySprite.anchor.y = day;
+        this._nightSprite.anchor.y = night;
         break;
     }
   }
