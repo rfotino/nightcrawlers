@@ -279,12 +279,21 @@ export class BackgroundBlock extends Terrain {
 }
 
 /**
+ * Transition types for decorations.
+ */
+const enum TransitionType {
+  FADE,
+  POPUP,
+}
+
+/**
  * Decorative objects that don't interact with the player but fade between two
  * different images, one for day and one for night.
  */
 export class Decoration extends GameObject {
   protected _daySprite: PIXI.Sprite;
   protected _nightSprite: PIXI.Sprite;
+  protected _transitionType: TransitionType;
 
   public get z(): number { return 0; }
 
@@ -303,29 +312,54 @@ export class Decoration extends GameObject {
     this._mirrorList.push(this._nightSprite);
     this.addChild(this._daySprite);
     this.addChild(this._nightSprite);
+    switch (blockType) {
+      case 'gravestone1':
+      case 'gravestone2':
+        this._transitionType = TransitionType.POPUP;
+        break;
+      case 'tree1':
+      case 'tree2':
+        this._transitionType = TransitionType.FADE;
+        break;
+    }
   }
 
   /**
-   * Linearly between day and night sprites.
+   * Linearly interpolate between day and night sprites based on the
+   * decoration's transition type.
    */
   public update(game: GameInstance): void {
     super.update(game);
+    let day: number, night: number;
     if (game.timeKeeper.isDay) {
       if (game.timeKeeper.transitioning) {
-        this._daySprite.alpha = 1 - game.timeKeeper.transition;
-        this._nightSprite.alpha = game.timeKeeper.transition;
+        day = 1 - game.timeKeeper.transition;
+        night = game.timeKeeper.transition;
       } else {
-        this._daySprite.alpha = 1;
-        this._nightSprite.alpha = 0;
+        day = 1;
+        night = 0;
       }
     } else {
       if (game.timeKeeper.transitioning) {
-        this._daySprite.alpha = game.timeKeeper.transition;
-        this._nightSprite.alpha = 1 - game.timeKeeper.transition;
+        day = game.timeKeeper.transition;
+        night = 1 - game.timeKeeper.transition;
       } else {
-        this._daySprite.alpha = 0;
-        this._nightSprite.alpha = 1;
+        day = 0;
+        night = 1;
       }
+    }
+    switch (this._transitionType) {
+      default:
+      case TransitionType.FADE:
+        this._daySprite.alpha = day;
+        this._nightSprite.alpha = night;
+        break;
+      case TransitionType.POPUP:
+        this._daySprite.anchor.y = day - 0.05;
+        this._daySprite.scale.y = day;
+        this._nightSprite.anchor.y = night - 0.05;
+        this._nightSprite.scale.y = night;
+        break;
     }
   }
 
