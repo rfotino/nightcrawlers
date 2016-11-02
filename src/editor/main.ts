@@ -428,6 +428,18 @@ elem('load').addEventListener('click', () => {
         objects.push(obj);
       });
     }
+    if (data.backgroundBlocks) {
+      data.backgroundBlocks.forEach(bgBlock => {
+        let obj = new LevelObject(
+          bgBlock.type,
+          bgBlock.r,
+          bgBlock.theta,
+          bgBlock.height,
+          bgBlock.width
+        );
+        objects.push(obj);
+      })
+    }
     if (data.platforms) {
       data.platforms.forEach(platform => {
         let obj = new LevelObject(
@@ -523,6 +535,17 @@ elem('save').addEventListener('click', () => {
         type: obj.type,
       };
     }),
+    backgroundBlocks: objects.filter(obj => {
+      return obj.type === 'underground';
+    }).map(obj => {
+      return {
+        r: Math.round(obj.r),
+        theta: Math.round(obj.theta * 1000) / 1000,
+        height: Math.round(obj.height),
+        width: Math.round(obj.width * 1000) / 1000,
+        type: obj.type,
+      }
+    }),
     platforms: objects.filter(obj => obj.type === 'platform').map(obj => {
       let ret = {
         r: Math.round(obj.r),
@@ -540,7 +563,6 @@ elem('save').addEventListener('click', () => {
     }),
     decorations: objects.filter(obj => {
       return [
-        'underground',
         'gravestone1',
         'gravestone2',
         'tree1',

@@ -5,6 +5,7 @@ import { ItemSpawner } from './objects/item-spawner';
 
 export class Level {
   protected _blocks: Terrain.Block[];
+  protected _backgroundBlocks: Terrain.BackgroundBlock[];
   protected _platforms: Terrain.Platform[];
   protected _decorations: Terrain.Decoration[];
   protected _playerSpawns: Polar.Coord[];
@@ -45,6 +46,35 @@ export class Level {
         rect.height,
         rect.width,
         rectProps['type'] || 'stone'
+      ));
+    });
+    // Add background blocks from file data
+    this._backgroundBlocks = [];
+    objects['backgroundBlocks'].forEach((rectProps: Object) => {
+      let rect = new Polar.Rect(
+        rectProps['r'], rectProps['theta'],
+        rectProps['height'], rectProps['width']
+      );
+      // If more than max width, add in pieces
+      let maxWidth = Math.PI / 2;
+      while (rect.width > maxWidth) {
+        this._blocks.push(new Terrain.BackgroundBlock(
+          rect.r,
+          rect.theta,
+          rect.height,
+          maxWidth,
+          rectProps['type']
+        ));
+        rect.theta += maxWidth;
+        rect.width -= maxWidth;
+      }
+      // Add leftover piece
+      this._blocks.push(new Terrain.BackgroundBlock(
+        rect.r,
+        rect.theta,
+        rect.height,
+        rect.width,
+        rectProps['type']
       ));
     });
     // Add platforms from file data
@@ -89,29 +119,10 @@ export class Level {
     this._decorations = [];
     if (objects['decorations']) {
       objects['decorations'].forEach((rectProps: Object) => {
-        let rect = new Polar.Rect(
-          rectProps['r'], rectProps['theta'],
-          rectProps['height'], rectProps['width']
-        );
-        // If more than max width, add in pieces
-        let maxWidth = Math.PI / 2;
-        while (rect.width > maxWidth) {
-          this._decorations.push(new Terrain.Decoration(
-            rect.r,
-            rect.theta,
-            rect.height,
-            maxWidth,
-            rectProps['type']
-          ));
-          rect.theta += maxWidth;
-          rect.width -= maxWidth;
-        }
         // Add leftover piece
         this._decorations.push(new Terrain.Decoration(
-          rect.r,
-          rect.theta,
-          rect.height,
-          rect.width,
+          rectProps['r'],
+          rectProps['theta'],
           rectProps['type']
         ));
       });
@@ -185,7 +196,12 @@ export class Level {
    * Gets all of the terrain game objects for this level.
    */
   public getObjects(): GameObject[] {
-    return [].concat(this._blocks, this._platforms, this._decorations);
+    return [].concat(
+      this._blocks,
+      this._backgroundBlocks,
+      this._platforms,
+      this._decorations
+    );
   }
 
   /**

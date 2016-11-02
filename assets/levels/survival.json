@@ -277,6 +277,92 @@
       "type": "grass"
     }
   ],
+  "backgroundBlocks": [
+    {
+      "r": 900,
+      "theta": -2.6,
+      "height": 50,
+      "width": 1.11,
+      "type": "underground"
+    },
+    {
+      "r": 950,
+      "theta": -2.8,
+      "height": 50,
+      "width": 0.425,
+      "type": "underground"
+    },
+    {
+      "r": 950,
+      "theta": -1.65,
+      "height": 50,
+      "width": 0.275,
+      "type": "underground"
+    },
+    {
+      "r": 950,
+      "theta": 0.4,
+      "height": 50,
+      "width": 0.9,
+      "type": "underground"
+    },
+    {
+      "r": 1000,
+      "theta": -3.05,
+      "height": 50,
+      "width": 0.525,
+      "type": "underground"
+    },
+    {
+      "r": 1000,
+      "theta": -1.55,
+      "height": 50,
+      "width": 0.275,
+      "type": "underground"
+    },
+    {
+      "r": 1000,
+      "theta": 0.6,
+      "height": 50,
+      "width": 1.4,
+      "type": "underground"
+    },
+    {
+      "r": 1050,
+      "theta": -2.7,
+      "height": 50,
+      "width": 0.25,
+      "type": "underground"
+    },
+    {
+      "r": 1050,
+      "theta": 0.8,
+      "height": 50,
+      "width": 0.2,
+      "type": "underground"
+    },
+    {
+      "r": 1050,
+      "theta": 1.9,
+      "height": 50,
+      "width": 0.1,
+      "type": "underground"
+    },
+    {
+      "r": 1080,
+      "theta": -1.975,
+      "height": 80,
+      "width": 0.775,
+      "type": "underground"
+    },
+    {
+      "r": 1110,
+      "theta": -1.925,
+      "height": 30,
+      "width": 0.6,
+      "type": "underground"
+    }
+  ],
   "platforms": [
     {
       "r": 1200,
@@ -321,41 +407,6 @@
   ],
   "decorations": [
     {
-      "r": 900,
-      "theta": -2.6,
-      "height": 50,
-      "width": 1.11,
-      "type": "underground"
-    },
-    {
-      "r": 950,
-      "theta": -2.8,
-      "height": 50,
-      "width": 0.425,
-      "type": "underground"
-    },
-    {
-      "r": 950,
-      "theta": -1.65,
-      "height": 50,
-      "width": 0.275,
-      "type": "underground"
-    },
-    {
-      "r": 950,
-      "theta": 0.4,
-      "height": 50,
-      "width": 0.9,
-      "type": "underground"
-    },
-    {
-      "r": 1000,
-      "theta": -3.05,
-      "height": 50,
-      "width": 0.525,
-      "type": "underground"
-    },
-    {
       "r": 1000,
       "theta": -2.3,
       "type": "gravestone1"
@@ -366,30 +417,9 @@
       "type": "tree1"
     },
     {
-      "r": 1000,
-      "theta": -1.55,
-      "height": 50,
-      "width": 0.275,
-      "type": "underground"
-    },
-    {
-      "r": 1000,
-      "theta": 0.6,
-      "height": 50,
-      "width": 1.4,
-      "type": "underground"
-    },
-    {
       "r": 1050,
       "theta": -2.925,
       "type": "gravestone2"
-    },
-    {
-      "r": 1050,
-      "theta": -2.7,
-      "height": 50,
-      "width": 0.25,
-      "type": "underground"
     },
     {
       "r": 1050,
@@ -408,13 +438,6 @@
     },
     {
       "r": 1050,
-      "theta": 0.8,
-      "height": 50,
-      "width": 0.2,
-      "type": "underground"
-    },
-    {
-      "r": 1050,
       "theta": 1.225,
       "type": "gravestone2"
     },
@@ -425,22 +448,8 @@
     },
     {
       "r": 1050,
-      "theta": 1.9,
-      "height": 50,
-      "width": 0.1,
-      "type": "underground"
-    },
-    {
-      "r": 1050,
       "theta": 3.025,
       "type": "gravestone2"
-    },
-    {
-      "r": 1080,
-      "theta": -1.975,
-      "height": 80,
-      "width": 0.775,
-      "type": "underground"
     },
     {
       "r": 1100,
@@ -451,13 +460,6 @@
       "r": 1100,
       "theta": 2.175,
       "type": "gravestone2"
-    },
-    {
-      "r": 1110,
-      "theta": -1.925,
-      "height": 30,
-      "width": 0.6,
-      "type": "underground"
     },
     {
       "r": 1250,
