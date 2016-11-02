@@ -351,6 +351,12 @@ export class Decoration extends GameObject {
     super.update(game);
     let day: number, night: number;
     if (game.timeKeeper.isDay) {
+      // Put night sprite in front because it is out of sight during day so it
+      // doesn't matter but it is in front during dusk transition
+      if (this.children[0] === this._nightSprite) {
+        this.swapChildren(this._daySprite, this._nightSprite);
+      }
+      // Get % day, % night
       if (game.timeKeeper.transitioning) {
         day = 1 - game.timeKeeper.transition;
         night = game.timeKeeper.transition;
@@ -359,6 +365,12 @@ export class Decoration extends GameObject {
         night = 0;
       }
     } else {
+      // Put day sprite in front because it is out of sight during night so it
+      // doesn't matter but it is in front during dawn transition
+      if (this.children[0] === this._daySprite) {
+        this.swapChildren(this._daySprite, this._nightSprite);
+      }
+      // Get % day, % night
       if (game.timeKeeper.transitioning) {
         day = game.timeKeeper.transition;
         night = 1 - game.timeKeeper.transition;
