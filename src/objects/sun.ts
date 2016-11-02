@@ -19,8 +19,6 @@ export class Sun extends GameObject {
 
   public get z(): number { return -5; }
 
-  public get movable(): boolean { return false; }
-
   public get radius(): number {
     return Math.max(this._sprite.width, this._sprite.height) / 2;
   }
@@ -33,6 +31,10 @@ export class Sun extends GameObject {
     this._sprite.anchor.set(0.5);
     this.addChild(this._sprite);
   }
+
+  public collidable(): boolean { return false; }
+
+  public movable(): boolean { return false; }
 
   /**
    * Make the moon rise and set.

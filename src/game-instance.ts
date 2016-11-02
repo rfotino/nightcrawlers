@@ -154,22 +154,37 @@ export class GameInstance extends UIContainer {
    * Do collision between objects after updating them.
    */
   private _collide(): void {
+    // Precalculate all starting bounds
     let currentCollisions = new Collider.Previous();
+    this.gameObjects.forEach(obj => {
+      if (obj.collidable()) {
+        currentCollisions.setBounds(obj, obj.getPolarBounds());
+      }
+    });
+    // Do collision against each pair of live and collidable objects
     for (let i = 0; i < this.gameObjects.length; i++) {
       let obj1 = this.gameObjects[i];
-      if (!obj1.alive) {
+      if (!obj1.alive || !obj1.collidable()) {
         continue;
       }
       for (let j = i + 1; j < this.gameObjects.length; j++) {
         let obj2 = this.gameObjects[j];
-        if (!obj2.alive) {
+        if (!obj2.alive || !obj2.collidable()) {
           continue;
         }
-        if (!obj1.movable && !obj2.movable) {
+        // No use colliding two immobile objects
+        if (!obj1.movable() && !obj2.movable()) {
           continue;
         }
-        let bounds1 = obj1.getPolarBounds();
-        let bounds2 = obj2.getPolarBounds();
+        // Grab precalculated bounds, do a quick bounds check before doing
+        // anything too heavy
+        let bounds1 = currentCollisions.getBounds(obj1);
+        let bounds2 = currentCollisions.getBounds(obj2);
+        if (!bounds2.intersects(bounds1)) {
+          continue;
+        }
+        // Grab previous bounds and result, we're going to do a full collision
+        // test
         let prevBounds1 = this._previousCollisions.getBounds(obj1) || bounds1;
         let prevBounds2 = this._previousCollisions.getBounds(obj2) || bounds2;
         let prevResult = this._previousCollisions.getResult(obj1, obj2);
@@ -186,19 +201,29 @@ export class GameInstance extends UIContainer {
           relativeVel
         );
         let reverse = result.reverse();
+        // If there was a collision, let individual objects handle the response
         if (result.any) {
           obj1.collide(obj2, result);
           obj2.collide(obj1, reverse);
         }
-        currentCollisions.setBounds(obj1, bounds1);
-        currentCollisions.setBounds(obj2, bounds2);
+        // Save the results for the next frame
         currentCollisions.setResult(obj1, obj2, result);
         currentCollisions.setResult(obj2, obj1, reverse);
+        // If we've got a dead object, quit while we're ahead
         if (!obj1.alive) {
           break;
         }
       }
     }
+    // Do a post-calculation of bounds, just to make sure that the previous
+    // bounds for the next frame accurately represent the positions of the
+    // objects
+    this.gameObjects.forEach(obj => {
+      if (obj.collidable() && obj.movable()) {
+        currentCollisions.setBounds(obj, obj.getPolarBounds());
+      }
+    });
+    // Roll over the previous collisions
     this._previousCollisions = currentCollisions;
   }
 

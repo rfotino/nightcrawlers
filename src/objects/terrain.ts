@@ -48,8 +48,6 @@ abstract class Terrain extends GameObject {
   public get size(): Polar.Coord {
     return this._size;
   }
-  
-  public get movable(): boolean { return false; }
 
   public constructor(r: number, theta: number, height: number, width: number,
                      pattern: ImageData | PIXI.Texture,
@@ -137,7 +135,7 @@ abstract class Terrain extends GameObject {
 
   public collide(other: GameObject, result: Collider.Result): void {
     // Do nothing if the other object is not movable
-    if (!other.movable) {
+    if (!other.movable()) {
       return;
     }
     // Otherwise move the other object out of this terrain object and
@@ -232,6 +230,8 @@ export class Block extends Terrain {
     this._solidTop = true;
   }
 
+  public movable(): boolean { return false; }
+
   private static _getImageData(type: string): ImageData {
     switch (type) {
       case 'grass':
@@ -286,6 +286,10 @@ export class Decoration extends Terrain {
       this._z = 0;
     }
   }
+
+  public collidable(): boolean { return false; }
+
+  public movable(): boolean { return false; }
 
   /**
    * Returns an ImageData object if we want to map a rectangular image to a

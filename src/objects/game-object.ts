@@ -62,10 +62,6 @@ export abstract class GameObject extends PIXI.Container {
     return this._maxHealth;
   }
 
-  public get movable(): boolean {
-    return true;
-  }
-
   public constructor() {
     super();
     idCounter++;
@@ -75,6 +71,10 @@ export abstract class GameObject extends PIXI.Container {
     this._vel = new Polar.Coord();
     this._accel = new Polar.Coord();
   }
+
+  public collidable(): boolean { return true; }
+
+  public movable(): boolean { return true; }
 
   public mirror(): void {
     this._mirrorList.forEach(obj => {

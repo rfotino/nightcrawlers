@@ -19,8 +19,6 @@ export class Moon extends GameObject {
 
   public get z(): number { return -1; }
 
-  public get movable(): boolean { return false; }
-
   public constructor(moonlight: Moonlight) {
     super();
     this._moonlight = moonlight;
@@ -30,6 +28,10 @@ export class Moon extends GameObject {
     this._sprite.anchor.set(0.5);
     this.addChild(this._sprite);
   }
+
+  public collidable(): boolean { return false; }
+
+  public movable(): boolean { return false; }
 
   /**
    * Make the moon rise and set.
@@ -105,8 +107,6 @@ export class Moonlight extends GameObject {
 
   public get z(): number { return 4; }
 
-  public get movable(): boolean { return false; }
-
   public get radius(): number {
     return Math.max(this._sprite.width, this._sprite.height) / 2;
   }
@@ -120,6 +120,10 @@ export class Moonlight extends GameObject {
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
   }
+
+  public collidable(): boolean { return false; }
+
+  public movable(): boolean { return false; }
 
   public type(): string { return 'moonlight'; }
 
