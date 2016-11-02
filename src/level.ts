@@ -58,7 +58,7 @@ export class Level {
       // If more than max width, add in pieces
       let maxWidth = Math.PI / 2;
       while (rect.width > maxWidth) {
-        this._blocks.push(new Terrain.BackgroundBlock(
+        this._backgroundBlocks.push(new Terrain.BackgroundBlock(
           rect.r,
           rect.theta,
           rect.height,
@@ -69,7 +69,7 @@ export class Level {
         rect.width -= maxWidth;
       }
       // Add leftover piece
-      this._blocks.push(new Terrain.BackgroundBlock(
+      this._backgroundBlocks.push(new Terrain.BackgroundBlock(
         rect.r,
         rect.theta,
         rect.height,
