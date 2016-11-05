@@ -30,16 +30,13 @@ export class Fog extends GameObject {
   public update(game: GameInstance): void {
     super.update(game);
     // Update the fog to be the appropriate color based on time of day
-    var fogColor: Color;
-    let dayColor = new Color(255, 255, 255);
-    let nightColor = new Color(0, 0, 0);
-    let transition = game.timeKeeper.transition;
+    let fogColor: Color;
+    const dayColor = new Color(255, 255, 255);
+    const nightColor = new Color(0, 0, 0);
     if (game.timeKeeper.isDay) {
-      fogColor = dayColor.clone();
-      fogColor.blend(nightColor, transition);
+      fogColor = dayColor.blend(nightColor, game.timeKeeper.transition);
     } else {
-      fogColor = nightColor.clone();
-      fogColor.blend(dayColor, transition);
+      fogColor = nightColor.blend(dayColor, game.timeKeeper.transition);
     }
     this._sprite.tint = fogColor.toPixi();
   }

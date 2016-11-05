@@ -1,12 +1,18 @@
+import { Game } from './game';
 import { GameInstance } from './game-instance';
+import { UIContainer } from './ui/container';
 
-export class Debugger extends PIXI.Container {
+export class Debugger extends UIContainer {
+  protected _gameInstance: GameInstance;
   private _text: PIXI.Text;
   private _lastTime: number;
   private _frameTimes: number[];
 
-  public constructor(visible: boolean = false) {
-    super();
+  public constructor(game: Game,
+                     gameInstance: GameInstance,
+                     visible: boolean = false) {
+    super(game);
+    this._gameInstance = gameInstance;
     this._text = new PIXI.Text('', {
       fontFamily: 'Monospace',
       fontSize: '24px',
@@ -20,26 +26,30 @@ export class Debugger extends PIXI.Container {
     this._frameTimes = [];
   }
 
-  public update(game: GameInstance): void {
+  public doLayout(): void {
+    super.doLayout();
+    this.width = this._text.width;
+    this.height = this._text.height;
+  }
+
+  public update(): void {
+    super.update();
     // Get time taken between frames
-    let curTime = Date.now();
+    const curTime = Date.now();
     this._frameTimes.push(curTime - this._lastTime);
     if (this._frameTimes.length > 60) {
       this._frameTimes.shift();
     }
     this._lastTime = curTime;
-    let frameTimeSum = this._frameTimes.reduce((p, c) => p + c);
-    let frameAvg = frameTimeSum / this._frameTimes.length;
-    let fps = frameAvg === 0 ? 0 : 1000 / frameAvg;
+    const frameTimeSum = this._frameTimes.reduce((p, c) => p + c);
+    const frameAvg = frameTimeSum / this._frameTimes.length;
+    const fps = frameAvg === 0 ? 0 : 1000 / frameAvg;
     // Update text display
     this._text.text =
       `FPS:     ${fps.toFixed(0)}\n` +
-      `r:       ${game.player.pos.r.toFixed(0)}\n` +
-      `θ:       ${(game.player.pos.theta / Math.PI).toFixed(2)}π\n` +
-      `objects: ${game.gameObjects.length}\n` +
-      `render:  ${game.isWebGL() ? 'WebGL' : 'Canvas'}`;
-    // Put text in bottom right
-    this._text.x = game.view.width - this.width;
-    this._text.y = game.view.height - this.height;
+      `r:       ${this._gameInstance.player.pos.r.toFixed(0)}\n` +
+      `θ:       ${(this._gameInstance.player.pos.theta / Math.PI).toFixed(2)}π\n` +
+      `objects: ${this._gameInstance.gameObjects.length}\n` +
+      `render:  ${this._game.isWebGL() ? 'WebGL' : 'Canvas'}`;
   }
 }

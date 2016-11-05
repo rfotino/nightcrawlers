@@ -10,10 +10,10 @@ import * as Terrain from './objects/terrain';
 import { Enemy } from './objects/enemy';
 import { EnemySpawner } from './objects/enemy-spawner';
 import { ItemSpawner } from './objects/item-spawner';
-import { Background } from './objects/background';
 import { TimeKeeper } from './timekeeper';
 import { KeyState } from './input/keystate';
 import { Polar } from './math/polar';
+import { Color } from './graphics/color';
 import { Debugger } from './debug';
 import { Collider } from './math/collider';
 import { UIContainer } from './ui/container';
@@ -25,7 +25,6 @@ import { EnemyIndicator } from './ui/enemy-indicator';
 
 export class GameInstance extends UIContainer {
   public player: Player;
-  public background: Background;
   public timeKeeper: TimeKeeper;
   public enemySpawner: EnemySpawner;
   public itemSpawners: ItemSpawner[];
@@ -73,7 +72,6 @@ export class GameInstance extends UIContainer {
     this.timeKeeper = new TimeKeeper();
     this.enemySpawner = new EnemySpawner();
     this.itemSpawners = this.level.getItemSpawners();
-    this.background = new Background();
     this.fog = new Fog(5);
     this.moonlight = new Moonlight();
     this.moon = new Moon(this.moonlight);
@@ -89,14 +87,14 @@ export class GameInstance extends UIContainer {
       this.level.getObjects()
     );
     // Debugger
-    this._debugger = new Debugger(this._options.debug);
+    this._debugger = new Debugger(game, this, this._options.debug);
+    this.addComponent(this._debugger);
     // Empty previous collisions tracker
     this._previousCollisions = new Collider.Previous();
     // Add game objects to scene
     this.gameObjects.forEach(obj => {
       this._innerViewStage.addChild(obj);
     });
-    this.addChildAt(this.background, 0);
     this.addChild(this._debugger);
     // Initialize the player view
     this.playerView = this.player.pos.clone();
@@ -141,13 +139,6 @@ export class GameInstance extends UIContainer {
         this._nightMusic.pause(this._nightMusicId);
       });
     });
-  }
-
-  /**
-   * Returns true if the renderer we're using is WebGL based.
-   */
-  public isWebGL(): boolean {
-    return this._game.isWebGL();
   }
 
   /**
@@ -232,6 +223,9 @@ export class GameInstance extends UIContainer {
    */
   public doLayout(): void {
     super.doLayout();
+    // Make this component fill the view
+    this.width = this.view.width;
+    this.height = this.view.height;
     // Scroll the view if the player goes too close to the edge of the screen
     let viewableTheta = this.view.width / (this.player.pos.r * 2);
     let diffTheta = viewableTheta / 3;
@@ -273,6 +267,9 @@ export class GameInstance extends UIContainer {
       (this.view.height * 0.95) -
       this._currentWeaponIndicator.height
     );
+    // Update debugger position
+    this._debugger.x = (this.view.width * 0.95) - this._debugger.width;
+    this._debugger.y = (this.view.height * 0.95) - this._debugger.height;
   }
 
   /**
@@ -280,7 +277,7 @@ export class GameInstance extends UIContainer {
    */
   public update(): void {
     super.update();
-    // Do not update anything if paused
+    // Do not update anything else if paused
     if (this._paused) {
       return;
     }
@@ -302,8 +299,14 @@ export class GameInstance extends UIContainer {
     this.enemySpawner.update(this);
     // Maybe spawn some items
     this.itemSpawners.forEach(spawner => spawner.update(this));
-    // Update the background for the time of day
-    this.background.update(this);
+    // Update background color based on time of day
+    const dayColor = new Color(135, 206, 250);
+    const nightColor = new Color(100, 160, 200);
+    if (this.timeKeeper.isDay) {
+      this.bgcolor = dayColor.blend(nightColor, this.timeKeeper.transition);
+    } else {
+      this.bgcolor = nightColor.blend(dayColor, this.timeKeeper.transition);
+    }
     // Call each game object's update function
     this.gameObjects.forEach(obj => obj.update(this));
     // Collide objects
@@ -336,8 +339,6 @@ export class GameInstance extends UIContainer {
     this.gameObjects.forEach(obj => obj.mirror());
     // Roll over previous game object positions
     this.gameObjects.forEach(obj => obj.rollOver());
-    // Update the debug text
-    this._debugger.update(this);
     // Update the score label
     this._scoreLabel.title = `${this.score}`;
   }

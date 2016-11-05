@@ -9,7 +9,7 @@ export abstract class UIContainer extends PIXI.Container {
   protected _sizer: PIXI.Sprite;
   protected _childComponents: UIContainer[];
   protected _listeners: {[key: string]: Function[]} = {};
-  private _background: PIXI.Graphics;
+  private _background: PIXI.Sprite;
   private _bgcolor: Color;
 
   public get keyState(): KeyState {
@@ -45,7 +45,7 @@ export abstract class UIContainer extends PIXI.Container {
     this._game = game;
     this._sizer = new PIXI.Sprite();
     this._childComponents = [];
-    this._background = new PIXI.Graphics();
+    this._background = new PIXI.Sprite(Color.white.genTexture());
     this._bgcolor = new Color(0, 0, 0, 0);
     this.addChild(this._background);
     this.addChild(this._sizer);
@@ -97,9 +97,8 @@ export abstract class UIContainer extends PIXI.Container {
 
   public update(): void {
     this._childComponents.forEach(child => child.update());
-    this._background.clear();
-    this._background.beginFill(this._bgcolor.toPixi(), this._bgcolor.a);
-    this._background.drawRect(0, 0, this.width, this.height);
-    this._background.endFill();
+    this._background.scale.set(this.width, this.height);
+    this._background.tint = this._bgcolor.toPixi();
+    this._background.alpha = this._bgcolor.a;
   }
 }

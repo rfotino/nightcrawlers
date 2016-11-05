@@ -109,16 +109,20 @@ export class Color {
   }
 
   /**
-   * Blends the other color into this color by the given factor.
+   * Blends the other color into this color by the given factor and returns
+   * the result.
    * @arg other The color to blend into this color.
    * @arg factor A number between 0 and 1.
    */
-  public blend(other: Color, factor: number): void {
+  public blend(other: Color, factor: number): Color {
     factor = clamp(factor, 0, 1);
-    let oneMinus = 1 - factor;
-    this._r = (this._r * oneMinus) + (other.r * factor);
-    this._g = (this._g * oneMinus) + (other.g * factor);
-    this._b = (this._b * oneMinus) + (other.b * factor);
+    const oneMinus = 1 - factor;
+    return new Color(
+      (this._r * oneMinus) + (other.r * factor),
+      (this._g * oneMinus) + (other.g * factor),
+      (this._b * oneMinus) + (other.b * factor),
+      (this._a * oneMinus) + (other.a * factor)
+    );
   }
 
   public clone(): Color {

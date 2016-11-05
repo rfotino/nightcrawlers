@@ -29,8 +29,8 @@ export class UISlider extends UIContainer {
 
   public update(): void {
     super.update();
-    // Choose some multiple of the window width for the preferred size
-    this.width = window.innerWidth / 5
+    // Choose some multiple of the view width for the preferred size
+    this.width = 0.2 * this._game.view.width;
     // Resize handle
     let percent = (this.value - this.min) / (this.max - this.min);
     this._handle.width = this.width / 10;

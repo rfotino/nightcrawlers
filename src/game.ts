@@ -64,7 +64,6 @@ export class Game {
       }
     )
     this._renderer.view.tabIndex = -1;
-    this._renderer.view.oncontextmenu = () => false;
     // Create top level UI containers and set the initial active screen to
     // be a progress bar.
     this._mainMenu = new MainMenu(this);
