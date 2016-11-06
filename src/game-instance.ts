@@ -20,6 +20,7 @@ import { UIContainer } from './ui/container';
 import { UILabel } from './ui/label';
 import { PauseMenu, GameOverMenu } from './ui/menu';
 import { HealthBar } from './ui/healthbar';
+import { EnergyBar } from './ui/energy-bar';
 import { CurrentWeaponIndicator } from './ui/current-weapon';
 import { EnemyIndicator } from './ui/enemy-indicator';
 
@@ -45,6 +46,7 @@ export class GameInstance extends UIContainer {
   protected _paused: boolean;
   protected _enemyIndicator: EnemyIndicator;
   protected _healthBar: HealthBar;
+  protected _energyBar: EnergyBar;
   protected _currentWeaponIndicator: CurrentWeaponIndicator;
   protected _scoreLabel: UILabel;
   protected _waveIndex: number;
@@ -109,6 +111,9 @@ export class GameInstance extends UIContainer {
     // Add the health bar
     this._healthBar = new HealthBar(game, this.player);
     this.addComponent(this._healthBar);
+    // Add the energy bar
+    this._energyBar = new EnergyBar(game, this.player);
+    this.addComponent(this._energyBar);
     // Add current weapon indicator
     this._currentWeaponIndicator = new CurrentWeaponIndicator(
       game, this.player
@@ -257,6 +262,11 @@ export class GameInstance extends UIContainer {
     this._healthBar.height = this._healthBar.width / 12;
     this._healthBar.x = (this.view.width * 0.95) - this._healthBar.width;
     this._healthBar.y = (this.view.height * 0.05);
+    // Update energy bar position
+    this._energyBar.width = this._healthBar.width;
+    this._energyBar.height = this._healthBar.height / 3;
+    this._energyBar.x = this._healthBar.x;
+    this._energyBar.y = this._healthBar.y + this._healthBar.height;
     // Update score label position
     this._scoreLabel.x = this.view.width * 0.05;
     this._scoreLabel.y = this.view.height * 0.02;

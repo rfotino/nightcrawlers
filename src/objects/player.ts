@@ -19,6 +19,8 @@ export class Player extends GameObject {
   protected _baseballBat: BaseballBat;
   protected _armor: number = 0;
   protected _maxArmor: number = 50;
+  protected _maxEnergy: number = 100;
+  protected _energy: number = this._maxEnergy;
   public facingLeft: boolean = false;
   public score: number = 0;
   public weapons: Weapon[];
@@ -42,6 +44,14 @@ export class Player extends GameObject {
 
   public get maxArmor(): number {
     return this._maxArmor;
+  }
+
+  public get energy(): number {
+    return this._energy;
+  }
+
+  public get maxEnergy(): number {
+    return this._maxEnergy;
   }
 
   public set armor(armor: number) {
@@ -70,8 +80,12 @@ export class Player extends GameObject {
       {
         walk: {
           frames: [1, 2, 3, 0],
-          ticksPerFrame: 10,
-        }
+          ticksPerFrame: 11,
+        },
+        run: {
+          frames: [1, 2, 3, 0],
+          ticksPerFrame: 7,
+        },
       }
     );
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
@@ -106,19 +120,37 @@ export class Player extends GameObject {
     super.update(game);
     // Update sprite animation
     this._sprite.nextFrame();
-    // Handle turning due to user input
-    let speed = 7 / this.pos.r;
-    let leftArrow = game.keyState.isDown(KeyState.LEFTARROW);
-    let rightArrow = game.keyState.isDown(KeyState.RIGHTARROW);
+    // Handle walking and running due to user input
+    const walkSpeed = 5 / this.pos.r;
+    const runSpeed = 7 / this.pos.r;
+    const leftArrow = game.keyState.isDown(KeyState.LEFTARROW);
+    const rightArrow = game.keyState.isDown(KeyState.RIGHTARROW);
+    const shift = game.keyState.isDown(KeyState.SHIFT);
+    const running = shift && (leftArrow !== rightArrow);
+    const energyLossRate = 0.5;
+    const energyGainRate = 0.2;
+    const speed = running && this.energy > 0 ? runSpeed : walkSpeed;
+    const anim = running && this.energy > 0 ? 'run' : 'walk';
+    if (running) {
+      this._energy -= energyLossRate;
+      if (this._energy < 0) {
+        this._energy = 0;
+      }
+    } else {
+      this._energy += energyGainRate;
+      if (this._energy > this._maxEnergy) {
+        this._energy = this._maxEnergy;
+      }
+    }
     if (leftArrow && !rightArrow) {
       this.vel.theta = -speed;
       this.facingLeft = true;
-      this._sprite.playAnim('walk');
+      this._sprite.playAnim(anim);
       this._sprite.scale.x = -1;
     } else if (rightArrow && !leftArrow) {
       this.vel.theta = speed;
       this.facingLeft = false;
-      this._sprite.playAnim('walk');
+      this._sprite.playAnim(anim);
       this._sprite.scale.x = 1;
     } else {
       this.vel.theta = 0;
