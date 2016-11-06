@@ -71,51 +71,73 @@ export class Item extends GameObject {
   }
 
   protected _addToPlayer(player: Player): void {
+    let text: string = null;
+    let color: string = null;
     switch (this._type) {
       case 'health':
-        const healthAmount = 20;
-        player.health += healthAmount;
-        // Add green fading text so player knows how much health they got
-        this._game.addGameObject(new FadingText(
-          this._game,
-          `+${healthAmount}`,
-          player.pos,
-          36, // font size
-          'rgb(0, 255, 0)', // font color
-          60 // timer
-        ));
+        const originalHealth = player.health;
+        player.health += 20;
+        const healthAmount = Math.round(player.health - originalHealth);
+        text = `+${healthAmount}`;
+        color = 'rgb(0, 255, 0)';
         break;
       case 'armor':
         player.armor = player.maxArmor;
+        text = 'SHIELDED';
+        color = 'rgb(0, 255, 150)';
         break;
       case 'pistol':
         player.weapons.forEach(weapon => {
           if (weapon.type() === 'pistol') {
-            weapon.ammo += 8;
+            const ammoAmount = 8;
+            weapon.ammo += ammoAmount;
+            text = `+${ammoAmount} ROUNDS`
+            color = 'white';
           }
         });
         break;
       case 'shotgun':
         player.weapons.forEach(weapon => {
           if (weapon.type() === 'shotgun') {
-            weapon.ammo += 5;
+            const ammoAmount = 5;
+            weapon.ammo += ammoAmount;
+            text = `+${ammoAmount} SHELLS`;
+            color = 'white';
           }
         });
         break;
       case 'assault':
         player.weapons.forEach(weapon => {
           if (weapon.type() === 'assault') {
-            weapon.ammo += 10;
+            const ammoAmount = 10;
+            weapon.ammo += ammoAmount;
+            text = `+${ammoAmount} ROUNDS`;
+            color = 'white';
           }
         });
         break;
       case 'mine':
         player.weapons.forEach(weapon => {
           if (weapon.type() === 'mine') {
-            weapon.ammo += 3;
+            const ammoAmount = 3;
+            weapon.ammo += ammoAmount;
+            text = `+${ammoAmount} MINES`;
+            color = 'white';
           }
         });
         break;
+    }
+    if (text !== null && color !== null) {
+      this._game.addGameObject(new FadingText(
+        this._game,
+        text,
+        player.pos,
+        {
+          fontSize: 30,
+          fill: color,
+        },
+        60 // timer
+      ));
     }
   }
 }

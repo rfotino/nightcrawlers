@@ -93,8 +93,7 @@ export class Enemy extends GameObject {
       this._game,
       `+${this.score}`,
       this.pos,
-      36, // font size
-      'white' // font color
+      { fontSize: 36, fill: 'white' }
     ));
   }
 
@@ -107,8 +106,7 @@ export class Enemy extends GameObject {
       this._game,
       `-${amount}`,
       this.pos,
-      28, // font size
-      'red', // font color
+      { fontSize: 28, fill: 'red' },
       15 // timer
     ));
   }

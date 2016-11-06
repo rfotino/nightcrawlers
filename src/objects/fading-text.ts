@@ -16,19 +16,14 @@ export class FadingText extends GameObject {
   public constructor(game: GameInstance,
                      text: string,
                      pos: Polar.Coord,
-                     fontSize: number = 36,
-                     color: string = 'white',
+                     style: PIXI.TextStyle = {},
                      time: number = 30) {
     super(game);
     this.pos.set(pos.r, pos.theta);
-    this._text = new PIXI.Text(
-      text,
-      {
-        fontFamily: 'sans-serif',
-        fontSize: fontSize,
-        fill: color,
-      }
-    );
+    style.fontFamily = style.fontFamily || 'sans-serif';
+    style.fontSize = style.fontSize || 36;
+    style.fill = style.fill || 'white';
+    this._text = new PIXI.Text(text, style);
     this._mirrorList.push(this);
     this.addChild(this._text);
     // Have to manually center the text because align and textBaseline
