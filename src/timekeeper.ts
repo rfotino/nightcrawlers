@@ -1,3 +1,5 @@
+import { LagFactor } from './math/lag-factor';
+
 export class TimeKeeper {
   protected _counter: number = 0;
   protected _isDay: boolean = true;
@@ -40,7 +42,7 @@ export class TimeKeeper {
    * Updates the time of day for another frame.
    */
   public update() {
-    this._counter++;
+    this._counter += LagFactor.get();
     if (this._transitioning) {
       if (this._counter > this._transitionLength) {
         this._counter = 0;

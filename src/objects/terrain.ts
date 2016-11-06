@@ -170,28 +170,23 @@ abstract class Terrain extends GameObject {
  * the top surface only.
  */
 export class Platform extends Terrain {
-  private _rMin: number;
-  private _rMax: number;
   private _thetaMin: number;
   private _thetaMax: number;
+  private _thetaSpeed: number;
 
   public constructor(r: number, theta: number, height: number, width: number,
                      moves: boolean = false,
                      rate: number = 0,
-                     rPrime: number = r,
                      thetaPrime: number = theta) {
     super(
       r, theta, height, width,
       getImageData('game/platform'), GRASS_PADDING
     );
-    // Assign animation characteristics for moving between r and rPrime and
-    // theta and thetaPrime every rate frames
+    // Assign animation characteristics for moving between theta and thetaPrime
+    // every rate frames
     if (moves && rate > 0) {
-      this.vel.r = (rPrime - r) / rate;
-      this.vel.theta = (thetaPrime - theta) / rate;
+      this.vel.theta = this._thetaSpeed = Math.abs((thetaPrime - theta) / rate);
     }
-    this._rMin = Math.min(r, rPrime);
-    this._rMax = Math.max(r, rPrime);
     this._thetaMin = Math.min(theta, thetaPrime);
     this._thetaMax = Math.max(theta, thetaPrime);
     // By default, platforms only have a solid top
@@ -203,11 +198,10 @@ export class Platform extends Terrain {
 
   public update(game: GameInstance): void {
     super.update(game);
-    if (this.pos.r <= this._rMin || this.pos.r >= this._rMax) {
-      this.vel.r *= -1;
-    }
-    if (this.pos.theta <= this._thetaMin || this.pos.theta >= this._thetaMax) {
-      this.vel.theta *= -1;
+    if (this.pos.theta <= this._thetaMin) {
+      this.vel.theta = this._thetaSpeed;
+    } else if (this.pos.theta >= this._thetaMax) {
+      this.vel.theta = -this._thetaSpeed;
     }
   }
 }

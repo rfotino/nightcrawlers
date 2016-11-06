@@ -96,7 +96,6 @@ export class Level {
             maxWidth,
             rectProps['moves'] || false,
             rectProps['rate'] || 0,
-            rectProps['rPrime'] || rect.r,
             rectProps['thetaPrime'] || rect.theta
           ));
           rect.theta += maxWidth;
@@ -110,7 +109,6 @@ export class Level {
           rect.width,
           rectProps['moves'] || false,
           rectProps['rate'] || 0,
-          rectProps['rPrime'] || rect.r,
           rectProps['thetaPrime'] || rect.theta
         ));
       });

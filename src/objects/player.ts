@@ -6,6 +6,7 @@ import { Level } from '../level';
 import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
+import { LagFactor } from '../math/lag-factor';
 import { Weapon } from '../weapons/weapon';
 import { BaseballBat } from '../weapons/baseball-bat';
 import { Pistol } from '../weapons/pistol';
@@ -132,12 +133,12 @@ export class Player extends GameObject {
     const speed = running && this.energy > 0 ? runSpeed : walkSpeed;
     const anim = running && this.energy > 0 ? 'run' : 'walk';
     if (running) {
-      this._energy -= energyLossRate;
+      this._energy -= energyLossRate * LagFactor.get();
       if (this._energy < 0) {
         this._energy = 0;
       }
     } else {
-      this._energy += energyGainRate;
+      this._energy += energyGainRate * LagFactor.get();
       if (this._energy > this._maxEnergy) {
         this._energy = this._maxEnergy;
       }

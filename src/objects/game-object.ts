@@ -1,5 +1,6 @@
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
+import { LagFactor } from '../math/lag-factor';
 import { KeyState } from '../input/keystate';
 import { GameInstance } from '../game-instance';
 
@@ -85,11 +86,12 @@ export abstract class GameObject extends PIXI.Container {
   }
 
   public update(game: GameInstance): void {
-    this.vel.r += this.accel.r;
-    this.vel.theta += this.accel.theta;
-    this.pos.r += this.vel.r;
-    this.pos.theta += this.vel.theta;
-    this.pos.theta += this._groundVel;
+    const lagFactor = LagFactor.get();
+    this.vel.r += this.accel.r * lagFactor;
+    this.vel.theta += this.accel.theta * lagFactor;
+    this.pos.r += this.vel.r * lagFactor;
+    this.pos.theta += this.vel.theta * lagFactor;
+    this.pos.theta += this._groundVel * lagFactor;
     this._groundVel = 0;
   }
 

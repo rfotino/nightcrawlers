@@ -4,12 +4,12 @@ import { Skeleton } from './skeleton';
 import { Spider } from './spider';
 import { Zombie } from './zombie';
 import { GameInstance } from '../game-instance';
+import { Counter } from '../math/counter';
 
 export class EnemySpawner {
   private _enemiesToSpawn: string[] = [];
   private _enemies: Enemy[] = [];
-  private _spawnCounter: number = 0;
-  private _spawnCounterMax: number = 120;
+  private _spawnCounter: Counter = new Counter(120);
 
   public get numAlive(): number {
     return this._enemies.filter(enemy => enemy.alive).length;
@@ -48,10 +48,10 @@ export class EnemySpawner {
    */
   public update(game: GameInstance): void {
     if (game.timeKeeper.isDay || game.timeKeeper.transitioning) {
-      this._spawnCounter = 0;
+      this._spawnCounter.reset();
     } else {
-      this._spawnCounter++;
-      if (this._spawnCounter >= this._spawnCounterMax) {
+      this._spawnCounter.next();
+      if (this._spawnCounter.done()) {
         let newEnemyType = this._enemiesToSpawn.shift();
         let enemy = null;
         switch (newEnemyType) {
@@ -72,7 +72,7 @@ export class EnemySpawner {
           game.addGameObject(enemy);
           this._enemies.push(enemy);
         }
-        this._spawnCounter = 0;
+        this._spawnCounter.reset();
       }
     }
   }

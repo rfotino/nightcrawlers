@@ -8,6 +8,7 @@ import { TouchState } from './input/touchstate';
 import { UIContainer } from './ui/container';
 import { MainMenu } from './ui/menu';
 import { MainProgressScreen } from './ui/progress';
+import { LagFactor } from './math/lag-factor';
 
 export class Game {
   protected _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
@@ -17,6 +18,9 @@ export class Game {
   protected _keyState: KeyState;
   protected _mouseState: MouseState;
   protected _touchState: TouchState;
+  private _prevTime: number;
+  private _currentTime: number;
+  private _prevLagFactors: number[] = [];
 
   public get mainMenu(): MainMenu { return this._mainMenu; }
   public get keyState(): KeyState { return this._keyState; }
@@ -100,6 +104,9 @@ export class Game {
       .add('music/night', `assets/music/night.${audioExt}`)
       .load(() => this.activeScreen = this._mainMenu)
       .on('progress', loader => this._progressBar.progress = loader.progress);
+    // Initialize timing logic
+    this._currentTime = Date.now();
+    this._prevTime = this._currentTime - 16;
     // Start update/draw loop
     this._updateDrawLoop();
   }
@@ -111,6 +118,26 @@ export class Game {
   private _updateDrawLoop(): void {
     // Request the next frame
     window.requestAnimationFrame(() => this._updateDrawLoop());
+    // Get the lag factor between this frame and the previous frame. We should
+    // be running at 60 frames per second, but if we are running at e.g.
+    // 30 FPS then the lag factor will be 2, or if we are running at 45 FPS
+    // the lag factor will be 1.5, etc. Cap lag factor at some reasonable
+    // maximum.
+    this._currentTime = Date.now();
+    let lagFactor = (this._currentTime - this._prevTime) * 60 / 1000;
+    if (lagFactor > 5) {
+      lagFactor = 5;
+    }
+    this._prevTime = this._currentTime;
+    // Do some smoothing of the lag factor by using a rolling average.
+    this._prevLagFactors.push(lagFactor);
+    if (this._prevLagFactors.length > 10) {
+      this._prevLagFactors.shift();
+    }
+    let avgLagFactor = this._prevLagFactors.reduce((p, c) => {
+      return p + c;
+    }, 0) / this._prevLagFactors.length;
+    LagFactor.set(avgLagFactor);
     // Resize the canvas to fit the screen
     if (this.view.width !== window.innerWidth ||
         this.view.height !== window.innerHeight) {

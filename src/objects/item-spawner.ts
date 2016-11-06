@@ -1,10 +1,10 @@
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
+import { Counter } from '../math/counter';
 import { Item } from './item';
 
 export class ItemSpawner {
-  private _spawnCounter: number;
-  private _spawnCounterMax: number;
+  private _spawnCounter: Counter;
   protected _pos: Polar.Coord;
   protected _type: string;
   protected _item: Item;
@@ -14,8 +14,7 @@ export class ItemSpawner {
   public constructor(r: number, theta: number,
                      counterMax: number, type: string) {
     this._pos = new Polar.Coord(r, theta);
-    this._spawnCounter = 0;
-    this._spawnCounterMax = counterMax;
+    this._spawnCounter = new Counter(counterMax);
     this._type = type;
     this._item = null;
   }
@@ -27,8 +26,8 @@ export class ItemSpawner {
     } else if (!this._item.alive) {
       // If the item has been taken by a user (and is no longer alive), count
       // up to spawning it again
-      this._spawnCounter++;
-      if (this._spawnCounter >= this._spawnCounterMax) {
+      this._spawnCounter.next();
+      if (this._spawnCounter.done()) {
         this._addItem(game);
       }
     }
@@ -36,7 +35,7 @@ export class ItemSpawner {
 
   protected _addItem(game: GameInstance): void {
     this._item = new Item(this._type, this._pos.r, this._pos.theta);
-    this._spawnCounter = 0;
+    this._spawnCounter.reset();
     game.addGameObject(this._item);
   }
 }
