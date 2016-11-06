@@ -64,31 +64,31 @@ abstract class Terrain extends GameObject {
     height += topPadding + 1.5;
     width += 1.5 / r;
     // Create canvas to use as sprite texture
-    let canvas = document.createElement('canvas');
-    let w = 2 * r * Math.sin(width / 2);
-    let h = r - ((r - height) * Math.cos(width / 2));
+    const canvas = document.createElement('canvas');
+    const w = 2 * r * Math.sin(width / 2);
+    const h = r - ((r - height) * Math.cos(width / 2));
     canvas.width = w + 2;
     canvas.height = h + 2;
     // Draw platform, mapping rectangular textures to curved platforms one
     // pixel at a time
-    let ctx = canvas.getContext('2d');
-    let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d');
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
     // Min/max r and theta for telling if we are inside the polar rectangle
-    let minR = r - height;
-    let maxR = r;
-    let minTheta = -(Math.PI / 2) - (width / 2);
-    let maxTheta = minTheta + width;
+    const minR = r - height;
+    const maxR = r;
+    const minTheta = -(Math.PI / 2) - (width / 2);
+    const maxTheta = minTheta + width;
     // Center of circles we are drawing
-    let cx = 1 + (w / 2);
-    let cy = 1 + r;
+    const cx = 1 + (w / 2);
+    const cy = 1 + r;
     for (let x = 0; x < pixels.width; x++) {
       for (let y = 0; y < pixels.height; y++) {
         // Coordinates of position we are drawing in cartesian circle space
-        let px = x - cx;
-        let py = y - cy;
+        const px = x - cx;
+        const py = y - cy;
         // Coordinates of position we are drawing in polar circle space
-        let pr = Math.sqrt(px*px + py*py);
-        let ptheta = Math.atan2(py, px);
+        const pr = Math.sqrt(px*px + py*py);
+        const ptheta = Math.atan2(py, px);
         // If we are inside the polar rectangle of this terrain piece, draw
         // a pixel from the pattern
         if (Polar.rBetween(pr, minR, maxR) &&
@@ -103,13 +103,13 @@ abstract class Terrain extends GameObject {
             dr += pattern.height;
           }
           // Pattern coordinates
-          let qx = Math.floor((dtheta * maxR) % pattern.width);
-          let qy = Math.floor(dr);
+          const qx = Math.floor((dtheta * maxR) % pattern.width);
+          const qy = Math.floor(dr);
           // Copy pattern color over to image data
-          for (let i = 0; i < 4; i++) {
-            let pixelIdx = (y*pixels.width + x)*4 + i;
-            let patternIdx = (qy*pattern.width + qx)*4 + i;
-            pixels.data[pixelIdx] = pattern.data[patternIdx];
+          let pixelIdx = (y*pixels.width + x)*4;
+          let patternIdx = (qy*pattern.width + qx)*4;
+          for (let i = 0; i < 4; i++, pixelIdx++, patternIdx++) {
+            pixels.data[pixelIdx] += pattern.data[patternIdx];
           }
         }
       }
