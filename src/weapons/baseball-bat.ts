@@ -34,7 +34,7 @@ class BaseballBatBullet extends Bullet {
       this.pos.theta = ownerBounds.theta + (thisBounds.width / 2);
     }
     // Bat swing lasts a short amount of time
-    this._lifespan = 3;
+    this._lifespanCounter.max = 3;
   }
 
   protected _getTexture(): PIXI.Texture {

@@ -4,12 +4,13 @@ import { Enemy } from './enemy';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
+import { Counter } from '../math/counter';
 
 export class Bullet extends GameObject {
   protected _owner: Player;
   protected _sprite: PIXI.Sprite;
   protected _damageAmount: number = 10;
-  protected _lifespan: number = 60;
+  protected _lifespanCounter: Counter = new Counter(60);
   protected _killedByTerrain: boolean = true;
   protected _knockbackVel: number;
 
@@ -87,9 +88,10 @@ export class Bullet extends GameObject {
 
   public update(game: GameInstance): void {
     super.update(game);
-    this._lifespan--;
-    if (this._lifespan <= 0) {
+    if (this._lifespanCounter.done()) {
       this.kill();
+    } else {
+      this._lifespanCounter.next();
     }
   }
 }

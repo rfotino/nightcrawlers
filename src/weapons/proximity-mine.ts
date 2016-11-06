@@ -46,7 +46,7 @@ class ProximityMineInstance extends Bullet {
     this._killedByTerrain = false;
     this.accel.r = Terrain.GRAVITY;
     // Disappears after 5 minutes
-    this._lifespan = 18000;
+    this._lifespanCounter.max = 18000;
     // Doesn't fly left or right
     this.vel.theta = 0;
   }
