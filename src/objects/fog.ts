@@ -4,20 +4,27 @@ import { Color } from '../graphics/color';
 import { GameInstance } from '../game-instance';
 
 export class Fog extends GameObject {
-  protected _sprite: PIXI.Sprite;
+  protected _daySprite: PIXI.Sprite;
+  protected _nightSprite: PIXI.Sprite;
 
   public get z(): number { return 3; };
 
   public constructor(game: GameInstance, scale: number = 5) {
     super(game);
-    this._sprite = new PIXI.Sprite(
-      PIXI.loader.resources[`game/clouds`].texture
-    );
-    this._sprite.anchor.set(0.5);
-    this._sprite.scale.set(scale);
-    this._sprite.alpha = 0.75;
-    this._mirrorList.push(this._sprite);
-    this.addChild(this._sprite);
+    const texture = PIXI.loader.resources['game/clouds'].texture;
+    this._daySprite = new PIXI.Sprite(texture);
+    this._nightSprite = new PIXI.Sprite(texture);
+    this._daySprite.anchor.set(0.5);
+    this._nightSprite.anchor.set(0.5);
+    this._daySprite.scale.set(scale);
+    this._nightSprite.scale.set(scale);
+    this._daySprite.alpha = 0.75;
+    this._nightSprite.alpha = 0;
+    this._nightSprite.tint = new Color(0, 0, 0).toPixi();
+    this._mirrorList.push(this._daySprite);
+    this._mirrorList.push(this._nightSprite);
+    this.addChild(this._daySprite);
+    this.addChild(this._nightSprite);
     this.vel.theta = 0.001;
   }
 
@@ -34,10 +41,11 @@ export class Fog extends GameObject {
     const dayColor = new Color(255, 255, 255);
     const nightColor = new Color(0, 0, 0);
     if (this._game.timeKeeper.isDay) {
-      fogColor = dayColor.blend(nightColor, this._game.timeKeeper.transition);
+      this._daySprite.alpha = 0.75 * (1 - this._game.timeKeeper.transition);
+      this._nightSprite.alpha = 0.75 * this._game.timeKeeper.transition;
     } else {
-      fogColor = nightColor.blend(dayColor, this._game.timeKeeper.transition);
+      this._daySprite.alpha = 0.75 * this._game.timeKeeper.transition;
+      this._nightSprite.alpha = 0.75 * (1 - this._game.timeKeeper.transition);
     }
-    this._sprite.tint = fogColor.toPixi();
   }
 }
