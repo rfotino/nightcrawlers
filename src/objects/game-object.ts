@@ -16,6 +16,7 @@ export abstract class GameObject extends PIXI.Container {
   private _onSolidGround: boolean = false;
   private _groundVel: number = 0;
   private _ground: GameObject = null;
+  protected _game: GameInstance;
   protected _maxHealth: number = Infinity;
   protected _health: number = Infinity;
   protected _mirrorList: PIXI.DisplayObject[] = [];
@@ -63,10 +64,11 @@ export abstract class GameObject extends PIXI.Container {
     return this._maxHealth;
   }
 
-  public constructor() {
+  public constructor(game: GameInstance) {
     super();
     idCounter++;
     this._id = idCounter;
+    this._game = game;
     this._pos = new Polar.Coord();
     this._prevPos = new Polar.Coord();
     this._vel = new Polar.Coord();
@@ -85,7 +87,7 @@ export abstract class GameObject extends PIXI.Container {
     });
   }
 
-  public update(game: GameInstance): void {
+  public update(): void {
     const lagFactor = LagFactor.get();
     this.vel.r += this.accel.r * lagFactor;
     this.vel.theta += this.accel.theta * lagFactor;

@@ -3,7 +3,6 @@ import { KeyState } from '../input/keystate';
 import { GameInstance } from '../game-instance';
 import * as Terrain from './terrain';
 import { Level } from '../level';
-import { Bullet } from './bullet';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { LagFactor } from '../math/lag-factor';
@@ -59,8 +58,8 @@ export class Player extends GameObject {
     this._armor = Math.min(this._maxArmor, armor);
   }
 
-  public constructor(level: Level) {
-    super();
+  public constructor(game: GameInstance) {
+    super(game);
     this._maxHealth = 100;
     this._health = this._maxHealth;
     // Set up weapons
@@ -93,7 +92,7 @@ export class Player extends GameObject {
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
     // Spawn the player at a random spawn point
-    let spawnPoint = level.getPlayerSpawn();
+    const spawnPoint = game.level.getPlayerSpawn();
     this.pos.r = spawnPoint.r;
     this.pos.theta = spawnPoint.theta;
   }
@@ -117,16 +116,16 @@ export class Player extends GameObject {
     }
   }
 
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     // Update sprite animation
     this._sprite.nextFrame();
     // Handle walking and running due to user input
     const walkSpeed = 5 / this.pos.r;
     const runSpeed = 7 / this.pos.r;
-    const leftArrow = game.keyState.isDown(KeyState.LEFTARROW);
-    const rightArrow = game.keyState.isDown(KeyState.RIGHTARROW);
-    const shift = game.keyState.isDown(KeyState.SHIFT);
+    const leftArrow = this._game.keyState.isDown(KeyState.LEFTARROW);
+    const rightArrow = this._game.keyState.isDown(KeyState.RIGHTARROW);
+    const shift = this._game.keyState.isDown(KeyState.SHIFT);
     const running = shift && (leftArrow !== rightArrow);
     const energyLossRate = 0.5;
     const energyGainRate = 0.2;
@@ -160,15 +159,16 @@ export class Player extends GameObject {
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
     // Handle jumping due to user input
-    let jumpSpeed = 17;
-    if (game.keyState.isPressed(KeyState.UPARROW) && this._isOnSolidGround()) {
+    const jumpSpeed = 17;
+    const upArrow = this._game.keyState.isPressed(KeyState.UPARROW);
+    if (upArrow && this._isOnSolidGround()) {
       this.vel.r = jumpSpeed;
     }
     // Change weapons if we pressed the button to do so and the corresponding
     // weapon has ammo left
     for (let i = 0; i < this.weapons.length; i++) {
       let key = KeyState.ONE + i;
-      if (game.keyState.isPressed(key)) {
+      if (this._game.keyState.isPressed(key)) {
         let weapon = this.weapons[i];
         if (weapon.ammo > 0) {
           this.equippedWeapon = weapon;
@@ -181,7 +181,7 @@ export class Player extends GameObject {
       this.equippedWeapon = this._baseballBat;
     }
     // Try to fire the equipped weapon if the user pressed the space bar
-    this.equippedWeapon.maybeFire(game);
+    this.equippedWeapon.maybeFire(this._game);
   }
 
   public getPolarBounds(): Polar.Rect {

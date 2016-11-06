@@ -2,7 +2,7 @@ import { GameInstance } from '../game-instance';
 import { GameObject } from './game-object';
 import * as Terrain from './terrain';
 import { Player } from './player';
-import { Bullet } from './bullet';
+import { FadingText } from './fading-text';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
@@ -65,7 +65,7 @@ export class Enemy extends GameObject {
   }
 
   public constructor(game: GameInstance) {
-    super();
+    super(game);
     this._maxHealth = 20;
     this._health = this._maxHealth;
     this._sprite = this._createSprite();
@@ -83,19 +83,50 @@ export class Enemy extends GameObject {
   public team(): string { return 'enemy'; }
 
   /**
+   * Add points to player score and show the amount of points where
+   * the enemy used to be
+   */
+  public kill(): void {
+    super.kill();
+    this._game.player.score += this.score;
+    this._game.addGameObject(new FadingText(
+      this._game,
+      `+${this.score}`,
+      this.pos,
+      36, // font size
+      'white' // font color
+    ));
+  }
+
+  /**
+   * Show little red number that shows how much the enemy was damaged.
+   */
+  public damage(amount: number): void {
+    super.damage(amount);
+    this._game.addGameObject(new FadingText(
+      this._game,
+      `-${amount}`,
+      this.pos,
+      28, // font size
+      'red', // font color
+      15 // timer
+    ));
+  }
+
+  /**
    * Returns true if a polar line from the center of the enemy to the center
    * of the player intersects no more than 1 horizontal line and no more than
    * 1 vertical line taken from the block bounds.
    */
-  protected _canSeePlayer(game: GameInstance): boolean {
+  protected _canSeePlayer(): boolean {
     let line = new Polar.Line(
       this.pos.r,
       this.pos.theta,
-      game.player.pos.r,
-      game.player.pos.theta
+      this._game.player.pos.r,
+      this._game.player.pos.theta
     );
     let numHor = 0, numVer = 0;
-    game.level.blocks.forEach(block => {
+    this._game.level.blocks.forEach(block => {
       let bounds = block.getPolarBounds();
       let result = line.intersectsRect(bounds);
       if (result.top) { numHor++; }
@@ -111,9 +142,9 @@ export class Enemy extends GameObject {
    * see the player. Wander around until the player comes in sight, then
    * transition to the "chasing" state.
    */
-  protected _updateSearching(game: GameInstance): void {
+  protected _updateSearching(): void {
     // Switch to chasing if we can see the player
-    if (this._canSeePlayer(game)) {
+    if (this._canSeePlayer()) {
       this._state = EnemyState.Chasing;
       this._searchDir = Direction.None;
       return;
@@ -145,19 +176,20 @@ export class Enemy extends GameObject {
    * Update the enemy if it is in the "chasing" state. Try to get to the
    * player, and if they go out of sight then go back to the "searching" state.
    */
-  protected _updateChasing(game: GameInstance): void {
+  protected _updateChasing(): void {
     // If we can't see the player, switch to searching
-    if (!this._canSeePlayer(game)) {
+    if (!this._canSeePlayer()) {
       this._state = EnemyState.Searching;
       return;
     }
     // Decide if we should go left or right
-    let closestPos = Polar.closestTheta(this.pos.theta, game.player.pos.theta);
-    let diffTheta = game.player.pos.theta - closestPos;
+    const player = this._game.player;
+    let closestPos = Polar.closestTheta(this.pos.theta, player.pos.theta);
+    let diffTheta = player.pos.theta - closestPos;
     let minDiffTheta = (
       0.3 *
-      (game.player.width + this.width) /
-      game.player.pos.r
+      (player.width + this.width) /
+      player.pos.r
     );
     this._shouldGoLeft = diffTheta < -minDiffTheta;
     this._shouldGoRight = diffTheta > minDiffTheta;
@@ -179,7 +211,7 @@ export class Enemy extends GameObject {
    * knockback velocity for a certain number of frames, then transition to
    * the "stunned" state.
    */
-  protected _updateKnockback(game: GameInstance): void {
+  protected _updateKnockback(): void {
     // Flip the enemy over while knocked back and stunned
     this._sprite.scale.y = -1;
     // Wait for counter to go to stunned state
@@ -197,12 +229,12 @@ export class Enemy extends GameObject {
    * of frames and do not move, then transition to the "chasing" or "searching"
    * state depending on if we can see the player.
    */
-  protected _updateStunned(game: GameInstance): void {
+  protected _updateStunned(): void {
     if (this._stunnedCounter.done()) {
       // Flip rightside up when done being stunned
       this._sprite.scale.y = 1;
       // Either chase or search depending on if the player is in sight
-      if (this._canSeePlayer(game)) {
+      if (this._canSeePlayer()) {
         this._state = EnemyState.Chasing;
       } else {
         this._state = EnemyState.Searching;
@@ -215,8 +247,8 @@ export class Enemy extends GameObject {
   /**
    * Update the enemy behavior based on its current state.
    */
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     // Make transparent if damaged
     this.alpha = this._health / this._maxHealth;
     // All enemies are affected by gravity by default
@@ -224,16 +256,16 @@ export class Enemy extends GameObject {
     // Do something different depending on the enemy state
     switch (this._state) {
       case EnemyState.Searching:
-        this._updateSearching(game);
+        this._updateSearching();
         break;
       case EnemyState.Chasing:
-        this._updateChasing(game);
+        this._updateChasing();
         break;
       case EnemyState.Knockback:
-        this._updateKnockback(game);
+        this._updateKnockback();
         break;
       case EnemyState.Stunned:
-        this._updateStunned(game);
+        this._updateStunned();
         break;
     }
     // Update current animation
@@ -281,8 +313,8 @@ export class FlyingEnemy extends Enemy {
     this.accel.r = 0;
   }
 
-  protected _updateSearching(game: GameInstance): void {
-    super._updateSearching(game);
+  protected _updateSearching(): void {
+    super._updateSearching();
     if (this._state !== EnemyState.Searching) {
       return;
     }
@@ -293,15 +325,15 @@ export class FlyingEnemy extends Enemy {
     this.vel.r = 0;
   }
 
-  protected _updateChasing(game: GameInstance): void {
-    super._updateChasing(game);
+  protected _updateChasing(): void {
+    super._updateChasing();
     if (this._state !== EnemyState.Chasing) {
       return;
     }
     // Flying enemies aren't affected by gravity while chasing
     this.accel.r = 0;
     // Decide if we should go up or down
-    let diffR = game.player.pos.r - this.pos.r;
+    let diffR = this._game.player.pos.r - this.pos.r;
     let minDiffR = 5;
     this._shouldGoUp = diffR > minDiffR;
     this._shouldGoDown = diffR < -minDiffR;
@@ -329,8 +361,8 @@ export class JumpingEnemy extends Enemy {
     return 60 + (90 * Math.random());
   }
 
-  protected _updateSearching(game: GameInstance): void {
-    super._updateSearching(game);
+  protected _updateSearching(): void {
+    super._updateSearching();
     if (this._state !== EnemyState.Searching) {
       this._jumpCounter = null;
       return;
@@ -357,13 +389,13 @@ export class JumpingEnemy extends Enemy {
     }
   }
 
-  protected _updateChasing(game: GameInstance): void {
-    super._updateChasing(game);
+  protected _updateChasing(): void {
+    super._updateChasing();
     if (this._state !== EnemyState.Chasing) {
       return;
     }
     // Decide if we should jump
-    this._shouldJump = game.player.pos.r > this.pos.r;
+    this._shouldJump = this._game.player.pos.r > this.pos.r;
     // Handle jumping if player is above this enemy
     if (this._shouldJump && this._isOnSolidGround()) {
       this.vel.r = this._jumpSpeed;

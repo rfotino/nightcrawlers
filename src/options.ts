@@ -1,4 +1,5 @@
 import { Level } from './level';
+import { GameInstance } from './game-instance';
 
 /// <reference path="../typings/require.d.ts" />
 
@@ -37,10 +38,6 @@ export class Options {
     return this._volume;
   }
 
-  public get level(): Level {
-    return new Level(this._levelData);
-  }
-
   // Option setters usually save the options to local storage
   public set debug(debug: boolean) {
     this._debug = debug;
@@ -68,6 +65,14 @@ export class Options {
         this._volume = savedOptions.volume;
       }
     }
+  }
+
+  /**
+   * Constructs and returns a level from the currently loaded level data.
+   * This is an expensive operation.
+   */
+  public getLevel(game: GameInstance): Level {
+    return new Level(game, this._levelData);
   }
 
   /**

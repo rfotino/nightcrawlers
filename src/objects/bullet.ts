@@ -1,13 +1,13 @@
 import { GameObject } from './game-object';
 import { Player } from './player';
 import { Enemy } from './enemy';
+import { FadingText } from './fading-text';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
 
 export class Bullet extends GameObject {
-  protected _owner: Player;
   protected _sprite: PIXI.Sprite;
   protected _damageAmount: number = 10;
   protected _lifespanCounter: Counter = new Counter(60);
@@ -34,12 +34,11 @@ export class Bullet extends GameObject {
     return 20;
   }
 
-  public constructor(owner: Player) {
-    super();
-    this._owner = owner;
-    this.pos.set(owner.pos.r, owner.pos.theta);
+  public constructor(game: GameInstance) {
+    super(game);
+    this.pos.set(game.player.pos.r, game.player.pos.theta);
     let speed = 20 / this.pos.r;
-    if (owner.facingLeft) {
+    if (game.player.facingLeft) {
       this.vel.theta = -speed;
     } else {
       this.vel.theta = speed;
@@ -62,12 +61,9 @@ export class Bullet extends GameObject {
   public collide(other: GameObject, result: Collider.Result): void {
     super.collide(other, result);
     if (other.team() === 'enemy') {
-      let enemy = <Enemy>other;
+      const enemy = <Enemy>other;
       enemy.damage(this._damageAmount);
       enemy.knockback(this._knockbackVel, this._knockbackTime, this._stunTime);
-      if (!other.alive) {
-        this._owner.score += (<Enemy>other).score;
-      }
       this.kill();
     } else if (other.type() === 'block' || other.type() === 'platform') {
       if (this._killedByTerrain) {
@@ -86,8 +82,8 @@ export class Bullet extends GameObject {
     );
   }
 
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     if (this._lifespanCounter.done()) {
       this.kill();
     } else {

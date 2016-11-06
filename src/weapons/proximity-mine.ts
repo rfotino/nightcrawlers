@@ -2,6 +2,7 @@ import { Weapon } from './weapon';
 import { Bullet } from '../objects/bullet';
 import { Player } from '../objects/player';
 import { Enemy } from '../objects/enemy';
+import { FadingText } from '../objects/fading-text';
 import * as Terrain from '../objects/terrain';
 import { GameObject } from '../objects/game-object';
 import { GameInstance } from '../game-instance';
@@ -38,8 +39,8 @@ class ProximityMineInstance extends Bullet {
     return 15;
   }
 
-  public constructor(owner: Player) {
-    super(owner);
+  public constructor(game: GameInstance) {
+    super(game);
     // Change default bullet texture
     this._sprite.texture = PIXI.loader.resources['game/mine'].texture;
     // Drops to ground and stays there
@@ -51,21 +52,22 @@ class ProximityMineInstance extends Bullet {
     this.vel.theta = 0;
   }
 
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     // Update setup counter, if it is not finished then do not explode)
     if (!this._setupCounter.done()) {
       this._setupCounter.next();
       return;
     }
     // Check if we are close enough to an enemy to explode
-    let enemies = game.gameObjects
+    const enemies = this._game.gameObjects
       .filter(obj => obj.type() === 'enemy')
       .map(obj => <Enemy>obj);
-    let blockBounds = game.level.blocks.map(block => block.getPolarBounds());
+    const blockBounds = this._game.level.blocks
+      .map(block => block.getPolarBounds());
     for (let i = 0; i < enemies.length; i++) {
-      let enemy = enemies[i];
-      let proximity = this.pos.dist(enemy.pos);
+      const enemy = enemies[i];
+      const proximity = this.pos.dist(enemy.pos);
       if (proximity < this._minExplodeDist &&
           this._canSee(enemy, blockBounds)) {
         this._explode(enemies, blockBounds);
@@ -73,6 +75,11 @@ class ProximityMineInstance extends Bullet {
       }
     }
   }
+
+  /**
+   * Mines do nothing in case of collision, they only explode due to proximity.
+   */
+  public collide(other: GameObject, result: Collider.Result): void {}
 
   protected _canSee(enemy: Enemy, blockBounds: Polar.Rect[]): boolean {
     let line = new Polar.Line(
@@ -110,10 +117,6 @@ class ProximityMineInstance extends Bullet {
       }
       enemy.vel.r = enemyVel.r;
       enemy.knockback(enemyVel.theta, this._knockbackTime, this._stunTime);
-      // If the enemy is dead, add points to owner's score
-      if (!enemy.alive) {
-        this._owner.score += enemy.score;
-      }
     });
     // Mines can only be used once
     this.kill();
@@ -125,7 +128,7 @@ export class ProximityMine extends Weapon {
 
   public maybeFire(game: GameInstance): void {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
-      game.addGameObject(new ProximityMineInstance(game.player));
+      game.addGameObject(new ProximityMineInstance(game));
       this.ammo--;
     }
   }

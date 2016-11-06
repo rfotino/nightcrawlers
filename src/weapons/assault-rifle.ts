@@ -16,7 +16,7 @@ export class AssaultRifle extends Weapon {
           this._cooldownCounter.done()))) {
       this.ammo--;
       this._cooldownCounter.reset();
-      game.addGameObject(new Bullet(game.player));
+      game.addGameObject(new Bullet(game));
     } else {
       this._cooldownCounter.next();
     }

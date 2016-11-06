@@ -2,6 +2,7 @@ import * as Terrain from './objects/terrain';
 import { Polar } from './math/polar';
 import { GameObject } from './objects/game-object';
 import { ItemSpawner } from './objects/item-spawner';
+import { GameInstance } from './game-instance';
 
 export class Level {
   protected _blocks: Terrain.Block[];
@@ -18,7 +19,7 @@ export class Level {
   /**
    * Construct a level from a JSON object saved to a file by the level editor.
    */
-  public constructor(objects: Object) {
+  public constructor(game: GameInstance, objects: Object) {
     // Add blocks from file data
     this._blocks = [];
     objects['blocks'].forEach((rectProps: Object) => {
@@ -30,6 +31,7 @@ export class Level {
       let maxWidth = Math.PI / 2;
       while (rect.width > maxWidth) {
         this._blocks.push(new Terrain.Block(
+          game,
           rect.r,
           rect.theta,
           rect.height,
@@ -41,6 +43,7 @@ export class Level {
       }
       // Add leftover piece
       this._blocks.push(new Terrain.Block(
+        game,
         rect.r,
         rect.theta,
         rect.height,
@@ -59,6 +62,7 @@ export class Level {
       let maxWidth = Math.PI / 2;
       while (rect.width > maxWidth) {
         this._backgroundBlocks.push(new Terrain.BackgroundBlock(
+          game,
           rect.r,
           rect.theta,
           rect.height,
@@ -70,6 +74,7 @@ export class Level {
       }
       // Add leftover piece
       this._backgroundBlocks.push(new Terrain.BackgroundBlock(
+        game,
         rect.r,
         rect.theta,
         rect.height,
@@ -90,6 +95,7 @@ export class Level {
         let maxWidth = Math.PI / 2;
         while (rect.width > maxWidth) {
           this._platforms.push(new Terrain.Platform(
+            game,
             rect.r,
             rect.theta,
             rect.height,
@@ -103,6 +109,7 @@ export class Level {
         }
         // Add leftover piece
         this._platforms.push(new Terrain.Platform(
+          game,
           rect.r,
           rect.theta,
           rect.height,
@@ -119,6 +126,7 @@ export class Level {
       objects['decorations'].forEach((rectProps: Object) => {
         // Add leftover piece
         this._decorations.push(new Terrain.Decoration(
+          game,
           rectProps['r'],
           rectProps['theta'],
           rectProps['type']

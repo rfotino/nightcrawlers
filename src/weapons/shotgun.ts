@@ -9,9 +9,9 @@ export class Shotgun extends Weapon {
   public maybeFire(game: GameInstance): void {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
       this.ammo--;
-      let bullet1 = new Bullet(game.player);
-      let bullet2 = new Bullet(game.player);
-      let bullet3 = new Bullet(game.player);
+      let bullet1 = new Bullet(game);
+      let bullet2 = new Bullet(game);
+      let bullet3 = new Bullet(game);
       let rVel = 1;
       bullet1.vel.r = rVel;
       bullet2.vel.r = -rVel;

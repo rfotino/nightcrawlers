@@ -49,10 +49,11 @@ abstract class Terrain extends GameObject {
     return this._size;
   }
 
-  public constructor(r: number, theta: number, height: number, width: number,
+  public constructor(game: GameInstance,
+                     r: number, theta: number, height: number, width: number,
                      pattern: ImageData,
                      topPadding: number = 0) {
-    super();
+    super(game);
     // Set up dimensions
     this.pos.r = r;
     this.pos.theta = theta;
@@ -174,12 +175,13 @@ export class Platform extends Terrain {
   private _thetaMax: number;
   private _thetaSpeed: number;
 
-  public constructor(r: number, theta: number, height: number, width: number,
+  public constructor(game: GameInstance,
+                     r: number, theta: number, height: number, width: number,
                      moves: boolean = false,
                      rate: number = 0,
                      thetaPrime: number = theta) {
     super(
-      r, theta, height, width,
+      game, r, theta, height, width,
       getImageData('game/platform'), GRASS_PADDING
     );
     // Assign animation characteristics for moving between theta and thetaPrime
@@ -196,8 +198,8 @@ export class Platform extends Terrain {
 
   public type(): string { return 'platform'; }
 
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     if (this.pos.theta <= this._thetaMin) {
       this.vel.theta = this._thetaSpeed;
     } else if (this.pos.theta >= this._thetaMax) {
@@ -210,10 +212,11 @@ export class Platform extends Terrain {
  * Immobile block that stops things from penetrating it from any side.
  */
 export class Block extends Terrain {
-  public constructor(r: number, theta: number, height: number, width: number,
+  public constructor(game: GameInstance,
+                     r: number, theta: number, height: number, width: number,
                      blockType: string) {
     super(
-      r, theta, height, width,
+      game, r, theta, height, width,
       Block._getImageData(blockType), Block._getTopPadding(blockType)
     );
     // Blocks can't be entered from any side, unlike platforms
@@ -255,9 +258,10 @@ export class Block extends Terrain {
 export class BackgroundBlock extends Terrain {
   public get z(): number { return 5; }
 
-  public constructor(r: number, theta: number, height: number, width: number,
+  public constructor(game: GameInstance,
+                     r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(r, theta, height, width, getImageData(`game/${blockType}`), 0);
+    super(game, r, theta, height, width, getImageData(`game/${blockType}`), 0);
     // Blocks can't be collided with from any side
     this._solidLeft = false;
     this._solidRight = false;
@@ -291,8 +295,9 @@ export class Decoration extends GameObject {
 
   public get z(): number { return 0; }
 
-  public constructor(r: number, theta: number, blockType: string) {
-    super();
+  public constructor(game: GameInstance,
+                     r: number, theta: number, blockType: string) {
+    super(game);
     // Initialize sprites with different textures
     this._daySprite = new PIXI.Sprite(
       PIXI.loader.resources[`game/day/${blockType}`].texture
@@ -341,19 +346,19 @@ export class Decoration extends GameObject {
    * Linearly interpolate between day and night sprites based on the
    * decoration's transition type.
    */
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     let day: number, night: number;
-    if (game.timeKeeper.isDay) {
+    if (this._game.timeKeeper.isDay) {
       // Put night sprite in front because it is out of sight during day so it
       // doesn't matter but it is in front during dusk transition
       if (this.children[0] === this._nightSprite) {
         this.swapChildren(this._daySprite, this._nightSprite);
       }
       // Get % day, % night
-      if (game.timeKeeper.transitioning) {
-        day = 1 - game.timeKeeper.transition;
-        night = game.timeKeeper.transition;
+      if (this._game.timeKeeper.transitioning) {
+        day = 1 - this._game.timeKeeper.transition;
+        night = this._game.timeKeeper.transition;
       } else {
         day = 1;
         night = 0;
@@ -365,9 +370,9 @@ export class Decoration extends GameObject {
         this.swapChildren(this._daySprite, this._nightSprite);
       }
       // Get % day, % night
-      if (game.timeKeeper.transitioning) {
-        day = game.timeKeeper.transition;
-        night = 1 - game.timeKeeper.transition;
+      if (this._game.timeKeeper.transitioning) {
+        day = this._game.timeKeeper.transition;
+        night = 1 - this._game.timeKeeper.transition;
       } else {
         day = 0;
         night = 1;

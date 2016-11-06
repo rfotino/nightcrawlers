@@ -1,6 +1,7 @@
 import { GameInstance } from '../game-instance';
 import { GameObject } from './game-object';
 import { Player } from './player';
+import { FadingText } from './fading-text';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import * as Terrain from './terrain';
@@ -14,8 +15,9 @@ export class Item extends GameObject {
 
   public get z(): number { return 25; }
   
-  public constructor(type: string, r: number = 0, theta: number = 0) {
-    super();
+  public constructor(game: GameInstance, type: string,
+                     r: number = 0, theta: number = 0) {
+    super(game);
     this._type = type;
     this.pos.r = r;
     this.pos.theta = theta;
@@ -63,15 +65,25 @@ export class Item extends GameObject {
     }
   }
 
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     this.vel.r += Terrain.GRAVITY;
   }
 
   protected _addToPlayer(player: Player): void {
     switch (this._type) {
       case 'health':
-        player.health += 20;
+        const healthAmount = 20;
+        player.health += healthAmount;
+        // Add green fading text so player knows how much health they got
+        this._game.addGameObject(new FadingText(
+          this._game,
+          `+${healthAmount}`,
+          player.pos,
+          36, // font size
+          'rgb(0, 255, 0)', // font color
+          60 // timer
+        ));
         break;
       case 'armor':
         player.armor = player.maxArmor;

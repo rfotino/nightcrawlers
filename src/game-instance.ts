@@ -31,7 +31,6 @@ export class GameInstance extends UIContainer {
   public itemSpawners: ItemSpawner[];
   public fog: Fog;
   public moon: Moon;
-  public moonlight: Moonlight;
   public sun: Sun;
   public level: Level;
   public gameObjects: GameObject[];
@@ -64,26 +63,26 @@ export class GameInstance extends UIContainer {
   public constructor(game: Game, options: Options) {
     super(game);
     this._options = options;
-    this.level = this._options.level;
+    this.level = this._options.getLevel(this);
     this._outerViewStage = new PIXI.Container();
     this._innerViewStage = new PIXI.Container();
     this.addChild(this._outerViewStage);
     this._outerViewStage.addChild(this._innerViewStage);
     // Construct game objects
-    this.player = new Player(this.level);
+    this.player = new Player(this);
     this.timeKeeper = new TimeKeeper();
     this.enemySpawner = new EnemySpawner();
     this.itemSpawners = this.level.getItemSpawners();
-    this.fog = new Fog(5);
-    this.moonlight = new Moonlight();
-    this.moon = new Moon(this.moonlight);
-    this.sun = new Sun();
+    this.fog = new Fog(this, 5);
+    const moonlight = new Moonlight(this);
+    this.moon = new Moon(this, moonlight);
+    this.sun = new Sun(this);
     this.gameObjects = [].concat(
       [
         this.player,
         this.fog,
         this.moon,
-        this.moonlight,
+        moonlight,
         this.sun,
       ],
       this.level.getObjects()
@@ -318,7 +317,7 @@ export class GameInstance extends UIContainer {
       this.bgcolor = nightColor.blend(dayColor, this.timeKeeper.transition);
     }
     // Call each game object's update function
-    this.gameObjects.forEach(obj => obj.update(this));
+    this.gameObjects.forEach(obj => obj.update());
     // Collide objects
     this._collide();
     // Remove dead game objects

@@ -9,7 +9,7 @@ export class Pistol extends Weapon {
   public maybeFire(game: GameInstance): void {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
       this.ammo--;
-      game.addGameObject(new Bullet(game.player));
+      game.addGameObject(new Bullet(game));
     }
   }
 }

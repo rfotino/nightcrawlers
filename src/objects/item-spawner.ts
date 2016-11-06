@@ -34,7 +34,7 @@ export class ItemSpawner {
   }
 
   protected _addItem(game: GameInstance): void {
-    this._item = new Item(this._type, this._pos.r, this._pos.theta);
+    this._item = new Item(game, this._type, this._pos.r, this._pos.theta);
     this._spawnCounter.reset();
     game.addGameObject(this._item);
   }

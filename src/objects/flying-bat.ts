@@ -29,23 +29,23 @@ export class FlyingBat extends FlyingEnemy {
     );
   }
 
-  protected _updateChasing(game: GameInstance): void {
-    super._updateChasing(game);
+  protected _updateChasing(): void {
+    super._updateChasing();
     this._sprite.playAnim('run');
   }
 
-  protected _updateSearching(game: GameInstance): void {
-    super._updateSearching(game);
+  protected _updateSearching(): void {
+    super._updateSearching();
     this._sprite.playAnim('walk');
   }
 
-  protected _updateKnockback(game: GameInstance): void {
-    super._updateKnockback(game);
+  protected _updateKnockback(): void {
+    super._updateKnockback();
     this._sprite.stopAnim();
   }
 
-  protected _updateStunned(game: GameInstance): void {
-    super._updateStunned(game);
+  protected _updateStunned(): void {
+    super._updateStunned();
     this._sprite.stopAnim();
   }
 }

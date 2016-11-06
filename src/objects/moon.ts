@@ -19,8 +19,8 @@ export class Moon extends GameObject {
 
   public get z(): number { return -1; }
 
-  public constructor(moonlight: Moonlight) {
-    super();
+  public constructor(game: GameInstance, moonlight: Moonlight) {
+    super(game);
     this._moonlight = moonlight;
     this._sprite = new PIXI.Sprite(
       PIXI.loader.resources['game/moon'].texture
@@ -36,39 +36,40 @@ export class Moon extends GameObject {
   /**
    * Make the moon rise and set.
    */
-  public update(game: GameInstance): void {
-    super.update(game);
+  public update(): void {
+    super.update();
     // Update state machine for handling moonrise and moonset
     const FAST_TANGENTIAL_SPEED = 0.01;
     const SLOW_TANGENTIAL_SPEED = 0.0005;
     const THETA_OFFSET = -0.5;
-    const MIN_R = game.level.getCoreRadius() - this._moonlight.radius;
-    const MAX_R = game.level.getOuterRadius();
+    const MIN_R = this._game.level.getCoreRadius() - this._moonlight.radius;
+    const MAX_R = this._game.level.getOuterRadius();
+    const timeKeeper = this._game.timeKeeper;
     switch (this._state) {
       case MoonState.WAITING_DAY:
-        if (game.timeKeeper.transitioning) {
-          this.pos.theta = game.player.pos.theta + THETA_OFFSET;
+        if (timeKeeper.transitioning) {
+          this.pos.theta = this._game.player.pos.theta + THETA_OFFSET;
           this.vel.theta = FAST_TANGENTIAL_SPEED;
           this._state = MoonState.RISING;
         }
         break;
       case MoonState.RISING:
-        if (game.timeKeeper.transitioning) {
-          this.pos.r = MIN_R + ((MAX_R - MIN_R) * game.timeKeeper.transition);
+        if (timeKeeper.transitioning) {
+          this.pos.r = MIN_R + ((MAX_R - MIN_R) * timeKeeper.transition);
         } else {
           this.vel.set(0, SLOW_TANGENTIAL_SPEED);
           this._state = MoonState.WAITING_NIGHT;
         }
         break;
       case MoonState.WAITING_NIGHT:
-        if (game.timeKeeper.transitioning) {
+        if (timeKeeper.transitioning) {
           this.vel.theta = FAST_TANGENTIAL_SPEED;
           this._state = MoonState.SETTING;
         }
         break;
       case MoonState.SETTING:
-        if (game.timeKeeper.transitioning) {
-          this.pos.r = MAX_R + ((MIN_R - MAX_R) * game.timeKeeper.transition);
+        if (timeKeeper.transitioning) {
+          this.pos.r = MAX_R + ((MIN_R - MAX_R) * timeKeeper.transition);
         } else {
           this.pos.r = 0;
           this.vel.set(0, 0);
@@ -80,10 +81,10 @@ export class Moon extends GameObject {
     // so that the moon seems to follow the player
     let parallaxR = 0.25;
     let parallaxTheta = 0.5;
-    let r = this.pos.r + (parallaxR * (game.playerView.r - this.pos.r));
+    let r = this.pos.r + (parallaxR * (this._game.playerView.r - this.pos.r));
     let theta = (
       this.pos.theta +
-      (parallaxTheta * (game.playerView.theta - this.pos.theta))
+      (parallaxTheta * (this._game.playerView.theta - this.pos.theta))
     );
     this._sprite.position.x = r * Math.cos(theta);
     this._sprite.position.y = r * Math.sin(theta);
@@ -111,8 +112,8 @@ export class Moonlight extends GameObject {
     return Math.max(this._sprite.width, this._sprite.height) / 2;
   }
 
-  public constructor() {
-    super();
+  public constructor(game: GameInstance) {
+    super(game);
     this._sprite = new PIXI.Sprite(
       PIXI.loader.resources['game/moonlight'].texture
     );

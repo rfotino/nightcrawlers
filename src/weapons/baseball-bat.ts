@@ -13,8 +13,8 @@ class BaseballBatBullet extends Bullet {
   // Bat knocks back enemies more than other weapons
   public get knockbackTime(): number { return 10; }
 
-  public constructor(owner: Player) {
-    super(owner);
+  public constructor(game: GameInstance) {
+    super(game);
     // Change from default bullet texture to transparent red hitbox
     this._sprite.texture = this._getTexture();
     // Don't want the bat hitbox to get cleaned up when it immediately impacts
@@ -24,9 +24,9 @@ class BaseballBatBullet extends Bullet {
     this.vel.set(0, 0);
     // Position the hitbox inside the player bounds but sticking out to the
     // left or right depending on where the player is facing
-    let ownerBounds = owner.getPolarBounds();
+    let ownerBounds = game.player.getPolarBounds();
     let thisBounds = this.getPolarBounds();
-    if (owner.facingLeft) {
+    if (game.player.facingLeft) {
       this.pos.theta = (
         ownerBounds.theta + ownerBounds.width - (thisBounds.width / 2)
       );
@@ -60,7 +60,7 @@ export class BaseballBat extends Weapon {
 
   public maybeFire(game: GameInstance): void {
     if (game.keyState.isPressed(KeyState.SPACEBAR)) {
-      game.addGameObject(new BaseballBatBullet(game.player));
+      game.addGameObject(new BaseballBatBullet(game));
     }
   }
 }
