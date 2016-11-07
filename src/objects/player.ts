@@ -14,8 +14,44 @@ import { AssaultRifle } from '../weapons/assault-rifle';
 import { ProximityMine } from '../weapons/proximity-mine';
 import { SpriteSheet } from '../graphics/spritesheet';
 
+/**
+ * Private spritesheet class for the player's bottom that also exposes the
+ * offset that the player's top should be placed at.
+ */
+class PlayerBottom extends SpriteSheet {
+  public getTopOffset(): number {
+    if (!this._current) {
+      return 0;
+    }
+    switch (this._current.frames[this._currentFrameIndex]) {
+      default:
+      case 0:
+        return 0;
+      case 1:
+        return -1;
+      case 2:
+        return -1;
+      case 3:
+        return 4;
+      case 4:
+        return 1;
+      case 5:
+        return -1;
+      case 6:
+        return -1;
+      case 7:
+        return 4;
+      case 8:
+        return 1;
+      case 9:
+        return -1;
+    }
+  }
+}
+
 export class Player extends GameObject {
-  private _sprite: SpriteSheet;
+  private _spriteBottom: PlayerBottom;
+  private _spriteTop: SpriteSheet;
   protected _baseballBat: BaseballBat;
   protected _armor: number = 0;
   protected _maxArmor: number = 50;
@@ -72,29 +108,53 @@ export class Player extends GameObject {
     ];
     this._baseballBat = this.equippedWeapon = this.weapons[0];
     // Add spritesheet
-    this._sprite = new SpriteSheet(
-      PIXI.loader.resources['game/player'].texture,
-      9, // images wide
+    this._spriteBottom = new PlayerBottom(
+      PIXI.loader.resources['game/player-bottom'].texture,
+      10, // images wide
       1, // images high
       0, // default frame
       {
+        idle: {
+          frames: [0],
+          ticksPerFrame: 0,
+        },
+        jump: {
+          frames: [1],
+          ticksPerFrame: 0,
+        },
         walk: {
-          frames: [1, 2, 3, 4, 5, 6, 7, 8],
+          frames: [2, 3, 4, 5, 6, 7, 8, 9],
           ticksPerFrame: 7,
         },
         run: {
-          frames: [1, 2, 3, 4, 5, 6, 7, 8],
-          ticksPerFrame: 4,
+          frames: [2, 3, 4, 5, 6, 7, 8, 9],
+          ticksPerFrame: 3,
         },
       }
     );
-    this._sprite.anchor.set(0.3, 0.5);
-    this._mirrorList.push(this._sprite);
-    this.addChild(this._sprite);
+    this._spriteTop = new SpriteSheet(
+      PIXI.loader.resources['game/player-top'].texture,
+      8, // images wide
+      4, // images high
+      0, // default frame
+      {
+        'bat-idle': {
+          frames: [0, 1, 2, 3],
+          ticksPerFrame: 10,
+        },
+      }
+    );
+    this._spriteBottom.anchor.set(0.3, 0.5);
+    this._spriteTop.anchor.set(0.3, 0.5);
+    this._mirrorList.push(this);
+    this.addChild(this._spriteBottom);
+    this.addChild(this._spriteTop);
     // Spawn the player at a random spawn point
     const spawnPoint = game.level.getPlayerSpawn();
     this.pos.r = spawnPoint.r;
     this.pos.theta = spawnPoint.theta;
+    // Default to bat idling animation
+    this._spriteTop.playAnim('bat-idle');
   }
 
   public type(): string { return 'player'; }
@@ -119,7 +179,8 @@ export class Player extends GameObject {
   public update(): void {
     super.update();
     // Update sprite animation
-    this._sprite.nextFrame();
+    this._spriteBottom.nextFrame();
+    this._spriteTop.nextFrame();
     // Handle walking and running due to user input
     const walkSpeed = 7 / this.pos.r;
     const runSpeed = 10 / this.pos.r;
@@ -145,20 +206,20 @@ export class Player extends GameObject {
     if (leftArrow && !rightArrow) {
       this.vel.theta = -speed;
       this.facingLeft = true;
-      this._sprite.playAnim(anim);
-      this._sprite.scale.x = -1;
+      this._spriteBottom.playAnim(anim);
+      this.scale.x = -1;
     } else if (rightArrow && !leftArrow) {
       this.vel.theta = speed;
       this.facingLeft = false;
-      this._sprite.playAnim(anim);
-      this._sprite.scale.x = 1;
+      this._spriteBottom.playAnim(anim);
+      this.scale.x = 1;
     } else {
       this.vel.theta = 0;
-      this._sprite.stopAnim();
+      this._spriteBottom.stopAnim();
     }
-    // Cancel walk/run animation if we're in the air
+    // Play jump animation if we're in the air
     if (!this._isOnSolidGround()) {
-      this._sprite.pauseAnim();
+      this._spriteBottom.playAnim('jump');
     }
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
@@ -186,6 +247,8 @@ export class Player extends GameObject {
     }
     // Try to fire the equipped weapon if the user pressed the space bar
     this.equippedWeapon.maybeFire(this._game);
+    // Offset the sprite top to match the sprite bottom
+    this._spriteTop.y = this._spriteBottom.getTopOffset();
   }
 
   public getPolarBounds(): Polar.Rect {

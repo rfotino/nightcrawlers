@@ -15,8 +15,8 @@ function getTextureFrames(texture: PIXI.Texture,
   let frames = [];
   let frameWidth = texture.width / cols;
   let frameHeight = texture.height / rows;
-  for (let numX = 0; numX < cols; numX++) {
-    for (let numY = 0; numY < rows; numY++) {
+  for (let numY = 0; numY < rows; numY++) {
+    for (let numX = 0; numX < cols; numX++) {
       let frameRect = new PIXI.Rectangle(
         Math.floor(numX * frameWidth),
         Math.floor(numY * frameHeight),

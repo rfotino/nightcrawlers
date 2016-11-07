@@ -76,7 +76,8 @@ export class Game {
     // Preload assets
     let audioExt = Howler.codecs('mp3') ? 'mp3' : 'm4a';
     PIXI.loader
-      .add('game/player', 'assets/images/game/lucy.png')
+      .add('game/player-bottom', 'assets/images/game/lucy-bottom.png')
+      .add('game/player-top', 'assets/images/game/lucy-top.png')
       .add('game/bullet', 'assets/images/game/bullet.png')
       .add('game/mine', 'assets/images/game/mine.png')
       .add('game/platform', 'assets/images/game/platform.png')
