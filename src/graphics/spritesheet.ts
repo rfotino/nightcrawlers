@@ -72,6 +72,7 @@ export class SpriteSheet extends PIXI.Sprite {
   protected _currentName: string;
   protected _currentCounter: Counter;
   protected _currentFrameIndex: number;
+  protected _paused: boolean = false;
 
   /**
    * Split the sheet up into imagesWidth x imagesHigh different textures.
@@ -111,6 +112,7 @@ export class SpriteSheet extends PIXI.Sprite {
    */
   public playAnim(name: string): void {
     let anim = this._anims[name];
+    this._paused = false;
     if (!anim || this._current === anim) {
       return;
     }
@@ -119,6 +121,13 @@ export class SpriteSheet extends PIXI.Sprite {
     this._currentCounter = new Counter(this._current.ticksPerFrame);
     this._currentFrameIndex = 0;
     this.texture = this._frames[this._current.frames[this._currentFrameIndex]];
+  }
+
+  /**
+   * Pauses the currently playing animation, if any.
+   */
+  public pauseAnim(): void {
+    this._paused = true;
   }
 
   /**
@@ -141,7 +150,7 @@ export class SpriteSheet extends PIXI.Sprite {
    * Updates to the next frame in the animation.
    */
   public nextFrame(): void {
-    if (!this._current) {
+    if (!this._current || this._paused) {
       return;
     }
     this._currentCounter.next();

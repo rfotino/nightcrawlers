@@ -27,15 +27,15 @@ export class Player extends GameObject {
   public equippedWeapon: Weapon;
 
   public get width(): number {
-    return 18;
+    return 25;
   }
 
   public get height(): number {
-    return 32;
+    return 75;
   }
 
   public get z(): number {
-    return 30;
+    return 25;
   }
 
   public get armor(): number {
@@ -74,21 +74,21 @@ export class Player extends GameObject {
     // Add spritesheet
     this._sprite = new SpriteSheet(
       PIXI.loader.resources['game/player'].texture,
-      4, // images wide
+      9, // images wide
       1, // images high
       0, // default frame
       {
         walk: {
-          frames: [1, 2, 3, 0],
-          ticksPerFrame: 11,
+          frames: [1, 2, 3, 4, 5, 6, 7, 8],
+          ticksPerFrame: 7,
         },
         run: {
-          frames: [1, 2, 3, 0],
-          ticksPerFrame: 7,
+          frames: [1, 2, 3, 4, 5, 6, 7, 8],
+          ticksPerFrame: 4,
         },
       }
     );
-    this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
+    this._sprite.anchor.set(0.3, 0.5);
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
     // Spawn the player at a random spawn point
@@ -121,8 +121,8 @@ export class Player extends GameObject {
     // Update sprite animation
     this._sprite.nextFrame();
     // Handle walking and running due to user input
-    const walkSpeed = 5 / this.pos.r;
-    const runSpeed = 7 / this.pos.r;
+    const walkSpeed = 7 / this.pos.r;
+    const runSpeed = 10 / this.pos.r;
     const leftArrow = this._game.keyState.isDown(KeyState.LEFTARROW);
     const rightArrow = this._game.keyState.isDown(KeyState.RIGHTARROW);
     const shift = this._game.keyState.isDown(KeyState.SHIFT);
@@ -155,6 +155,10 @@ export class Player extends GameObject {
     } else {
       this.vel.theta = 0;
       this._sprite.stopAnim();
+    }
+    // Cancel walk/run animation if we're in the air
+    if (!this._isOnSolidGround()) {
+      this._sprite.pauseAnim();
     }
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
