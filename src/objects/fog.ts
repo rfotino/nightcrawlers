@@ -37,9 +37,6 @@ export class Fog extends GameObject {
   public update(): void {
     super.update();
     // Update the fog to be the appropriate color based on time of day
-    let fogColor: Color;
-    const dayColor = new Color(255, 255, 255);
-    const nightColor = new Color(0, 0, 0);
     if (this._game.timeKeeper.isDay) {
       this._daySprite.alpha = 0.75 * (1 - this._game.timeKeeper.transition);
       this._nightSprite.alpha = 0.75 * this._game.timeKeeper.transition;
