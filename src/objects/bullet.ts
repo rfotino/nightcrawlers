@@ -12,7 +12,6 @@ export class Bullet extends GameObject {
   protected _damageAmount: number = 10;
   protected _lifespanCounter: Counter = new Counter(60);
   protected _killedByTerrain: boolean = true;
-  protected _knockbackVel: number;
 
   protected get _knockbackTime(): number {
     return 5;
@@ -20,6 +19,10 @@ export class Bullet extends GameObject {
 
   protected get _stunTime(): number {
     return 7;
+  }
+
+  protected get _knockbackVel(): number {
+    return this.vel.theta;
   }
 
   public get width(): number {
@@ -43,7 +46,6 @@ export class Bullet extends GameObject {
     } else {
       this.vel.theta = speed;
     }
-    this._knockbackVel = this.vel.theta;
     this._sprite = new PIXI.Sprite(PIXI.loader.resources['game/bullet'].texture);
     this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
     this._mirrorList.push(this._sprite);

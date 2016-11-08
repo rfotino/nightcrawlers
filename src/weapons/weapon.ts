@@ -9,5 +9,10 @@ export abstract class Weapon {
 
   public abstract type(): string;
 
-  public abstract maybeFire(game: GameInstance): void;
+  /**
+   * Maybe fires (or swings in the case of the baseball bat). Returns true if
+   * it fired. It is the job of this function to handle cooldowns or handle
+   * adding any necessary game objects (like bullets).
+   */
+  public abstract maybeFire(game: GameInstance): boolean;
 }

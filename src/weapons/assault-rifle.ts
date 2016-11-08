@@ -9,7 +9,7 @@ export class AssaultRifle extends Weapon {
 
   public type(): string { return 'assault'; }
 
-  public maybeFire(game: GameInstance): void {
+  public maybeFire(game: GameInstance): boolean {
     if (this.ammo > 0 &&
         (game.keyState.isPressed(KeyState.SPACEBAR) ||
          (game.keyState.isDown(KeyState.SPACEBAR) &&
@@ -17,8 +17,10 @@ export class AssaultRifle extends Weapon {
       this.ammo--;
       this._cooldownCounter.reset();
       game.addGameObject(new Bullet(game));
+      return true;
     } else {
       this._cooldownCounter.next();
+      return false;
     }
   }
 }

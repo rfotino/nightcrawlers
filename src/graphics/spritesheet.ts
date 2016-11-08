@@ -67,32 +67,34 @@ export interface SpriteSheetAnimation {
 export class SpriteSheet extends PIXI.Sprite {
   protected _frames: PIXI.Texture[];
   protected _anims: {[key: string]: SpriteSheetAnimation};
-  protected _defaultFrame: number;
+  protected _defaultAnim: string;
   protected _current: SpriteSheetAnimation;
   protected _currentName: string;
   protected _currentCounter: Counter;
   protected _currentFrameIndex: number;
   protected _paused: boolean = false;
+  protected _once: boolean = false;
 
   /**
    * Split the sheet up into imagesWidth x imagesHigh different textures.
-   * Both numWide and numHigh must be >= 1, and defaultFrame must be >= 0 and
-   * < numWide*numHigh. All of the frames in anims must be in the same range
-   * of possibilities as defaultFrame.
+   * Both numWide and numHigh must be >= 1, and all of the frames in anims
+   * must be >= 0 and < numWide*numHigh. defaultAnim must be a key in anims.
    */
   public constructor(texture: string | PIXI.Texture,
                      cols: number = 1,
                      rows: number = 1,
-                     defaultFrame: number = 0,
-                     anims: {[key: string]: SpriteSheetAnimation} = {}) {
+                     defaultAnim: string = 'idle',
+                     anims: {[key: string]: SpriteSheetAnimation} = {
+                       'idle': { frames: [0], ticksPerFrame: 0 },
+                     }) {
     super();
     // Split sheet up into different frames
     this._frames = getCachedTextureFrames(texture, cols, rows);
     // Add animations
     this._anims = anims;
-    // Set default frame
-    this._defaultFrame = defaultFrame;
-    this.texture = this._frames[this._defaultFrame];
+    // Set default animation
+    this._defaultAnim = defaultAnim;
+    this.playAnim(this._defaultAnim);
   }
 
   /**
@@ -107,12 +109,22 @@ export class SpriteSheet extends PIXI.Sprite {
   }
 
   /**
+   * Plays an animation only one time, setting a flag so that we go back to
+   * the default animation once it has played through.
+   */
+  public playAnimOnce(name: string) {
+    this.playAnim(name);
+    this._once = true;
+  }
+
+  /**
    * Starts playing the named animation, or does nothing if an animation
    * with the given name is already playing or is not found.
    */
   public playAnim(name: string): void {
-    let anim = this._anims[name];
+    const anim = this._anims[name];
     this._paused = false;
+    this._once = false;
     if (!anim || this._current === anim) {
       return;
     }
@@ -121,6 +133,17 @@ export class SpriteSheet extends PIXI.Sprite {
     this._currentCounter = new Counter(this._current.ticksPerFrame);
     this._currentFrameIndex = 0;
     this.texture = this._frames[this._current.frames[this._currentFrameIndex]];
+  }
+
+  /**
+   * Sets the new animation as the default, optionally starting the animation
+   * as well.
+   */
+  public setDefault(name: string, play: boolean = false): void {
+    this._defaultAnim = name;
+    if (play) {
+      this.playAnim(name);
+    }
   }
 
   /**
@@ -134,9 +157,7 @@ export class SpriteSheet extends PIXI.Sprite {
    * Stops the currently playing animation, if any.
    */
   public stopAnim(): void {
-    this._current = null;
-    this._currentName = null;
-    this.texture = this._frames[this._defaultFrame];
+    this.playAnim(this._defaultAnim);
   }
 
   /**
@@ -157,6 +178,12 @@ export class SpriteSheet extends PIXI.Sprite {
     if (this._currentCounter.done()) {
       this._currentFrameIndex++;
       if (this._currentFrameIndex >= this._current.frames.length) {
+        // Animation is over, either restart or go back to the default
+        // animation if the once flag is set
+        if (this._once) {
+          this.playAnim(this._defaultAnim);
+          return;
+        }
         this._currentFrameIndex = 0;
       }
       this._currentCounter.reset();

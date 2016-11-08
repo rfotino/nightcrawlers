@@ -6,7 +6,7 @@ import { KeyState } from '../input/keystate';
 export class Shotgun extends Weapon {
   public type(): string { return 'shotgun'; }
 
-  public maybeFire(game: GameInstance): void {
+  public maybeFire(game: GameInstance): boolean {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
       this.ammo--;
       let bullet1 = new Bullet(game);
@@ -18,6 +18,8 @@ export class Shotgun extends Weapon {
       game.addGameObject(bullet1);
       game.addGameObject(bullet2);
       game.addGameObject(bullet3);
+      return true;
     }
+    return false;
   }
 }

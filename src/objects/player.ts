@@ -112,7 +112,7 @@ export class Player extends GameObject {
       PIXI.loader.resources['game/player-bottom'].texture,
       10, // images wide
       1, // images high
-      0, // default frame
+      'idle', // default anim
       {
         idle: {
           frames: [0],
@@ -135,17 +135,53 @@ export class Player extends GameObject {
     this._spriteTop = new SpriteSheet(
       PIXI.loader.resources['game/player-top'].texture,
       8, // images wide
-      4, // images high
-      0, // default frame
+      5, // images high
+      'baseball-bat-idle', // default anim
       {
-        'bat-idle': {
+        'baseball-bat-idle': {
           frames: [0, 1, 2, 3],
           ticksPerFrame: 10,
         },
+        'baseball-bat-attack': {
+          frames: [4, 4, 5, 6, 7, 7, 7, 7, 7],
+          ticksPerFrame: 1,
+        },
+        'pistol-idle': {
+          frames: [8, 9, 10, 11],
+          ticksPerFrame: 10,
+        },
+        'pistol-attack': {
+          frames: [12, 13, 14, 15],
+          ticksPerFrame: 1,
+        },
+        'shotgun-idle': {
+          frames: [16, 17, 18, 19],
+          ticksPerFrame: 10,
+        },
+        'shotgun-attack': {
+          frames: [20, 21, 22, 23],
+          ticksPerFrame: 1,
+        },
+        'assault-idle': {
+          frames: [24, 25, 26, 27],
+          ticksPerFrame: 10,
+        },
+        'assault-attack': {
+          frames: [28, 29, 30, 31],
+          ticksPerFrame: 1,
+        },
+        'mine-idle': {
+          frames: [32, 33, 34, 35],
+          ticksPerFrame: 10,
+        },
+        'mine-attack': {
+          frames: [36, 37, 38, 39],
+          ticksPerFrame: 1,
+        }
       }
     );
-    this._spriteBottom.anchor.set(0.3, 0.5);
-    this._spriteTop.anchor.set(0.3, 0.5);
+    this._spriteBottom.anchor.set(0.39, 0.5);
+    this._spriteTop.anchor.set(0.39, 0.5);
     this._mirrorList.push(this);
     this.addChild(this._spriteBottom);
     this.addChild(this._spriteTop);
@@ -153,8 +189,6 @@ export class Player extends GameObject {
     const spawnPoint = game.level.getPlayerSpawn();
     this.pos.r = spawnPoint.r;
     this.pos.theta = spawnPoint.theta;
-    // Default to bat idling animation
-    this._spriteTop.playAnim('bat-idle');
   }
 
   public type(): string { return 'player'; }
@@ -224,19 +258,21 @@ export class Player extends GameObject {
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
     // Handle jumping due to user input
-    const jumpSpeed = 17;
+    const jumpSpeed = 20;
     const upArrow = this._game.keyState.isPressed(KeyState.UPARROW);
     if (upArrow && this._isOnSolidGround()) {
       this.vel.r = jumpSpeed;
     }
     // Change weapons if we pressed the button to do so and the corresponding
-    // weapon has ammo left
+    // weapon has ammo left. Switch the default idle animation as we switch
+    // weapons.
     for (let i = 0; i < this.weapons.length; i++) {
       let key = KeyState.ONE + i;
       if (this._game.keyState.isPressed(key)) {
         let weapon = this.weapons[i];
         if (weapon.ammo > 0) {
           this.equippedWeapon = weapon;
+          this._spriteTop.setDefault(`${this.equippedWeapon.type()}-idle`, true);
         }
       }
     }
@@ -245,8 +281,12 @@ export class Player extends GameObject {
     if (this.equippedWeapon.ammo <= 0) {
       this.equippedWeapon = this._baseballBat;
     }
-    // Try to fire the equipped weapon if the user pressed the space bar
-    this.equippedWeapon.maybeFire(this._game);
+    // Try to fire the equipped weapon, and play the appropriate attack
+    // animation if we actually fired
+    if (this.equippedWeapon.maybeFire(this._game)) {
+      this._spriteTop.stopAnim();
+      this._spriteTop.playAnimOnce(`${this.equippedWeapon.type()}-attack`);
+    }
     // Offset the sprite top to match the sprite bottom
     this._spriteTop.y = this._spriteBottom.getTopOffset();
   }

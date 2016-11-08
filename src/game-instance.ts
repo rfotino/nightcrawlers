@@ -73,7 +73,7 @@ export class GameInstance extends UIContainer {
     this.timeKeeper = new TimeKeeper();
     this.enemySpawner = new EnemySpawner();
     this.itemSpawners = this.level.getItemSpawners();
-    this.fog = new Fog(this, 5);
+    this.fog = new Fog(this, 6);
     const moonlight = new Moonlight(this);
     this.moon = new Moon(this, moonlight);
     this.sun = new Sun(this);

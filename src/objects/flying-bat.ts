@@ -15,7 +15,7 @@ export class FlyingBat extends FlyingEnemy {
     return new SpriteSheet(
       'game/flying-bat',
       3, 1, // width, height
-      0, // default frame
+      'walk', // default anim
       { // animations
         walk: {
           frames: [ 0, 1, 2 ],

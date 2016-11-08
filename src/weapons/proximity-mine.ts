@@ -126,10 +126,12 @@ class ProximityMineInstance extends Bullet {
 export class ProximityMine extends Weapon {
   public type(): string { return 'mine'; }
 
-  public maybeFire(game: GameInstance): void {
+  public maybeFire(game: GameInstance): boolean {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
       game.addGameObject(new ProximityMineInstance(game));
       this.ammo--;
+      return true;
     }
+    return false;
   }
 }

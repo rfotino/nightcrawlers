@@ -13,7 +13,6 @@ class LevelObject {
   public width: number;
   public rate: number;
   public moves: boolean;
-  public rPrime: number;
   public thetaPrime: number;
   public itemType: string;
   public frame: number;
@@ -48,7 +47,6 @@ class LevelObject {
     this.width = width;
     this.rate = 60;
     this.moves = false;
-    this.rPrime = this.r;
     this.thetaPrime = this.theta;
     this.itemType = elem('item-type').value;
     this.frame = 0;
@@ -57,9 +55,8 @@ class LevelObject {
 
   public toRect(): Polar.Rect {
     let anim = (this.frame / Math.max(this.rate, 1));
-    let r = (this.r * (1 - anim)) + (this.rPrime * anim);
     let theta = (this.theta * (1 - anim)) + (this.thetaPrime * anim);
-    return new Polar.Rect(r, theta, this.height, this.width);
+    return new Polar.Rect(this.r, theta, this.height, this.width);
   }
 
   public getColor(): Color {
@@ -174,7 +171,6 @@ function setFields(obj: LevelObject): void {
   elem('width').value = obj.width.toString();
   elem('rate').value = obj.rate.toString();
   elem('moves').checked = obj.moves;
-  elem('r-prime').value = obj.rPrime.toString();
   elem('theta-prime').value = obj.thetaPrime.toString();
   elem('item-type').value = obj.itemType;
 }
@@ -193,7 +189,6 @@ function addEventListeners(elem: HTMLElement,
   'width',
   'rate',
   'moves',
-  'r-prime',
   'theta-prime',
   'item-type',
 ].forEach((id: string) => {
@@ -206,7 +201,6 @@ function addEventListeners(elem: HTMLElement,
       selectedObj.width = parseFloat(elem('width').value);
       selectedObj.rate = parseFloat(elem('rate').value);
       selectedObj.moves = elem('moves').checked;
-      selectedObj.rPrime = parseFloat(elem('r-prime').value);
       selectedObj.thetaPrime = parseFloat(elem('theta-prime').value);
       selectedObj.itemType = elem('item-type').value;
     }
@@ -224,7 +218,7 @@ let objects: LevelObject[] = [
 let selectedObj: LevelObject = null;
 let addingObj: LevelObject = null;
 
-const RSTEP = 10;
+const RSTEP = 25;
 const THETASTEP = 0.025;
 
 let mouseState = new MouseState();
@@ -244,7 +238,7 @@ canvas.addEventListener('keyup', (e: KeyboardEvent) => {
 function getScale(): number {
   let maxR = 0;
   objects.forEach(obj => {
-    maxR = Math.max(maxR, obj.r, obj.rPrime);
+    maxR = Math.max(maxR, obj.r);
   });
   let scale = canvas.height / (maxR * 2);
   return scale;
@@ -451,7 +445,6 @@ elem('load').addEventListener('click', () => {
         );
         obj.rate = platform.rate || 60;
         obj.moves = platform.moves || false;
-        obj.rPrime = platform.rPrime || platform.r;
         obj.thetaPrime = platform.thetaPrime || platform.theta;
         objects.push(obj);
       });
@@ -556,7 +549,6 @@ elem('save').addEventListener('click', () => {
       };
       if (obj.moves) {
         ret['rate'] = Math.round(obj.rate);
-        ret['rPrime'] = Math.round(obj.rPrime);
         ret['thetaPrime'] = Math.round(obj.thetaPrime * 1000) / 1000;
       }
       return ret;

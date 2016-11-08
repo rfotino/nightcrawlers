@@ -12,6 +12,6 @@ export class Spider extends JumpingEnemy {
   public constructor(game: GameInstance) {
     super(game);
     this._moveSpeed = 5;
-    this._jumpSpeed = 20;
+    this._jumpSpeed = 22;
   }
 }

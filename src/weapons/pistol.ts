@@ -6,10 +6,12 @@ import { KeyState } from '../input/keystate';
 export class Pistol extends Weapon {
   public type(): string { return 'pistol'; }
 
-  public maybeFire(game: GameInstance): void {
+  public maybeFire(game: GameInstance): boolean {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
       this.ammo--;
       game.addGameObject(new Bullet(game));
+      return true;
     }
+    return false;
   }
 }

@@ -353,7 +353,7 @@ export class FlyingEnemy extends Enemy {
 export class JumpingEnemy extends Enemy {
   private _jumpCounter: Counter;
   protected _shouldJump: boolean = false;
-  protected _jumpSpeed: number = 15;
+  protected _jumpSpeed: number = 18;
 
   private _getNewJumpCounterInterval(): number {
     return 60 + (90 * Math.random());
@@ -393,7 +393,8 @@ export class JumpingEnemy extends Enemy {
       return;
     }
     // Decide if we should jump
-    this._shouldJump = this._game.player.pos.r > this.pos.r;
+    const JUMP_THRESHOLD = 30;
+    this._shouldJump = this._game.player.pos.r > this.pos.r + JUMP_THRESHOLD;
     // Handle jumping if player is above this enemy
     if (this._shouldJump && this._isOnSolidGround()) {
       this.vel.r = this._jumpSpeed;
