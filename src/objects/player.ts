@@ -280,6 +280,7 @@ export class Player extends GameObject {
     // back to the baseball bat
     if (this.equippedWeapon.ammo <= 0) {
       this.equippedWeapon = this._baseballBat;
+      this._spriteTop.setDefault(`${this.equippedWeapon.type()}-idle`);
     }
     // Try to fire the equipped weapon, and play the appropriate attack
     // animation if we actually fired
