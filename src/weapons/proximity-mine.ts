@@ -77,9 +77,14 @@ class ProximityMineInstance extends Bullet {
   }
 
   /**
-   * Mines do nothing in case of collision, they only explode due to proximity.
+   * Mines don't do anything when enemies touch them, they only explode
+   * from proximity.
    */
-  public collide(other: GameObject, result: Collider.Result): void {}
+  public collide(other: GameObject, result: Collider.Result): void {
+    if (other.type() !== 'enemy') {
+      super.collide(other, result);
+    }
+  }
 
   protected _canSee(enemy: Enemy, blockBounds: Polar.Rect[]): boolean {
     let line = new Polar.Line(
