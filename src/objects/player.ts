@@ -159,8 +159,8 @@ export class Player extends GameObject {
           ticksPerFrame: 10,
         },
         'shotgun-attack': {
-          frames: [20, 21, 22, 23],
-          ticksPerFrame: 1,
+          frames: [20, 21, 22, 22, 23],
+          ticksPerFrame: 5,
         },
         'assault-idle': {
           frames: [24, 25, 26, 27],

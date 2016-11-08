@@ -9,15 +9,17 @@ export class Shotgun extends Weapon {
   public maybeFire(game: GameInstance): boolean {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
       this.ammo--;
-      let bullet1 = new Bullet(game);
-      let bullet2 = new Bullet(game);
-      let bullet3 = new Bullet(game);
-      let rVel = 1;
-      bullet1.vel.r = rVel;
-      bullet2.vel.r = -rVel;
-      game.addGameObject(bullet1);
-      game.addGameObject(bullet2);
-      game.addGameObject(bullet3);
+      let bullets = [new Bullet(game), new Bullet(game), new Bullet(game)];
+      const rVel = 1;
+      const offsetR = 11;
+      const offsetTheta = (game.player.facingLeft ? -20 : 20) / game.player.pos.r;
+      bullets[0].vel.r = rVel;
+      bullets[1].vel.r = -rVel;
+      bullets.forEach(bullet => {
+        bullet.pos.r += offsetR;
+        bullet.pos.theta += offsetTheta;
+        game.addGameObject(bullet);
+      });
       return true;
     }
     return false;

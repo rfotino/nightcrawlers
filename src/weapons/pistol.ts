@@ -9,9 +9,11 @@ export class Pistol extends Weapon {
   public maybeFire(game: GameInstance): boolean {
     if (this.ammo > 0 && game.keyState.isPressed(KeyState.SPACEBAR)) {
       this.ammo--;
-      const BULLET_OFFSET = 9;
+      const offsetR = 9;
+      const offsetTheta = (game.player.facingLeft ? -20 : 20) / game.player.pos.r;
       let bullet = new Bullet(game);
-      bullet.pos.r += BULLET_OFFSET;
+      bullet.pos.r += offsetR;
+      bullet.pos.theta += offsetTheta;
       game.addGameObject(bullet);
       return true;
     }
