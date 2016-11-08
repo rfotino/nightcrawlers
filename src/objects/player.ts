@@ -152,7 +152,7 @@ export class Player extends GameObject {
         },
         'pistol-attack': {
           frames: [12, 13, 14, 15],
-          ticksPerFrame: 1,
+          ticksPerFrame: 3,
         },
         'shotgun-idle': {
           frames: [16, 17, 18, 19],
