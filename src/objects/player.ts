@@ -6,6 +6,7 @@ import { Level } from '../level';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { LagFactor } from '../math/lag-factor';
+import { Counter } from '../math/counter';
 import { Weapon } from '../weapons/weapon';
 import { BaseballBat } from '../weapons/baseball-bat';
 import { Pistol } from '../weapons/pistol';
@@ -61,6 +62,7 @@ export class Player extends GameObject {
   public score: number = 0;
   public weapons: Weapon[];
   public equippedWeapon: Weapon;
+  public weaponCooldownCounter: Counter = new Counter();
 
   public get width(): number {
     return 25;
@@ -167,8 +169,8 @@ export class Player extends GameObject {
           ticksPerFrame: 10,
         },
         'assault-attack': {
-          frames: [34, 35, 36, 37],
-          ticksPerFrame: 1,
+          frames: [34, 35, 36],
+          ticksPerFrame: 5,
         },
         'mine-idle': {
           frames: [40, 41, 42, 43],
@@ -282,11 +284,28 @@ export class Player extends GameObject {
       this.equippedWeapon = this._baseballBat;
       this._spriteTop.setDefault(`${this.equippedWeapon.type()}-idle`);
     }
-    // Try to fire the equipped weapon, and play the appropriate attack
-    // animation if we actually fired
-    if (this.equippedWeapon.maybeFire(this._game)) {
-      this._spriteTop.stopAnim();
-      this._spriteTop.playAnimOnce(`${this.equippedWeapon.type()}-attack`);
+    // If we meet certain conditions, fire the weapon. The weapon cooldown must
+    // be complete and the equipped weapon must have ammo, and either the
+    // fire key must have just been pressed or it must be held down and the
+    // weapon must be fully automatic
+    this.weaponCooldownCounter.next();
+    if (this.weaponCooldownCounter.done() &&
+        this.equippedWeapon.ammo > 0) {
+      if (this._game.keyState.isPressed(KeyState.SPACEBAR) ||
+          (this._game.keyState.isDown(KeyState.SPACEBAR) &&
+           this.equippedWeapon.isFullAuto())) {
+        // Decrease weapon ammo
+        this.equippedWeapon.ammo--;
+        // Make the player wait for the weapon-specific cooldown before firing
+        // again
+        this.weaponCooldownCounter.max = this.equippedWeapon.cooldown();
+        this.weaponCooldownCounter.reset();
+        // Add bullets to the scene
+        this.equippedWeapon.fire(this._game);
+        // Play the firing animation
+        this._spriteTop.stopAnim();
+        this._spriteTop.playAnimOnce(`${this.equippedWeapon.type()}-attack`);
+      }
     }
     // Offset the sprite top to match the sprite bottom
     this._spriteTop.y = this._spriteBottom.getTopOffset();

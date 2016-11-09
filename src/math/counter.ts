@@ -11,7 +11,9 @@ export class Counter {
   public count: number;
   public useLag: boolean;
 
-  public constructor(max: number, step: number = 1, useLag: boolean = true) {
+  public constructor(max: number = 0,
+                     step: number = 1,
+                     useLag: boolean = true) {
     this.max = max;
     this.step = step;
     this.count = 0;

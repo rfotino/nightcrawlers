@@ -67,11 +67,9 @@ export class BaseballBat extends Weapon {
 
   public type(): string { return 'baseball-bat'; }
 
-  public maybeFire(game: GameInstance): boolean {
-    if (game.keyState.isPressed(KeyState.SPACEBAR)) {
-      game.addGameObject(new BaseballBatBullet(game));
-      return true;
-    }
-    return false;
+  public cooldown(): number { return 15; }
+
+  public fire(game: GameInstance): void {
+    game.addGameObject(new BaseballBatBullet(game));
   }
 }
