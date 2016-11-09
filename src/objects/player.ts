@@ -101,10 +101,10 @@ export class Player extends GameObject {
     // Set up weapons
     this.weapons = [
       new BaseballBat(),
-      new Pistol(8),
-      new Shotgun(5),
-      new AssaultRifle(10),
-      new ProximityMine(3),
+      new Pistol(100),
+      new Shotgun(100),
+      new AssaultRifle(100),
+      new ProximityMine(100),
     ];
     this._baseballBat = this.equippedWeapon = this.weapons[0];
     // Add spritesheet
@@ -134,7 +134,7 @@ export class Player extends GameObject {
     );
     this._spriteTop = new SpriteSheet(
       PIXI.loader.resources['game/player-top'].texture,
-      8, // images wide
+      10, // images wide
       5, // images high
       'baseball-bat-idle', // default anim
       {
@@ -147,36 +147,36 @@ export class Player extends GameObject {
           ticksPerFrame: 1,
         },
         'pistol-idle': {
-          frames: [8, 9, 10, 11],
+          frames: [10, 11, 12, 13],
           ticksPerFrame: 10,
         },
         'pistol-attack': {
-          frames: [12, 13, 14, 15],
+          frames: [14, 15, 16, 17],
           ticksPerFrame: 3,
         },
         'shotgun-idle': {
-          frames: [16, 17, 18, 19],
+          frames: [20, 21, 22, 23],
           ticksPerFrame: 10,
         },
         'shotgun-attack': {
-          frames: [20, 21, 22, 22, 23],
+          frames: [24, 25, 26, 27, 27, 28, 29],
           ticksPerFrame: 5,
         },
         'assault-idle': {
-          frames: [24, 25, 26, 27],
+          frames: [30, 31, 32, 33],
           ticksPerFrame: 10,
         },
         'assault-attack': {
-          frames: [28, 29, 30, 31],
+          frames: [34, 35, 36, 37],
           ticksPerFrame: 1,
         },
         'mine-idle': {
-          frames: [32, 33, 34, 35],
+          frames: [40, 41, 42, 43],
           ticksPerFrame: 10,
         },
         'mine-attack': {
-          frames: [36, 37, 38, 39],
-          ticksPerFrame: 1,
+          frames: [44, 45, 46, 47],
+          ticksPerFrame: 3,
         }
       }
     );
