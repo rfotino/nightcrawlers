@@ -210,6 +210,12 @@ export class Player extends GameObject {
     // Update sprite animation
     this._spriteBottom.nextFrame();
     this._spriteTop.nextFrame();
+    // Drain armor by small amount each tick
+    const ARMOR_DRAIN_SPEED = 0.01;
+    this._armor -= ARMOR_DRAIN_SPEED * LagFactor.get();
+    if (this._armor < 0) {
+      this._armor = 0;
+    }
     // Handle walking and running due to user input
     const walkSpeed = 7 / this.pos.r;
     const runSpeed = 10 / this.pos.r;

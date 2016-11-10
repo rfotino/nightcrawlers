@@ -101,7 +101,12 @@ export class Game {
       .add('ui/pistol', 'assets/images/ui/pistol.png')
       .add('ui/shotgun', 'assets/images/ui/shotgun.png')
       .add('ui/assault', 'assets/images/ui/assault.png')
-      .add('ui/mine', 'assets/images/ui/mine.png')
+      .add('ui/portrait', 'assets/images/ui/portrait.png')
+      .add('ui/full-health', 'assets/images/ui/full-health.png')
+      .add('ui/empty-health', 'assets/images/ui/empty-health.png')
+      .add('ui/full-energy', 'assets/images/ui/full-energy.png')
+      .add('ui/empty-energy', 'assets/images/ui/empty-energy.png')
+      .add('ui/full-armor', 'assets/images/ui/full-armor.png')
       .add('music/night', `assets/music/night.${audioExt}`)
       .load(() => this.activeScreen = this._mainMenu)
       .on('progress', loader => this._progressBar.progress = loader.progress);
