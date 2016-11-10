@@ -37,6 +37,7 @@ export class TouchState {
           }
           this._x = x;
           this._y = y;
+          elem.focus();
         }
         if (trigger) {
           trigger(eventType, this._x, this._y);

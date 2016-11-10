@@ -38,6 +38,7 @@ export class MouseState {
         });
         this._x = e.offsetX;
         this._y = e.offsetY;
+        elem.focus();
         if (trigger) {
           trigger(eventType, this._x, this._y);
         }

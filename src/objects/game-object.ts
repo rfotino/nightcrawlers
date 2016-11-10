@@ -93,7 +93,10 @@ export abstract class GameObject extends PIXI.Container {
     this.vel.theta += this.accel.theta * lagFactor;
     this.pos.r += this.vel.r * lagFactor;
     this.pos.theta += this.vel.theta * lagFactor;
-    this.pos.theta += this._groundVel * lagFactor;
+    // Can't have friction without normal force
+    if (this.accel.r !== 0) {
+      this.pos.theta += this._groundVel * lagFactor;
+    }
     this._groundVel = 0;
   }
 
