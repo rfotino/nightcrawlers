@@ -117,14 +117,10 @@ export class Item extends GameObject {
         });
         break;
       case 'mine':
-        player.weapons.forEach(weapon => {
-          if (weapon.type() === 'mine') {
-            const ammoAmount = 3;
-            weapon.ammo += ammoAmount;
-            text = `+${ammoAmount} MINES`;
-            color = 'white';
-          }
-        });
+        const ammoAmount = 3;
+        player.numMines += ammoAmount;
+        text = `+${ammoAmount} MINES`;
+        color = 'white';
         break;
     }
     if (text !== null && color !== null) {
