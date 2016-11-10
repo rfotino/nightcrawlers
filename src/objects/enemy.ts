@@ -7,6 +7,7 @@ import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
 import { SpriteSheet } from '../graphics/spritesheet';
+import { LagFactor } from '../math/lag-factor';
 
 const enum Direction {
   None,
@@ -283,7 +284,7 @@ export class Enemy extends GameObject {
   public collide(other: GameObject, result: Collider.Result): void {
     super.collide(other, result);
     if (other.team() === 'player') {
-      other.damage(this._damageAmount);
+      other.damage(this._damageAmount * LagFactor.get());
     }
   }
 
