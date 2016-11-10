@@ -12,7 +12,7 @@ import { BaseballBat } from '../weapons/baseball-bat';
 import { Pistol } from '../weapons/pistol';
 import { Shotgun } from '../weapons/shotgun';
 import { AssaultRifle } from '../weapons/assault-rifle';
-import { ProximityMine } from '../weapons/proximity-mine';
+import { ProximityMine } from '../objects/proximity-mine';
 import { SpriteSheet } from '../graphics/spritesheet';
 
 /**
@@ -63,6 +63,7 @@ export class Player extends GameObject {
   public weapons: Weapon[];
   public equippedWeapon: Weapon;
   public weaponCooldownCounter: Counter = new Counter();
+  public numMines: number;
 
   public get width(): number {
     return 25;
@@ -106,9 +107,9 @@ export class Player extends GameObject {
       new Pistol(100),
       new Shotgun(100),
       new AssaultRifle(100),
-      new ProximityMine(100),
     ];
     this._baseballBat = this.equippedWeapon = this.weapons[0];
+    this.numMines = 100;
     // Add spritesheet
     this._spriteBottom = new PlayerBottom(
       PIXI.loader.resources['game/player-bottom'].texture,
@@ -137,7 +138,7 @@ export class Player extends GameObject {
     this._spriteTop = new SpriteSheet(
       PIXI.loader.resources['game/player-top'].texture,
       10, // images wide
-      5, // images high
+      4, // images high
       'baseball-bat-idle', // default anim
       {
         'baseball-bat-idle': {
@@ -172,14 +173,6 @@ export class Player extends GameObject {
           frames: [34, 35, 36],
           ticksPerFrame: 5,
         },
-        'mine-idle': {
-          frames: [40, 41, 42, 43],
-          ticksPerFrame: 10,
-        },
-        'mine-attack': {
-          frames: [44, 45, 46, 47],
-          ticksPerFrame: 3,
-        }
       }
     );
     this._spriteBottom.anchor.set(0.39, 0.5);
@@ -306,6 +299,12 @@ export class Player extends GameObject {
         this._spriteTop.stopAnim();
         this._spriteTop.playAnimOnce(`${this.equippedWeapon.type()}-attack`);
       }
+    }
+    // If the player pressed the drop mine button and we have mines left,
+    // drop a mine
+    if (this._game.keyState.isPressed(KeyState.Q) && this.numMines > 0) {
+      this.numMines--;
+      this._game.addGameObject(new ProximityMine(this._game));
     }
     // Offset the sprite top to match the sprite bottom
     this._spriteTop.y = this._spriteBottom.getTopOffset();

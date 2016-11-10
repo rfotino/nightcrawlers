@@ -6,7 +6,7 @@ import { KeyState } from '../input/keystate';
 export class Pistol extends Weapon {
   public type(): string { return 'pistol'; }
 
-  public cooldown(): number { return 15; }
+  public cooldown(): number { return 10; }
 
   public fire(game: GameInstance): void {
     const offsetR = 9;

@@ -1,8 +1,6 @@
-import { Weapon } from './weapon';
 import { Bullet } from '../objects/bullet';
 import { Player } from '../objects/player';
 import { Enemy } from '../objects/enemy';
-import { FadingText } from '../objects/fading-text';
 import * as Terrain from '../objects/terrain';
 import { GameObject } from '../objects/game-object';
 import { GameInstance } from '../game-instance';
@@ -11,7 +9,7 @@ import { Collider } from '../math/collider';
 import { Polar } from '../math/polar';
 import { Counter } from '../math/counter';
 
-class ProximityMineInstance extends Bullet {
+export class ProximityMine extends Bullet {
   // Don't explode immediately after spawning, wait for setup counter
   protected _setupCounter: Counter = new Counter(30);
 
@@ -125,15 +123,5 @@ class ProximityMineInstance extends Bullet {
     });
     // Mines can only be used once
     this.kill();
-  }
-}
-
-export class ProximityMine extends Weapon {
-  public type(): string { return 'mine'; }
-
-  public cooldown(): number { return 10; }
-
-  public fire(game: GameInstance): void {
-    game.addGameObject(new ProximityMineInstance(game));
   }
 }
