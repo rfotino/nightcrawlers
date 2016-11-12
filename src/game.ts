@@ -1,5 +1,6 @@
 /// <reference path="../typings/pixi.d.ts" />
 /// <reference path="../typings/howler.d.ts" />
+/// <reference path="../typings/require.d.ts" />
 
 import { GameInstance } from './game-instance';
 import { KeyState } from './input/keystate';
@@ -73,43 +74,50 @@ export class Game {
     this._mainMenu = new MainMenu(this);
     this._progressBar = new MainProgressScreen(this);
     this._activeScreen = this._progressBar;
-    // Preload assets
-    let audioExt = Howler.codecs('mp3') ? 'mp3' : 'm4a';
-    PIXI.loader
-      .add('game/player-bottom', 'assets/images/game/lucy-bottom.png')
-      .add('game/player-top', 'assets/images/game/lucy-top.png')
-      .add('game/bullet', 'assets/images/game/bullet.png')
-      .add('game/mine', 'assets/images/game/mine.png')
-      .add('game/platform', 'assets/images/game/platform.png')
-      .add('game/grass', 'assets/images/game/grass.png')
-      .add('game/stone', 'assets/images/game/stone.png')
-      .add('game/underground', 'assets/images/game/underground.png')
-      .add('game/flying-bat', 'assets/images/game/flying-bat.png')
-      .add('game/day/gravestone1', 'assets/images/game/gravestone1-day.png')
-      .add('game/day/gravestone2', 'assets/images/game/gravestone2-day.png')
-      .add('game/day/tree1', 'assets/images/game/tree1-day.png')
-      .add('game/day/tree2', 'assets/images/game/tree2-day.png')
-      .add('game/night/gravestone1', 'assets/images/game/gravestone1-night.png')
-      .add('game/night/gravestone2', 'assets/images/game/gravestone2-night.png')
-      .add('game/night/tree1', 'assets/images/game/tree1-night.png')
-      .add('game/night/tree2', 'assets/images/game/tree2-night.png')
-      .add('game/clouds', 'assets/images/game/clouds.png')
-      .add('game/moon', 'assets/images/game/moon.png')
-      .add('game/moonlight', 'assets/images/game/moonlight.png')
-      .add('game/sun', 'assets/images/game/sun.png')
-      .add('ui/baseball-bat', 'assets/images/ui/baseball-bat.png')
-      .add('ui/pistol', 'assets/images/ui/pistol.png')
-      .add('ui/shotgun', 'assets/images/ui/shotgun.png')
-      .add('ui/assault', 'assets/images/ui/assault.png')
-      .add('ui/portrait', 'assets/images/ui/portrait.png')
-      .add('ui/full-health', 'assets/images/ui/full-health.png')
-      .add('ui/empty-health', 'assets/images/ui/empty-health.png')
-      .add('ui/full-energy', 'assets/images/ui/full-energy.png')
-      .add('ui/empty-energy', 'assets/images/ui/empty-energy.png')
-      .add('ui/full-armor', 'assets/images/ui/full-armor.png')
-      .add('music/night', `assets/music/night.${audioExt}`)
-      .load(() => this.activeScreen = this._mainMenu)
-      .on('progress', loader => this._progressBar.progress = loader.progress);
+    // Preload assets - figure out which audio extension the browser supports,
+    // then read the asset manifest (which contains file sizes), add the files
+    // we want to load to the PIXI loader, then wait for progress/load events
+    const audioExt = Howler.codecs('mp3') ? 'mp3' : 'm4a';
+    const assetManifest = <Object[]>require('../assets/manifest.json');
+    let resourceSizes: {[key: string]: number} = {};
+    assetManifest.forEach(obj => {
+      let fileName: string, fileSize: number;
+      switch (obj['type']) {
+        default:
+        case 'image':
+          const file = obj['files'][0];
+          fileName = file['src'];
+          fileSize = file['size'];
+          break;
+        case 'audio':
+          obj['files'].forEach(file => {
+            if (new RegExp(`.+\.${audioExt}$`).test(file['src'])) {
+              fileName = file['src'];
+              fileSize = file['size'];
+            }
+          });
+          break;
+      }
+      resourceSizes[obj['name']] = fileSize;
+      PIXI.loader.add(obj['name'], fileName);
+    });
+    PIXI.loader.on('progress', loader => {
+      // Count total bytes loaded over total bytes expected,
+      // and update the progress bar
+      let bytesLoaded = 0, bytesTotal = 0;
+      for (let name in resourceSizes) {
+        if (!resourceSizes.hasOwnProperty(name)) {
+          continue;
+        }
+        bytesTotal += resourceSizes[name];
+        if (loader.resources[name].isComplete) {
+          bytesLoaded += resourceSizes[name];
+        }
+      }
+      const progress = 100 * bytesLoaded / bytesTotal;
+      this._progressBar.progress = progress;
+    });
+    PIXI.loader.load(() => this.activeScreen = this._mainMenu);
     // Initialize timing logic
     this._currentTime = Date.now();
     this._prevTime = this._currentTime - 16;

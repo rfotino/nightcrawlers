@@ -1,8 +1,6 @@
 import { Level } from './level';
 import { GameInstance } from './game-instance';
 
-/// <reference path="../typings/require.d.ts" />
-
 /**
  * Key used to store options JSON in local storage. Notice that we prefix the
  * key to make it unique to this application.

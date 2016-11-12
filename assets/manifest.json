@@ -1,0 +1,326 @@
+[
+  {
+    "name": "game/player-bottom",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/lucy-bottom.png",
+        "size": 6608
+      }
+    ]
+  },
+  {
+    "name": "game/player-top",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/lucy-top.png",
+        "size": 39696
+      }
+    ]
+  },
+  {
+    "name": "game/bullet",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/bullet.png",
+        "size": 99
+      }
+    ]
+  },
+  {
+    "name": "game/mine",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/mine.png",
+        "size": 100
+      }
+    ]
+  },
+  {
+    "name": "game/platform",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/platform.png",
+        "size": 18264
+      }
+    ]
+  },
+  {
+    "name": "game/grass",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/grass.png",
+        "size": 30077
+      }
+    ]
+  },
+  {
+    "name": "game/stone",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/stone.png",
+        "size": 5356
+      }
+    ]
+  },
+  {
+    "name": "game/underground",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/underground.png",
+        "size": 5969
+      }
+    ]
+  },
+  {
+    "name": "game/flying-bat",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/flying-bat.png",
+        "size": 5363
+      }
+    ]
+  },
+  {
+    "name": "game/day/gravestone1",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/gravestone1-day.png",
+        "size": 10197
+      }
+    ]
+  },
+  {
+    "name": "game/day/gravestone2",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/gravestone2-day.png",
+        "size": 4915
+      }
+    ]
+  },
+  {
+    "name": "game/day/tree1",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/tree1-day.png",
+        "size": 45519
+      }
+    ]
+  },
+  {
+    "name": "game/day/tree2",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/tree2-day.png",
+        "size": 69519
+      }
+    ]
+  },
+  {
+    "name": "game/night/gravestone1",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/gravestone1-night.png",
+        "size": 7682
+      }
+    ]
+  },
+  {
+    "name": "game/night/gravestone2",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/gravestone2-night.png",
+        "size": 3108
+      }
+    ]
+  },
+  {
+    "name": "game/night/tree1",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/tree1-night.png",
+        "size": 17302
+      }
+    ]
+  },
+  {
+    "name": "game/night/tree2",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/tree2-night.png",
+        "size": 27750
+      }
+    ]
+  },
+  {
+    "name": "game/clouds",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/clouds.png",
+        "size": 322455
+      }
+    ]
+  },
+  {
+    "name": "game/moon",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/moon.png",
+        "size": 30102
+      }
+    ]
+  },
+  {
+    "name": "game/moonlight",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/moonlight.png",
+        "size": 16898
+      }
+    ]
+  },
+  {
+    "name": "game/sun",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/sun.png",
+        "size": 47993
+      }
+    ]
+  },
+  {
+    "name": "ui/baseball-bat",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/baseball-bat.png",
+        "size": 3885
+      }
+    ]
+  },
+  {
+    "name": "ui/pistol",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/pistol.png",
+        "size": 3085
+      }
+    ]
+  },
+  {
+    "name": "ui/shotgun",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/shotgun.png",
+        "size": 5266
+      }
+    ]
+  },
+  {
+    "name": "ui/assault",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/assault.png",
+        "size": 5629
+      }
+    ]
+  },
+  {
+    "name": "ui/portrait",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/portrait.png",
+        "size": 5792
+      }
+    ]
+  },
+  {
+    "name": "ui/full-health",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/full-health.png",
+        "size": 723
+      }
+    ]
+  },
+  {
+    "name": "ui/empty-health",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/empty-health.png",
+        "size": 712
+      }
+    ]
+  },
+  {
+    "name": "ui/full-energy",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/full-energy.png",
+        "size": 432
+      }
+    ]
+  },
+  {
+    "name": "ui/empty-energy",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/empty-energy.png",
+        "size": 427
+      }
+    ]
+  },
+  {
+    "name": "ui/full-armor",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/full-armor.png",
+        "size": 2611
+      }
+    ]
+  },
+  {
+    "name": "music/night",
+    "type": "audio",
+    "files": [
+      {
+        "src": "assets/music/night.mp3",
+        "size": 3973119
+      },
+      {
+        "src": "assets/music/night.m4a",
+        "size": 3764806
+      }
+    ]
+  }
+]

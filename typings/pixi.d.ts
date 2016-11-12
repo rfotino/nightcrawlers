@@ -1624,6 +1624,7 @@ declare namespace PIXI {
             xhrType: string;
             error: Error;
             xhr: XMLHttpRequest;
+            isComplete: boolean;
 
             complete(): void;
             load(cb?: () => void): void;
