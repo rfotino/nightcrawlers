@@ -2,6 +2,18 @@ import { Game } from '../game';
 import { UIContainer } from './container';
 import { MouseState } from '../input/mousestate';
 
+export class UIImageLabel extends UIContainer {
+  protected _sprite: PIXI.Sprite;
+
+  public constructor(game: Game, resourceName: string) {
+    super(game);
+    this._sprite = new PIXI.Sprite(PIXI.loader.resources[resourceName].texture);
+    this.addChild(this._sprite);
+    this.width = this._sprite.width;
+    this.height = this._sprite.height;
+  }
+}
+
 export class UILabel extends UIContainer {
   protected _text: PIXI.Text;
   protected _title: string;
@@ -29,21 +41,20 @@ export class UILabel extends UIContainer {
     this._sizer.height = height;
   }
 
-  public constructor(game: Game, title: string, textColor: string = 'white') {
+  public constructor(game: Game, title: string, style: PIXI.TextStyle = {}) {
     super(game);
     this._title = title;
-    this._text = new PIXI.Text(this._title, {
-      align: 'center',
-      fontFamily: 'sans-serif',
-      fill: textColor,
-    });
+    style.align = style.align || 'center';
+    style.fontFamily = style.fontFamily || 'sans-serif';
+    style.fontSize = style.fontSize || 90;
+    style.fill = style.fill || 'white';
+    this._text = new PIXI.Text(this._title, style);
     this._text.anchor.x = this._text.anchor.y = 0.5;
     this.addChild(this._text);
   }
 
   public doLayout(): void {
     super.doLayout();
-    this._text.style.fontSize = this.height * 0.8;
     this._text.x = this.width / 2;
     this._text.y = this.height / 2;
   }

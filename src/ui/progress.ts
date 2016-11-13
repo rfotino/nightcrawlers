@@ -2,6 +2,7 @@ import { UIContainer } from './container';
 import { UILabel } from './label';
 import { Game } from '../game';
 import { Color } from '../graphics/color';
+import { Counter } from '../math/counter';
 
 export class UIProgressBar extends UIContainer {
   protected _percentLabel: UILabel;
@@ -22,7 +23,7 @@ export class UIProgressBar extends UIContainer {
     this._loadedBar = new PIXI.Sprite(new Color(0, 200, 0).genTexture());
     this.addChild(this._loadedBar);
     // Add percent text label
-    this._percentLabel = new UILabel(game, '0%', 'black');
+    this._percentLabel = new UILabel(game, '0%', { fill: 'black' });
     this.addComponent(this._percentLabel);
   }
 
@@ -51,6 +52,10 @@ export class UIProgressBar extends UIContainer {
 export class MainProgressScreen extends UIContainer {
   protected _title: UILabel;
   protected _progressBar: UIProgressBar;
+  protected _transitionCounter: Counter = new Counter(20);
+  protected _transitioningIn: boolean = false;
+  protected _transitioningOut: boolean = false;
+  protected _fader: PIXI.Sprite;
 
   public set progress(progress: number) {
     this._progressBar.progress = progress;
@@ -62,6 +67,9 @@ export class MainProgressScreen extends UIContainer {
     this._progressBar = new UIProgressBar(game);
     this.addComponent(this._title);
     this.addComponent(this._progressBar);
+    this._fader = new PIXI.Sprite(new Color(0, 0, 0).genTexture());
+    this._fader.alpha = 0;
+    this.addChild(this._fader);
   }
 
   public doLayout(): void {
@@ -79,5 +87,37 @@ export class MainProgressScreen extends UIContainer {
     // Then center child components
     this._title.x = (this.width - this._title.width) / 2;
     this._progressBar.x = (this.width - this._progressBar.width) / 2;
+  }
+
+  public update(): void {
+    super.update();
+    if (this._transitioningIn || this._transitioningOut) {
+      this._transitionCounter.next();
+      if (this._transitionCounter.done()) {
+        this._transitioningIn = this._transitioningOut = false;
+      } else {
+        this._fader.scale.set(this.width, this.height);
+        if (this._transitioningIn) {
+          this._fader.alpha = 1 - this._transitionCounter.percent();
+        } else {
+          this._fader.alpha = this._transitionCounter.percent();
+        }
+      }
+    }
+  }
+
+  public isTransitionDone(): boolean {
+    return !this._transitioningIn && !this._transitioningOut;
+  }
+
+  public startTransition(isIn: boolean): void {
+    this._transitioningIn = isIn;
+    this._transitioningOut = !isIn;
+    this._transitionCounter.reset();
+    if (this._transitioningIn) {
+      this._fader.alpha = 1;
+    } else {
+      this._fader.alpha = 0;
+    }
   }
 }

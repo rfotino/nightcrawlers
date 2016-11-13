@@ -13,6 +13,7 @@ import { ItemSpawner } from './objects/item-spawner';
 import { TimeKeeper } from './timekeeper';
 import { KeyState } from './input/keystate';
 import { Polar } from './math/polar';
+import { Counter } from './math/counter';
 import { Color } from './graphics/color';
 import { Debugger } from './debug';
 import { Collider } from './math/collider';
@@ -49,6 +50,10 @@ export class GameInstance extends UIContainer {
   protected _waveIndex: number;
   protected _nightMusic: Howl;
   protected _nightMusicId: number;
+  protected _fadeTransitioningIn: boolean = false;
+  protected _fadeTransitioningOut: boolean = false;
+  protected _fadeTransitionCounter: Counter = new Counter();
+  protected _fader: PIXI.Sprite;
 
   public get options(): Options {
     return this._options;
@@ -138,6 +143,10 @@ export class GameInstance extends UIContainer {
         this._nightMusic.pause(this._nightMusicId);
       });
     });
+    // Add transparent black sprite for fading in and out
+    this._fader = new PIXI.Sprite(new Color(0, 0, 0).genTexture());
+    this._fader.alpha = 0;
+    this.addChild(this._fader);
   }
 
   /**
@@ -271,10 +280,44 @@ export class GameInstance extends UIContainer {
   }
 
   /**
+   * Returns true if we are neither fading in nor out.
+   */
+  public isTransitionDone(): boolean {
+    return !this._fadeTransitioningIn && !this._fadeTransitioningOut;
+  }
+
+  /**
+   * Starts transitioning in or out.
+   */
+  public startTransition(isIn: boolean): void {
+    this._fadeTransitionCounter.reset();
+    this._fadeTransitionCounter.max = isIn ? 60 : 20;
+    this._fadeTransitioningIn = isIn;
+    this._fadeTransitioningOut = !isIn;
+  }
+
+  /**
    * The main update function for the game.
    */
   public update(): void {
     super.update();
+    // Update fader size and opacity for fading in and out
+    if (this._fadeTransitioningIn || this._fadeTransitioningOut) {
+      this.setChildIndex(this._fader, this.children.length - 1);
+      this._fader.scale.set(this.width, this.height);
+      this._fadeTransitionCounter.next();
+      if (this._fadeTransitionCounter.done()) {
+        this._fadeTransitioningIn = this._fadeTransitioningOut = false;
+      } else {
+        if (this._fadeTransitioningIn) {
+          this._fader.alpha = 1 - this._fadeTransitionCounter.percent();
+        } else {
+          this._fader.alpha = this._fadeTransitionCounter.percent();
+        }
+      }
+    } else {
+      this._fader.alpha = 0;
+    }
     // Do not update anything else if paused
     if (this._paused) {
       return;

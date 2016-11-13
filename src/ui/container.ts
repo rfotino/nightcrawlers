@@ -101,4 +101,18 @@ export abstract class UIContainer extends PIXI.Container {
     this._background.tint = this._bgcolor.toPixi();
     this._background.alpha = this._bgcolor.a;
   }
+
+  /**
+   * By default UI containers have no transition, but main screens have the
+   * option to fade in/out and other effects.
+   */
+  public isTransitionDone(): boolean {
+    return true;
+  }
+
+  /**
+   * No-op because by default UI containers have no transition effects. Main
+   * screens can override this function to start off their transition in or out.
+   */
+  public startTransition(isIn: boolean): void {}
 }

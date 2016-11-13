@@ -11,14 +11,22 @@ import { MainMenu } from './ui/menu';
 import { MainProgressScreen } from './ui/progress';
 import { LagFactor } from './math/lag-factor';
 
+enum TransitionState {
+  NONE,
+  IN,
+  OUT,
+}
+
 export class Game {
   protected _renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer;
   protected _activeScreen: UIContainer;
+  protected _nextScreen: UIContainer;
   protected _mainMenu: MainMenu;
   protected _progressBar: MainProgressScreen;
   protected _keyState: KeyState;
   protected _mouseState: MouseState;
   protected _touchState: TouchState;
+  protected _transitionState: TransitionState = TransitionState.NONE;
   private _prevTime: number;
   private _currentTime: number;
   private _prevLagFactors: number[] = [];
@@ -32,9 +40,11 @@ export class Game {
     return this._renderer.view;
   }
 
-  public set activeScreen(screen: UIContainer) {
+  public setActiveScreen(screen: UIContainer) {
     screen.doLayout();
-    this._activeScreen = screen;
+    this._activeScreen.startTransition(false);
+    this._transitionState = TransitionState.OUT;
+    this._nextScreen = screen;
   }
 
   public constructor() {
@@ -71,7 +81,6 @@ export class Game {
     this._renderer.view.tabIndex = -1;
     // Create top level UI containers and set the initial active screen to
     // be a progress bar.
-    this._mainMenu = new MainMenu(this);
     this._progressBar = new MainProgressScreen(this);
     this._activeScreen = this._progressBar;
     // Preload assets - figure out which audio extension the browser supports,
@@ -117,7 +126,10 @@ export class Game {
       const progress = 100 * bytesLoaded / bytesTotal;
       this._progressBar.progress = progress;
     });
-    PIXI.loader.load(() => this.activeScreen = this._mainMenu);
+    PIXI.loader.load(() => {
+      this._mainMenu = new MainMenu(this);
+      this.setActiveScreen(this._mainMenu);
+    });
     // Initialize timing logic
     this._currentTime = Date.now();
     this._prevTime = this._currentTime - 16;
@@ -158,6 +170,19 @@ export class Game {
       this.view.width = window.innerWidth;
       this.view.height = window.innerHeight;
       this._renderer.resize(window.innerWidth, window.innerHeight);
+    }
+    // Handle transitioning and screen switching logic
+    if (this._transitionState === TransitionState.OUT) {
+      if (this._activeScreen.isTransitionDone()) {
+        this._activeScreen = this._nextScreen;
+        this._nextScreen = null;
+        this._activeScreen.startTransition(true);
+        this._transitionState = TransitionState.IN;
+      }
+    } else if (this._transitionState === TransitionState.IN) {
+      if (this._activeScreen.isTransitionDone) {
+        this._transitionState = TransitionState.NONE;
+      }
     }
     // Update the layout of the active screen and then update whatever is
     // happening on that screen

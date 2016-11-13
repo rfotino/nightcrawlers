@@ -27,10 +27,14 @@ export class UISlider extends UIContainer {
     this.addChild(this._handle);
   }
 
+  public doLayout(): void {
+    super.doLayout();
+    this.width = this._game.view.width * 0.2;
+    this.height = 70;
+  }
+
   public update(): void {
     super.update();
-    // Choose some multiple of the view width for the preferred size
-    this.width = 0.2 * this._game.view.width;
     // Resize handle
     let percent = (this.value - this.min) / (this.max - this.min);
     this._handle.width = this.width / 10;
@@ -92,9 +96,10 @@ export class UISliderWithLabel extends UIContainer {
   public set max(max: number) { this._slider.max = max; }
 
   public constructor(game: Game, title: string,
-                     value?: number, min?: number, max?: number) {
+                     value?: number, min?: number, max?: number,
+                     style?: PIXI.TextStyle) {
     super(game);
-    this._label = new UILabel(game, title);
+    this._label = new UILabel(game, title, style);
     this._slider = new UISlider(game, value, min, max);
     this.addComponent(this._label);
     this.addComponent(this._slider);
@@ -104,12 +109,10 @@ export class UISliderWithLabel extends UIContainer {
   }
 
   public doLayout(): void {
-    this._label.height = this.height;
     super.doLayout();
     const margin = this._slider.width * 0.1;
-    this.width = this._label.width + this._slider.width + margin;
+    this.width = this._label.width + margin + this._slider.width;
+    this.height = Math.max(this._label.height, this._slider.height);
     this._slider.x = this._label.width + margin;
-    this._slider.y = this.height * 0.1;
-    this._slider.height = this.height * 0.8;
   }
 }
