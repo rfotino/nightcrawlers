@@ -12,6 +12,34 @@ import { Options } from '../options';
 
 const TITLE_FONT_SIZE = 130;
 
+// Background position data to be shared by every menu
+let FOG_ROTATIONS = [
+  {
+    rotation: Math.random() * Math.PI * 2,
+    rotationVel: 0.001,
+  },
+  {
+    rotation: Math.random() * Math.PI * 2,
+    rotationVel: 0.00025,
+  },
+];
+
+// Generate fog layers for a menu
+function getFogs(): PIXI.Sprite[] {
+  let fogs: PIXI.Sprite[] = [];
+  for (let i = 0; i < FOG_ROTATIONS.length; i++) {
+    let fog = new PIXI.Sprite(PIXI.loader.resources['game/clouds'].texture);
+    fog.anchor.set(0.5);
+    fog.alpha = 0.75;
+    fog.tint = 0x000000;
+    fogs.push(fog);
+  }
+  return fogs;
+}
+
+/**
+ * Menu items can fly around the screen in response to transitions.
+ */
 interface MenuItem {
   component: UIContainer;
   pos: number;
@@ -20,10 +48,19 @@ interface MenuItem {
   delay?: number;
 }
 
+/**
+ * Base menu class from which custom menus can be subclassed.
+ */
 export class UIMenu extends UIContainer {
   protected _menuItems: MenuItem[] = [];
   protected _transitioningIn: boolean = false;
   protected _transitioningOut: boolean = false;
+  protected _fogs: PIXI.Sprite[];
+  protected _moon: PIXI.Sprite;
+  protected _moonlight: PIXI.Sprite;
+  protected _ground: PIXI.extras.TilingSprite;
+  protected _tree: PIXI.Sprite;
+  protected _gravestone: PIXI.Sprite;
 
   protected get _transitionOffsetMin(): number {
     return -this._transitionOffsetMax;
@@ -35,6 +72,36 @@ export class UIMenu extends UIContainer {
       maxWidth = Math.max(maxWidth, item.component.width);
     });
     return (this._game.view.width + maxWidth) / 2;
+  }
+
+  public constructor(game: Game, bgVisible: boolean = true) {
+    super(game);
+    this.bgcolor = new Color(100, 160, 200); // Night color from game instance
+    this._fogs = getFogs();
+    this._moon = new PIXI.Sprite(PIXI.loader.resources['game/moon'].texture);
+    this._moonlight = new PIXI.Sprite(PIXI.loader.resources['game/moonlight'].texture);
+    this._moon.anchor.set(0.5);
+    this._moonlight.anchor.set(0.5);
+    this._moon.scale.set(1.5);
+    this._moonlight.scale.set(1.5);
+    this._ground = new PIXI.extras.TilingSprite(
+      PIXI.loader.resources['game/grass'].texture,
+      this.width,
+      76
+    );
+    this._tree = new PIXI.Sprite(PIXI.loader.resources['game/night/tree1'].texture);
+    this._gravestone = new PIXI.Sprite(PIXI.loader.resources['game/night/gravestone2'].texture);
+    this._tree.anchor.set(0.5, 1);
+    this._gravestone.anchor.set(0.5, 1);
+    // Add images in the correct order
+    if (bgVisible) {
+      this.addChild(this._moon);
+      this.addChild(this._tree);
+      this.addChild(this._gravestone);
+      this.addChild(this._ground);
+      this._fogs.forEach(fog => this.addChild(fog));
+      this.addChild(this._moonlight);
+    }
   }
 
   public doLayout(): void {
@@ -65,6 +132,25 @@ export class UIMenu extends UIContainer {
       }
       currentY += item.component.height + betweenMargin;
     });
+    // Update background position and scale
+    const maxDist = Math.sqrt(
+      Math.pow(this.width / 2, 2) +
+      Math.pow(this.height, 2)
+    );
+    const scale = maxDist * 2 / this._fogs[0].texture.baseTexture.width;
+    this._fogs.forEach((fog, index) => {
+      fog.rotation = FOG_ROTATIONS[index].rotation;
+      fog.scale.set(2 * scale);
+      fog.position.set(this.width / 2, this.height);
+    });
+    this._moon.position.x = this._moonlight.position.x = this.width * 0.15;
+    this._moon.position.y = this._moonlight.position.y = this.height * 0.3;
+    this._ground.position.y = this.height - this._ground.height;
+    this._ground.width = this.width;
+    this._tree.position.x = this.width * 0.85;
+    this._tree.position.y = this._ground.position.y + 12;
+    this._gravestone.position.x = this._tree.position.x - 60;
+    this._gravestone.position.y = this._tree.position.y;
   }
 
   /**
@@ -72,6 +158,10 @@ export class UIMenu extends UIContainer {
    */
   public update(): void {
     super.update();
+    // Update fog rotation
+    FOG_ROTATIONS.forEach(obj => {
+      obj.rotation += obj.rotationVel * LagFactor.get();
+    });
     // Update position/velocity of menu items if transitioning in or out
     if (this._transitioningIn || this._transitioningOut) {
       let done = true;
@@ -258,7 +348,7 @@ class CreditsMenu extends UIMenu {
 
 export class PauseMenu extends UIMenu {
   public constructor(game: Game, gameInstance: GameInstance) {
-    super(game);
+    super(game, false);
     // Add title
     this.addMenuItem(new UILabel(game, 'Paused', { fontSize: TITLE_FONT_SIZE }));
     // Add resume button
@@ -281,7 +371,7 @@ export class PauseMenu extends UIMenu {
 
 export class GameOverMenu extends UIMenu {
   public constructor(game: Game, gameInstance: GameInstance) {
-    super(game);
+    super(game, false);
     // Add title
     this.addMenuItem(new UILabel(game, 'Game Over', { fontSize: TITLE_FONT_SIZE }));
     // Add button to start a new game
