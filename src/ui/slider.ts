@@ -67,7 +67,11 @@ export class UISlider extends UIContainer {
    * Adjust the slider value based on the x-position of the mouse.
    */
   protected _adjustValue(x: number, y: number): void {
-    let percent = (x - (this._handle.width / 2)) / (this.width - this._handle.width);
+    const selfBounds = this.getBounds();
+    let percent = (
+      (x - (this._handle.width / 2)) /
+      (selfBounds.width - this._handle.width)
+    );
     if (percent < 0) {
       percent = 0;
     } else if (percent > 1) {

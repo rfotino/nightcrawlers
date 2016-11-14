@@ -67,8 +67,8 @@ export class UIImageButton extends UIContainer {
     return new PIXI.Rectangle(
       this.parent.x + this.x,
       this.parent.y + this.y,
-      this.width,
-      this.height
+      this.width * this.scale.x,
+      this.height * this.scale.y
     );
   }
 

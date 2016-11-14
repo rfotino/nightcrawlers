@@ -86,8 +86,6 @@ export class UIMenu extends UIContainer {
     this._moonlight = new PIXI.Sprite(PIXI.loader.resources['game/moonlight'].texture);
     this._moon.anchor.set(0.5);
     this._moonlight.anchor.set(0.5);
-    this._moon.scale.set(1.5);
-    this._moonlight.scale.set(1.5);
     this._ground = new PIXI.extras.TilingSprite(
       PIXI.loader.resources['game/grass'].texture,
       this.width,
@@ -119,34 +117,42 @@ export class UIMenu extends UIContainer {
     const usedHeight = this._menuItems
       .map(item => item.component.height)
       .reduce((c, v) => c + v);
-    let betweenMargin = (availableHeight - usedHeight) / (this._menuItems.length - 1);
     const maxBetweenMargin = this.height * 0.05;
+    const minBetweenMargin = maxBetweenMargin / 2;
+    let betweenMargin = (availableHeight - usedHeight) / (this._menuItems.length - 1);
+    let menuItemScale = 1;
     if (betweenMargin > maxBetweenMargin) {
       marginTop += (betweenMargin - maxBetweenMargin) * (this._menuItems.length - 1) / 2;
       betweenMargin = maxBetweenMargin;
+    } else if (betweenMargin < minBetweenMargin) {
+      betweenMargin = minBetweenMargin;
+      menuItemScale = availableHeight / (usedHeight + betweenMargin * (this._menuItems.length - 1));
     }
     let currentY = marginTop;
     this._menuItems.forEach((item, index) => {
+      item.component.scale.set(menuItemScale);
+      const itemWidth = item.component.width * menuItemScale;
+      const itemHeight = item.component.height * menuItemScale;
       if (index === 0) {
         // First item goes up and down screen based on position, others go
         // left and right
-        item.component.x = (this.width - item.component.width) / 2;
+        item.component.x = (this.width - itemWidth) / 2;
         item.component.y = (item.pos / 4) + currentY;
       } else {
-        item.component.x = item.pos + (this.width - item.component.width) / 2;
+        item.component.x = item.pos + (this.width - itemWidth) / 2;
         item.component.y = currentY;
       }
-      currentY += item.component.height + betweenMargin;
+      currentY += itemHeight + betweenMargin;
     });
     // Update background position and scale
     const maxDist = Math.sqrt(
       Math.pow(this.width / 2, 2) +
       Math.pow(this.height, 2)
     );
-    const scale = maxDist * 2 / this._fogs[0].texture.baseTexture.width;
+    const fogScale = maxDist * 2 / this._fogs[0].texture.baseTexture.width;
     this._fogs.forEach((fog, index) => {
       fog.rotation = FOG_ROTATIONS[index].rotation;
-      fog.scale.set(2 * scale);
+      fog.scale.set(2 * fogScale);
       fog.position.set(this.width / 2, this.height);
     });
     this._moon.position.x = this._moonlight.position.x = this.width * 0.15;
@@ -154,9 +160,14 @@ export class UIMenu extends UIContainer {
     this._ground.position.y = this.height - this._ground.height;
     this._ground.width = this.width;
     this._tree.position.x = this.width * 0.85;
-    this._tree.position.y = this._ground.position.y + 12;
+    this._tree.position.y = this._ground.position.y + 15;
     this._gravestone.position.x = this._tree.position.x - 60;
     this._gravestone.position.y = this._tree.position.y;
+    const decorationScale = 1.5 * this._game.view.height / 1080;
+    this._moon.scale.set(decorationScale);
+    this._moonlight.scale.set(decorationScale);
+    this._tree.scale.set(decorationScale);
+    this._gravestone.scale.set(decorationScale);
   }
 
   /**
