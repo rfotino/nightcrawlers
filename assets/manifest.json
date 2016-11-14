@@ -314,7 +314,7 @@
     "type": "image",
     "files": [
       {
-        "src": "assets/images/ui/menu/nightcrawlers-title-white.png",
+        "src": "assets/images/ui/menu/nightcrawlers-title.png",
         "size": 44563
       }
     ]
@@ -324,7 +324,7 @@
     "type": "image",
     "files": [
       {
-        "src": "assets/images/ui/menu/options-title-white.png",
+        "src": "assets/images/ui/menu/options-title.png",
         "size": 32170
       }
     ]
@@ -334,8 +334,8 @@
     "type": "image",
     "files": [
       {
-        "src": "assets/images/ui/menu/credits-title-white.png",
-        "size": 28570
+        "src": "assets/images/ui/menu/credits-title.png",
+        "size": 34548
       }
     ]
   },
