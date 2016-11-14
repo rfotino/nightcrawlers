@@ -1,6 +1,6 @@
 import { UIContainer } from './container';
-import { UIButton } from './button';
-import { UILabel } from './label';
+import { UIButton, UIImageButton } from './button';
+import { UILabel, UIImageLabel } from './label';
 import { UISliderWithLabel } from './slider';
 import { Game } from '../game';
 import { GameInstance } from '../game-instance';
@@ -11,6 +11,10 @@ import { LagFactor } from '../math/lag-factor';
 import { Options } from '../options';
 
 const TITLE_FONT_SIZE = 130;
+const TITLE_WIDTH = 600;
+const TITLE_HEIGHT = 220;
+const BUTTON_WIDTH = 380;
+const BUTTON_HEIGHT = 115;
 
 // Background position data to be shared by every menu
 let FOG_ROTATIONS = [
@@ -110,16 +114,18 @@ export class UIMenu extends UIContainer {
     this.width = this.view.width;
     this.height = this.view.height;
     // Then position menu items horizontally centered and vertically cascading
-    const marginTop = this.height * 0.1;
+    let marginTop = this.height * 0.05;
     const availableHeight = this.height - (marginTop * 2);
     const usedHeight = this._menuItems
       .map(item => item.component.height)
       .reduce((c, v) => c + v);
-    const betweenMargin = Math.min(
-      this.height * 0.05,
-      (availableHeight - usedHeight) / this._menuItems.length
-    );
-    let currentY = marginTop + (betweenMargin / 2);
+    let betweenMargin = (availableHeight - usedHeight) / (this._menuItems.length - 1);
+    const maxBetweenMargin = this.height * 0.05;
+    if (betweenMargin > maxBetweenMargin) {
+      marginTop += (betweenMargin - maxBetweenMargin) * (this._menuItems.length - 1) / 2;
+      betweenMargin = maxBetweenMargin;
+    }
+    let currentY = marginTop;
     this._menuItems.forEach((item, index) => {
       if (index === 0) {
         // First item goes up and down screen based on position, others go
@@ -240,23 +246,23 @@ export class MainMenu extends UIMenu {
   public constructor(game: Game) {
     super(game);
     // Add title
-    this.addMenuItem(new UILabel(game, 'Nightcrawlers', { fontSize: TITLE_FONT_SIZE }));
+    this.addMenuItem(new UIImageLabel(game, 'ui/menu/nightcrawlers-title', TITLE_WIDTH, TITLE_HEIGHT));
     // Add play game button
-    const playGameBtn = new UIButton(game, 'Play Game');
+    const playGameBtn = new UIImageButton(game, 'ui/menu/play-game-btn', BUTTON_WIDTH, BUTTON_HEIGHT);
     playGameBtn.addListener('action', () => {
       game.setActiveScreen(new GameInstance(game, this._optionsMenu.options));
     });
     this.addMenuItem(playGameBtn);
     // Add options button
     this._optionsMenu = new OptionsMenu(game, this);
-    const optionsBtn = new UIButton(game, 'Options');
+    const optionsBtn = new UIImageButton(game, 'ui/menu/options-btn', BUTTON_WIDTH, BUTTON_HEIGHT);
     optionsBtn.addListener('action', () => {
       game.setActiveScreen(this._optionsMenu);
     });
     this.addMenuItem(optionsBtn);
     // Add credits button
     const creditsMenu = new CreditsMenu(game, this);
-    const creditsBtn = new UIButton(game, 'Credits');
+    const creditsBtn = new UIImageButton(game, 'ui/menu/credits-btn', BUTTON_WIDTH, BUTTON_HEIGHT);
     creditsBtn.addListener('action', () => {
       game.setActiveScreen(creditsMenu);
     });
@@ -273,7 +279,7 @@ class OptionsMenu extends UIMenu {
     super(game);
     this._options = new Options();
     // Add title
-    this.addMenuItem(new UILabel(game, 'Options', { fontSize: TITLE_FONT_SIZE }));
+    this.addMenuItem(new UIImageLabel(game, 'ui/menu/options-title', TITLE_WIDTH, TITLE_HEIGHT));
     // Add debug on/off button
     let debugButton = new UIButton(
       game,
@@ -327,7 +333,7 @@ class CreditsMenu extends UIMenu {
   public constructor(game: Game, previous: UIMenu) {
     super(game);
     // Add title
-    this.addMenuItem(new UILabel(game, 'Credits', { fontSize: TITLE_FONT_SIZE }));
+    this.addMenuItem(new UIImageLabel(game, 'ui/menu/credits-title', TITLE_WIDTH, TITLE_HEIGHT));
     // Add contributor labels
     let contributors = [
       'Robert Fotino',

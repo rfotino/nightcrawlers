@@ -5,12 +5,24 @@ import { MouseState } from '../input/mousestate';
 export class UIImageLabel extends UIContainer {
   protected _sprite: PIXI.Sprite;
 
-  public constructor(game: Game, resourceName: string) {
+  public constructor(game: Game, resourceName: string,
+                     width?: number, height?: number) {
     super(game);
     this._sprite = new PIXI.Sprite(PIXI.loader.resources[resourceName].texture);
     this.addChild(this._sprite);
-    this.width = this._sprite.width;
-    this.height = this._sprite.height;
+    this.width = width || this._sprite.width;
+    this.height = height || this._sprite.height;
+    this._sprite.x = -(this._sprite.width - this.width) / 2;
+    this._sprite.y = -(this._sprite.height - this.height) / 2;
+  }
+
+  public getBounds(): PIXI.Rectangle {
+    return new PIXI.Rectangle(
+      this.parent.x + this.x,
+      this.parent.y + this.y,
+      this.width,
+      this.height
+    );
   }
 }
 

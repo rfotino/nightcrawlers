@@ -60,9 +60,15 @@ export abstract class UIContainer extends PIXI.Container {
   }
 
   public trigger(event: string, mouseX: number, mouseY: number) {
+    // If we are transitioning, don't respond to any events
+    if (!this.isTransitionDone()) {
+      return;
+    }
+    // Otherwise call listener functions for this container
     if (this._listeners[event]) {
       this._listeners[event].forEach(fn => fn(mouseX, mouseY));
     }
+    // And then any applicable subcontainers
     this._childComponents.forEach(child => {
       let bounds = child.getBounds();
       if (bounds.contains(mouseX, mouseY)) {

@@ -310,6 +310,66 @@
     ]
   },
   {
+    "name": "ui/menu/nightcrawlers-title",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/nightcrawlers-title-white.png",
+        "size": 44563
+      }
+    ]
+  },
+  {
+    "name": "ui/menu/options-title",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/options-title-white.png",
+        "size": 32170
+      }
+    ]
+  },
+  {
+    "name": "ui/menu/credits-title",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/credits-title-white.png",
+        "size": 28570
+      }
+    ]
+  },
+  {
+    "name": "ui/menu/play-game-btn",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/play-game-btn.png",
+        "size": 74775
+      }
+    ]
+  },
+  {
+    "name": "ui/menu/options-btn",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/options-btn.png",
+        "size": 82398
+      }
+    ]
+  },
+  {
+    "name": "ui/menu/credits-btn",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/credits-btn.png",
+        "size": 84799
+      }
+    ]
+  },
+  {
     "name": "music/night",
     "type": "audio",
     "files": [
