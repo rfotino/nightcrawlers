@@ -332,7 +332,10 @@ class OptionsMenu extends UIMenu {
     });
     this.addMenuItem(loadLevelButton);
     // Add back button to return to previous menu
-    const backBtn = new UIButton(game, 'Back');
+    const backBtn = new UIImageButton(
+      game, 'ui/menu/back-btn',
+      BUTTON_WIDTH, BUTTON_HEIGHT
+    );
     backBtn.addListener('action', () => {
       game.setActiveScreen(previous);
     });
@@ -361,7 +364,10 @@ class CreditsMenu extends UIMenu {
       LABEL_HEIGHT
     ));
     // Add back button to return to previous menu
-    const backBtn = new UIButton(game, 'Back');
+    const backBtn = new UIImageButton(
+      game, 'ui/menu/back-btn',
+      BUTTON_WIDTH, BUTTON_HEIGHT
+    );
     backBtn.addListener('action', () => {
       game.setActiveScreen(previous);
     });

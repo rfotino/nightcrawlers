@@ -360,6 +360,16 @@
     ]
   },
   {
+    "name": "ui/menu/back-btn",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/back-btn.png",
+        "size": 72411
+      }
+    ]
+  },
+  {
     "name": "ui/menu/credits-label-rob",
     "type": "image",
     "files": [
