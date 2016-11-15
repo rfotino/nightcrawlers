@@ -346,14 +346,20 @@ class CreditsMenu extends UIMenu {
     // Add title
     this.addMenuItem(new UIImageLabel(game, 'ui/menu/credits-title', TITLE_WIDTH, TITLE_HEIGHT));
     // Add contributor labels
-    let contributors = [
-      'Robert Fotino',
-      'Joe Calvi',
-      'Nikolas Verlennich',
-    ].sort();
-    contributors.forEach(name => {
-      this.addMenuItem(new UILabel(game, name));
-    });
+    const LABEL_WIDTH = 975;
+    const LABEL_HEIGHT = 300;
+    this.addMenuItem(new UIImageLabel(
+      game,
+      'ui/menu/credits-label-rob',
+      LABEL_WIDTH,
+      LABEL_HEIGHT
+    ));
+    this.addMenuItem(new UIImageLabel(
+      game,
+      'ui/menu/credits-label-joe',
+      LABEL_WIDTH,
+      LABEL_HEIGHT
+    ));
     // Add back button to return to previous menu
     const backBtn = new UIButton(game, 'Back');
     backBtn.addListener('action', () => {

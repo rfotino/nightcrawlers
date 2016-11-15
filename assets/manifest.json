@@ -360,6 +360,26 @@
     ]
   },
   {
+    "name": "ui/menu/credits-label-rob",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/credits-label-rob.png",
+        "size": 101946
+      }
+    ]
+  },
+  {
+    "name": "ui/menu/credits-label-joe",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/menu/credits-label-joe.png",
+        "size": 87844
+      }
+    ]
+  },
+  {
     "name": "ui/menu/credits-btn",
     "type": "image",
     "files": [
