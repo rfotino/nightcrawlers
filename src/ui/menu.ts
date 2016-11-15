@@ -346,11 +346,15 @@ class OptionsMenu extends UIMenu {
 class CreditsMenu extends UIMenu {
   public constructor(game: Game, previous: UIMenu) {
     super(game);
-    // Add title
-    this.addMenuItem(new UIImageLabel(game, 'ui/menu/credits-title', TITLE_WIDTH, TITLE_HEIGHT));
+    // Add title - "Credits" has no letters that go below the baseline like
+    // "Options" and "Nightcrawlers" so decrease the height a bit to match
+    this.addMenuItem(new UIImageLabel(
+      game, 'ui/menu/credits-title',
+      TITLE_WIDTH, TITLE_HEIGHT - 50
+    ));
     // Add contributor labels
     const LABEL_WIDTH = 975;
-    const LABEL_HEIGHT = 300;
+    const LABEL_HEIGHT = 270;
     this.addMenuItem(new UIImageLabel(
       game,
       'ui/menu/credits-label-rob',
