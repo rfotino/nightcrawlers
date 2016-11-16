@@ -3,6 +3,7 @@ import { Game } from '../game';
 import { GameInstance } from '../game-instance';
 import { Color } from '../graphics/color';
 import { Polar } from '../math/polar';
+import { Enemy } from '../objects/enemy';
 
 function getCenter(rect: PIXI.Rectangle): PIXI.Point {
   return new PIXI.Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
@@ -14,10 +15,13 @@ class IndicatorArrow extends PIXI.Sprite {
   protected static _circleTexture: PIXI.Texture = null;
   protected static _pointerTexture: PIXI.Texture = null;
 
-  protected static get RADIUS(): number { return 25; }
+  protected static get RADIUS(): number { return 30; }
+  protected static get IMAGE_RADIUS(): number {
+    return IndicatorArrow.RADIUS - 3;
+  }
   protected static get POINTER_OFFSET(): number { return 3; }
-  protected static get POINTER_WIDTH(): number { return 15; }
-  protected static get POINTER_HEIGHT(): number { return 10; }
+  protected static get POINTER_WIDTH(): number { return 20; }
+  protected static get POINTER_HEIGHT(): number { return 15; }
   public static get MAX_RADIUS(): number {
     return (
       IndicatorArrow.RADIUS +
@@ -26,13 +30,25 @@ class IndicatorArrow extends PIXI.Sprite {
     );
   }
 
-  public constructor() {
+  public constructor(enemyType: string) {
     super(IndicatorArrow.getCircleTexture());
-    this.anchor.x = this.anchor.y = 0.5;
+    this.anchor.set(0.5);
+    // Add directional pointer arrow
     this._pointer = new PIXI.Sprite(IndicatorArrow.getPointerTexture());
     this._pointer.anchor.x = 0.5;
     this._pointer.anchor.y = 1;
     this.addChild(this._pointer);
+    // Add image of the enemy
+    const enemyResourceName = `game/indicator-${enemyType}`;
+    const enemyTexture = PIXI.loader.resources[enemyResourceName].texture;
+    const enemySprite = new PIXI.Sprite(enemyTexture);
+    this.addChild(enemySprite);
+    const enemyScale = (
+      2 * IndicatorArrow.IMAGE_RADIUS /
+      Math.max(enemySprite.width, enemySprite.height)
+    );
+    enemySprite.anchor.set(0.5);
+    enemySprite.scale.set(enemyScale);
   }
 
   public setDir(dir: PIXI.Point) {
@@ -95,7 +111,7 @@ export class EnemyIndicator extends UIContainer {
     // Get view bounds, player position, and array of all enemies
     let viewBounds = this.getBounds();
     let playerCenter = getCenter(this._gameInst.player.getBounds());
-    let enemies = this._gameInst.gameObjects.filter(obj => {
+    let enemies = <Enemy[]>this._gameInst.gameObjects.filter(obj => {
       return obj.type() === 'enemy';
     });
     // Mark all arrows as dead, any still marked as dead at the end will
@@ -109,7 +125,7 @@ export class EnemyIndicator extends UIContainer {
     enemies.forEach(enemy => {
       // Add an indicator arrow for this enemy if one doesn't exist
       if (!this._arrows[enemy.id]) {
-        let newArrow = new IndicatorArrow();
+        let newArrow = new IndicatorArrow(enemy.enemyType());
         this.addChild(newArrow);
         this._arrows[enemy.id] = newArrow;
       }

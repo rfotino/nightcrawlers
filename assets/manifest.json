@@ -100,6 +100,46 @@
     ]
   },
   {
+    "name": "game/indicator-zombie",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/indicator-zombie.png",
+        "size": 2823
+      }
+    ]
+  },
+  {
+    "name": "game/indicator-bat",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/indicator-bat.png",
+        "size": 1236
+      }
+    ]
+  },
+  {
+    "name": "game/indicator-skeleton",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/indicator-skeleton.png",
+        "size": 1231
+      }
+    ]
+  },
+  {
+    "name": "game/indicator-spider",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/indicator-spider.png",
+        "size": 1142
+      }
+    ]
+  },
+  {
     "name": "game/day/gravestone1",
     "type": "image",
     "files": [

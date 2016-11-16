@@ -28,7 +28,7 @@ const enum EnemyState {
  * General enemy class, moves left and right towards the player but cannot
  * fly or jump. Is affected by gravity by default.
  */
-export class Enemy extends GameObject {
+export abstract class Enemy extends GameObject {
   protected _sprite: SpriteSheet;
   protected _damageAmount: number = 0.25;
   protected _score: number = 50;
@@ -82,6 +82,8 @@ export class Enemy extends GameObject {
   public type(): string { return 'enemy'; }
 
   public team(): string { return 'enemy'; }
+
+  public abstract enemyType(): string;
 
   /**
    * Add points to player score and show the amount of points where
@@ -303,7 +305,7 @@ export class Enemy extends GameObject {
  * Class of enemies that can move in all directions (up and down as well as
  * left and right). Not affected by gravity, since they can fly.
  */
-export class FlyingEnemy extends Enemy {
+export abstract class FlyingEnemy extends Enemy {
   protected _shouldGoUp: boolean = false;
   protected _shouldGoDown: boolean = false;
 
@@ -351,7 +353,7 @@ export class FlyingEnemy extends Enemy {
  * Class of enemies that are affected by gravity and can only jump if they
  * are on solid ground.
  */
-export class JumpingEnemy extends Enemy {
+export abstract class JumpingEnemy extends Enemy {
   private _searchingJumpCounter: Counter;
   private _chasingJumpCounter: Counter = new Counter(30);
   protected _shouldJump: boolean = false;
@@ -416,7 +418,7 @@ export class JumpingEnemy extends Enemy {
  * sky. If you spawn out of the ground, you probably jump, so this class
  * naturally extends JumpingEnemy.
  */
-export class GroundSpawnEnemy extends JumpingEnemy {
+export abstract class GroundSpawnEnemy extends JumpingEnemy {
   public constructor(game: GameInstance) {
     super(game);
     // Spawn the enemy on a block near to the player. First choose an angle

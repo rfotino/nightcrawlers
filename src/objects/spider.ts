@@ -14,4 +14,6 @@ export class Spider extends JumpingEnemy {
     this._moveSpeed = 5;
     this._jumpSpeed = 22;
   }
+
+  public enemyType(): string { return 'spider'; }
 }

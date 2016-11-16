@@ -17,6 +17,8 @@ export class Zombie extends GroundSpawnEnemy {
     this._moveSpeed = 2.5;
   }
 
+  public enemyType(): string { return 'zombie'; }
+
   protected _createSprite(): SpriteSheet {
     return new SpriteSheet(
       'game/zombie',

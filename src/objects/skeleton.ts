@@ -13,4 +13,6 @@ export class Skeleton extends GroundSpawnEnemy {
     super(game);
     this._moveSpeed = 5;
   }
+
+  public enemyType(): string { return 'skeleton'; }
 }

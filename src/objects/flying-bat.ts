@@ -11,6 +11,8 @@ export class FlyingBat extends FlyingEnemy {
   public get width(): number { return 50; }
   public get height(): number { return 50; }
 
+  public enemyType(): string { return 'bat'; }
+
   protected _createSprite(): SpriteSheet {
     return new SpriteSheet(
       'game/flying-bat',
