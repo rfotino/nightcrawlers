@@ -80,12 +80,22 @@
     ]
   },
   {
+    "name": "game/zombie",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/zombie.png",
+        "size": 13141
+      }
+    ]
+  },
+  {
     "name": "game/flying-bat",
     "type": "image",
     "files": [
       {
         "src": "assets/images/game/flying-bat.png",
-        "size": 5363
+        "size": 7854
       }
     ]
   },

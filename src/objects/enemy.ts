@@ -352,7 +352,8 @@ export class FlyingEnemy extends Enemy {
  * are on solid ground.
  */
 export class JumpingEnemy extends Enemy {
-  private _jumpCounter: Counter;
+  private _searchingJumpCounter: Counter;
+  private _chasingJumpCounter: Counter = new Counter(30);
   protected _shouldJump: boolean = false;
   protected _jumpSpeed: number = 18;
 
@@ -363,42 +364,49 @@ export class JumpingEnemy extends Enemy {
   protected _updateSearching(): void {
     super._updateSearching();
     if (this._state !== EnemyState.Searching) {
-      this._jumpCounter = null;
+      this._searchingJumpCounter = null;
       return;
     }
     // Make sure the jump counter has been initialized
-    if (!this._jumpCounter) {
-      this._jumpCounter = new Counter(this._getNewJumpCounterInterval());
+    if (!this._searchingJumpCounter) {
+      this._searchingJumpCounter = new Counter(this._getNewJumpCounterInterval());
     }
     // Update the jump counter, jump if it has expired
     if (this._isOnSolidGround()) {
-      if (this._jumpCounter.done()) {
+      if (this._searchingJumpCounter.done()) {
         // Jump
         this.vel.r = this._jumpSpeed;
         // Reset jump counter with another randomized interval
-        this._jumpCounter.max = this._getNewJumpCounterInterval();
-        this._jumpCounter.reset();
+        this._searchingJumpCounter.max = this._getNewJumpCounterInterval();
+        this._searchingJumpCounter.reset();
       } else {
         // Increment jump counter
-        this._jumpCounter.next();
+        this._searchingJumpCounter.next();
       }
     } else {
       // Not on solid ground, reset the jump counter
-      this._jumpCounter.reset();
+      this._searchingJumpCounter.reset();
     }
   }
 
   protected _updateChasing(): void {
     super._updateChasing();
     if (this._state !== EnemyState.Chasing) {
+      this._chasingJumpCounter.count = this._chasingJumpCounter.max;
       return;
     }
     // Decide if we should jump
     const JUMP_THRESHOLD = 30;
     this._shouldJump = this._game.player.pos.r > this.pos.r + JUMP_THRESHOLD;
+    // Only jump every so often when we are on the ground, don't jump constantly
+    if (this._isOnSolidGround()) {
+      this._chasingJumpCounter.next();
+    }
     // Handle jumping if player is above this enemy
-    if (this._shouldJump && this._isOnSolidGround()) {
+    if (this._shouldJump && this._isOnSolidGround() &&
+        this._chasingJumpCounter.done()) {
       this.vel.r = this._jumpSpeed;
+      this._chasingJumpCounter.reset();
     }
   }
 }
