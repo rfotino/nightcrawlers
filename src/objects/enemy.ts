@@ -65,18 +65,40 @@ export abstract class Enemy extends GameObject {
     return new SpriteSheet(PIXI.Texture.fromCanvas(canvas));
   }
 
+  protected _setInitialPos(): void {
+    this.pos.set(
+      this._game.player.pos.r + 300,
+      this._game.player.pos.theta - 0.5 + Math.random()
+    );
+  }
+
   public constructor(game: GameInstance) {
     super(game);
     this._maxHealth = 20;
     this._health = this._maxHealth;
     this._sprite = this._createSprite();
     this._sprite.anchor.set(0.5, 0.5);
-    this.pos.set(
-      game.player.pos.r + 300,
-      game.player.pos.theta - 0.5 + Math.random()
-    );
+    this._setInitialPos();
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
+    // Push the enemy sprite up and out of the ground, if that is where it is
+    const blockBounds = game.level.blocks.map(block => block.getPolarBounds());
+    let enemyRect = this.getPolarBounds();
+    for (let i = 0; i < blockBounds.length; i++) {
+      let blockRect = blockBounds[i];
+      if (enemyRect.intersects(blockRect) &&
+          !Polar.above(enemyRect, blockRect) &&
+          !Polar.above(blockRect, enemyRect)) {
+        // Push this enemy above the block and update bounds
+        this.pos.r = blockRect.r + (this.height / 2);
+        enemyRect = this.getPolarBounds();
+        // start loop over, i === 0 next iteration
+        i = -1;
+      }
+    }
+    // Push the enemy up a bit so that it doesn't fall through the block below
+    // it in the first frame after it spawns
+    this.pos.r += Math.abs(Terrain.GRAVITY) + 0.1;
   }
 
   public type(): string { return 'enemy'; }
@@ -419,8 +441,8 @@ export abstract class JumpingEnemy extends Enemy {
  * naturally extends JumpingEnemy.
  */
 export abstract class GroundSpawnEnemy extends JumpingEnemy {
-  public constructor(game: GameInstance) {
-    super(game);
+  protected _setInitialPos(): void {
+    const game = this._game;
     // Spawn the enemy on a block near to the player. First choose an angle
     // to spawn at that is between minDist and maxDist radians away from the
     // player.
@@ -436,8 +458,8 @@ export abstract class GroundSpawnEnemy extends JumpingEnemy {
     this.pos.theta = theta;
     // Then find all blocks that can be found at that angle and sort them by
     // distance from the player.
-    let blockBounds = game.level.blocks.map(block => block.getPolarBounds());
-    let possibleRects = blockBounds.filter(rect => {
+    const blockBounds = game.level.blocks.map(block => block.getPolarBounds());
+    const possibleRects = blockBounds.filter(rect => {
       return Polar.thetaBetween(theta, rect.theta, rect.theta + rect.width);
     }).sort((r1, r2) => {
       return (
@@ -448,24 +470,10 @@ export abstract class GroundSpawnEnemy extends JumpingEnemy {
     // Choose the closest possible rectangle, if available, and then push the
     // enemy up until it isn't intersecting any blocks
     if (possibleRects.length > 0) {
-      let rect = possibleRects[0];
+      const rect = possibleRects[0];
       this.pos.r = rect.r + (this.height / 2);
+    } else {
+      super._setInitialPos();
     }
-    let enemyRect = this.getPolarBounds();
-    for (let i = 0; i < blockBounds.length; i++) {
-      let blockRect = blockBounds[i];
-      if (enemyRect.intersects(blockRect) &&
-          !Polar.above(enemyRect, blockRect) &&
-          !Polar.above(blockRect, enemyRect)) {
-        // Push this enemy above the block and update bounds
-        this.pos.r = blockRect.r + (this.height / 2);
-        enemyRect = this.getPolarBounds();
-        // start loop over, i === 0 next iteration
-        i = -1;
-      }
-    }
-    // Push the enemy up a bit so that it doesn't fall through the block below
-    // it in the first frame after it spawns
-    this.pos.r += Math.abs(Terrain.GRAVITY) + 0.1;
   }
 }
