@@ -40,6 +40,7 @@ export abstract class Enemy extends GameObject {
   protected _stunnedCounter: Counter = new Counter(0);
   protected _state: EnemyState = EnemyState.Searching;
   protected _searchDir: Direction = Direction.None;
+  protected _chasingCounter: Counter = new Counter(45);
 
   public get z(): number {
     return 40;
@@ -200,10 +201,19 @@ export abstract class Enemy extends GameObject {
    * player, and if they go out of sight then go back to the "searching" state.
    */
   protected _updateChasing(): void {
-    // If we can't see the player, switch to searching
-    if (!this._canSeePlayer()) {
-      this._state = EnemyState.Searching;
-      return;
+    // If we can't see the player, switch to searching after chasingCounter
+    // is up. The small timer period that the enemy continues chasing after it
+    // has lost sight of the player can help it to get the player in its line
+    // of sight once more
+    if (this._canSeePlayer()) {
+      this._chasingCounter.reset();
+    } else {
+      this._chasingCounter.next();
+      if (this._chasingCounter.done()) {
+        this._chasingCounter.reset();
+        this._state = EnemyState.Searching;
+        return;
+      }
     }
     // Decide if we should go left or right
     const player = this._game.player;
