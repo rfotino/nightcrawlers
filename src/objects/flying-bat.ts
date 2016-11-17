@@ -9,22 +9,26 @@ import { SpriteSheet} from '../graphics/spritesheet';
  */
 export class FlyingBat extends FlyingEnemy {
   public get width(): number { return 50; }
-  public get height(): number { return 50; }
+  public get height(): number { return 35; }
 
   public enemyType(): string { return 'bat'; }
 
   protected _createSprite(): SpriteSheet {
     return new SpriteSheet(
       'game/flying-bat',
-      3, 1, // width, height
-      'walk', // default anim
+      4, 1, // width, height
+      'idle', // default anim
       { // animations
+        idle: {
+          frames: [0],
+          ticksPerFrame: 0,
+        },
         walk: {
-          frames: [ 0, 1, 2 ],
+          frames: [0, 1, 2, 3],
           ticksPerFrame: 10,
         },
         run: {
-          frames: [ 0, 1, 2 ],
+          frames: [0, 1, 2, 3],
           ticksPerFrame: 6,
         },
       }

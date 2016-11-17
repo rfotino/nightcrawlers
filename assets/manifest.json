@@ -95,7 +95,7 @@
     "files": [
       {
         "src": "assets/images/game/flying-bat.png",
-        "size": 7854
+        "size": 8640
       }
     ]
   },
@@ -115,7 +115,7 @@
     "files": [
       {
         "src": "assets/images/game/indicator-bat.png",
-        "size": 1236
+        "size": 3426
       }
     ]
   },
