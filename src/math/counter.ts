@@ -32,8 +32,11 @@ export class Counter {
     }
   }
 
+  /**
+   * Returns the percentage complete, clamped to the range [0, 1].
+   */
   public percent(): number {
-    return this.count / this.max;
+    return Math.min(1, Math.max(0, this.count / this.max));
   }
 
   public reset(): void {

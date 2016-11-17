@@ -107,9 +107,8 @@ export class ProximityMine extends Bullet {
           !this._canSee(enemy, blockBounds)) {
         return;
       }
-      // Damage the enemy
-      enemy.damage(this._damageAmount);
-      // And knock them away
+      // Damage has to be after knockback, otherwise blood splatter won't have
+      // the correct velocity if damage() ends up killing the enemy
       let enemyVel = new Polar.Coord(15, 20 / enemy.pos.r);
       if (enemy.pos.r < this.pos.r) {
         enemyVel.r *= -1;
@@ -120,6 +119,7 @@ export class ProximityMine extends Bullet {
       }
       enemy.vel.r = enemyVel.r;
       enemy.knockback(enemyVel.theta, this._knockbackTime, this._stunTime);
+      enemy.damage(this._damageAmount);
     });
     // Mines can only be used once
     this.kill();

@@ -64,8 +64,10 @@ export class Bullet extends GameObject {
     super.collide(other, result);
     if (other.team() === 'enemy') {
       const enemy = <Enemy>other;
-      enemy.damage(this._damageAmount);
+      // Damage has to be after knockback, otherwise blood splatter won't have
+      // the correct velocity if damage() ends up killing the enemy
       enemy.knockback(this._knockbackVel, this._knockbackTime, this._stunTime);
+      enemy.damage(this._damageAmount);
       this.kill();
     } else if (other.type() === 'block' || other.type() === 'platform') {
       if (this._killedByTerrain) {

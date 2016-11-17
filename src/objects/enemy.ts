@@ -3,6 +3,7 @@ import { GameObject } from './game-object';
 import * as Terrain from './terrain';
 import { Player } from './player';
 import { FadingText } from './fading-text';
+import { BloodSplatter } from './blood-splatter';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
@@ -35,7 +36,6 @@ export abstract class Enemy extends GameObject {
   protected _shouldGoLeft: boolean = false;
   protected _shouldGoRight: boolean = false;
   protected _moveSpeed: number = 3;
-  protected _knockbackVel: number = 0;
   protected _knockbackCounter: Counter = new Counter(0);
   protected _stunnedCounter: Counter = new Counter(0);
   protected _state: EnemyState = EnemyState.Searching;
@@ -121,6 +121,7 @@ export abstract class Enemy extends GameObject {
       this.pos,
       { fontSize: 36, fill: 'white' }
     ));
+    this._game.addGameObject(new BloodSplatter(this._game, this.pos, this.vel));
   }
 
   /**
@@ -253,7 +254,6 @@ export abstract class Enemy extends GameObject {
       this.vel.theta = 0;
     } else {
       this._knockbackCounter.next();
-      this.vel.theta = this._knockbackVel;
     }
   }
 
@@ -308,7 +308,7 @@ export abstract class Enemy extends GameObject {
   public knockback(knockbackVel: number, knockbackTime: number,
                    stunTime: number) {
     this._state = EnemyState.Knockback;
-    this._knockbackVel = knockbackVel;
+    this.vel.theta = knockbackVel;
     this._knockbackCounter.reset();
     this._knockbackCounter.max = knockbackTime;
     this._stunnedCounter.reset();
