@@ -13,7 +13,7 @@ export class Zombie extends GroundSpawnEnemy {
 
   public constructor(game: GameInstance) {
     super(game);
-    this._sprite.anchor.set(0.3, 0.5);
+    this._sprite.anchor.set(0.4, 0.5);
     this._moveSpeed = 2.5;
   }
 
@@ -23,19 +23,27 @@ export class Zombie extends GroundSpawnEnemy {
     return new SpriteSheet(
       'game/zombie',
       8, 2, // width, height
-      'walk', // default anim
+      'idle', // default anim
       { // animations
+        idle: {
+          frames: [0],
+          ticksPerFrame: 0,
+        },
         walk: {
-          frames: [0, 1, 2, 3, 4, 5, 6, 7],
+          frames: [8, 9, 10, 11, 12, 13, 14, 15],
           ticksPerFrame: 8,
         },
         run: {
-          frames: [0, 1, 2, 3, 4, 5, 6, 7],
+          frames: [8, 9, 10, 11, 12, 13, 14, 15],
           ticksPerFrame: 5,
         },
         jump: {
-          frames: [8],
+          frames: [1],
           ticksPerFrame: 0,
+        },
+        attack: {
+          frames: [2, 3, 4, 5, 6, 7],
+          ticksPerFrame: 3,
         },
       }
     );
@@ -43,7 +51,12 @@ export class Zombie extends GroundSpawnEnemy {
 
   protected _updateChasing(): void {
     super._updateChasing();
-    if (this._isOnSolidGround()) {
+    if (this.getPolarBounds().intersects(this._game.player.getPolarBounds())) {
+      // Because temporarily the enemies just do a steady stream of damage when
+      // in contact with the player. The above if condition is a hack and should
+      // be generalized out to the Enemy class to decide when we are attacking.
+      this._sprite.playAnim('attack');
+    } else if (this._isOnSolidGround()) {
       this._sprite.playAnim('run');
     } else {
       this._sprite.playAnim('jump');
