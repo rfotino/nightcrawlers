@@ -9,7 +9,7 @@ import { SpriteSheet} from '../graphics/spritesheet';
  */
 export class FlyingBat extends FlyingEnemy {
   public get width(): number { return 50; }
-  public get height(): number { return 35; }
+  public get height(): number { return 45; }
 
   public enemyType(): string { return 'bat'; }
 
