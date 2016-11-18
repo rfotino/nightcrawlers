@@ -85,7 +85,7 @@
     "files": [
       {
         "src": "assets/images/game/zombie.png",
-        "size": 21607
+        "size": 21633
       }
     ]
   },
@@ -105,7 +105,7 @@
     "files": [
       {
         "src": "assets/images/game/indicator-zombie.png",
-        "size": 2823
+        "size": 2783
       }
     ]
   },
