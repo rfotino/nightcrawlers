@@ -171,7 +171,7 @@ export class Player extends GameObject {
         },
         'assault-attack': {
           frames: [34, 35, 36],
-          ticksPerFrame: 5,
+          ticksPerFrame: 2,
         },
       }
     );

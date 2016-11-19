@@ -7,7 +7,7 @@ import { Counter } from '../math/counter';
 export class AssaultRifle extends Weapon {
   public type(): string { return 'assault'; }
 
-  public cooldown(): number { return 10; }
+  public cooldown(): number { return 6; }
 
   public isFullAuto(): boolean { return true; }
 
