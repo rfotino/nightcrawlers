@@ -100,6 +100,16 @@
     ]
   },
   {
+    "name": "game/spider",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/spider.png",
+        "size": 35073
+      }
+    ]
+  },
+  {
     "name": "game/indicator-zombie",
     "type": "image",
     "files": [
@@ -135,7 +145,7 @@
     "files": [
       {
         "src": "assets/images/game/indicator-spider.png",
-        "size": 1142
+        "size": 2319
       }
     ]
   },
