@@ -7,6 +7,7 @@ import { BloodSplatter } from './blood-splatter';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
+import { Color } from '../graphics/color';
 import { SpriteSheet } from '../graphics/spritesheet';
 import { LagFactor } from '../math/lag-factor';
 
@@ -26,11 +27,72 @@ const enum EnemyState {
 }
 
 /**
+ * Miniature health bar that floats above the head of each enemy. Only has to
+ * do with on-screen display of the enemy so this doesn't need to get exported.
+ */
+class EnemyHealthBar extends PIXI.Container {
+  protected _emptySprite: PIXI.Sprite;
+  protected _fullSprite: PIXI.Sprite;
+  protected _fullSpriteMask: PIXI.Sprite;
+  protected static _barTexture: PIXI.Texture = null;
+
+  protected static get WIDTH(): number { return 50; }
+  protected static get HEIGHT(): number { return 6; }
+
+  protected static _getBarTexture(): PIXI.Texture {
+    if (!EnemyHealthBar._barTexture) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = EnemyHealthBar.WIDTH + 2;
+      canvas.height = EnemyHealthBar.HEIGHT + 2;
+      ctx.fillStyle = 'white';
+      ctx.fillRect(1, 1, EnemyHealthBar.WIDTH, EnemyHealthBar.HEIGHT);
+      EnemyHealthBar._barTexture = PIXI.Texture.fromCanvas(canvas);
+    }
+    return EnemyHealthBar._barTexture;
+  }
+
+  public constructor(enemy: Enemy) {
+    super();
+    const texture = EnemyHealthBar._getBarTexture();
+    const margin = 10;
+    const width = EnemyHealthBar.WIDTH;
+    const height = EnemyHealthBar.HEIGHT;
+    const x = -texture.width / 2;
+    const y = -margin - (0.5 * (enemy.height + height));
+    // Have empty sprite on the bottom
+    this._emptySprite = new PIXI.Sprite(texture);
+    this._emptySprite.tint = new Color(255, 50, 50).toPixi();
+    this._emptySprite.position.set(x, y);
+    this.addChild(this._emptySprite);
+    // Overlay full sprite on top
+    this._fullSprite = new PIXI.Sprite(texture);
+    this._fullSprite.tint = new Color(0, 255, 100).toPixi();
+    this._fullSprite.position.set(x, y);
+    this.addChild(this._fullSprite);
+    // Add clipping mask to full sprite
+    this._fullSpriteMask = new PIXI.Sprite(Color.white.genTexture());
+    this._fullSpriteMask.position.x = 1;
+    this._fullSpriteMask.scale.set(0, this._fullSprite.height);
+    this._fullSprite.mask = this._fullSpriteMask;
+    this._fullSprite.addChild(this._fullSpriteMask);
+  }
+
+  // Update size of green sprite to be proportional to enemy health
+  public update(enemy: Enemy): void {
+    this._fullSpriteMask.scale.x = (
+      EnemyHealthBar.WIDTH * enemy.health / enemy.maxHealth
+    );
+  }
+}
+
+/**
  * General enemy class, moves left and right towards the player but cannot
  * fly or jump. Is affected by gravity by default.
  */
 export abstract class Enemy extends GameObject {
   protected _sprite: SpriteSheet;
+  protected _healthBar: EnemyHealthBar;
   protected _damageAmount: number = 0.25;
   protected _score: number = 50;
   protected _shouldGoLeft: boolean = false;
@@ -82,6 +144,10 @@ export abstract class Enemy extends GameObject {
     this._setInitialPos();
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
+    // Add health bar
+    this._healthBar = new EnemyHealthBar(this);
+    this._mirrorList.push(this._healthBar);
+    this.addChild(this._healthBar);
     // Push the enemy sprite up and out of the ground, if that is where it is
     const blockBounds = game.level.blocks.map(block => block.getPolarBounds());
     let enemyRect = this.getPolarBounds();
@@ -282,8 +348,7 @@ export abstract class Enemy extends GameObject {
    */
   public update(): void {
     super.update();
-    // Make transparent if damaged
-    this.alpha = this._health / this._maxHealth;
+    this._healthBar.update(this);
     // All enemies are affected by gravity by default
     this.accel.r = Terrain.GRAVITY;
     // Do something different depending on the enemy state
