@@ -33,7 +33,7 @@ const enum EnemyState {
 class EnemyHealthBar extends PIXI.Container {
   protected _emptySprite: PIXI.Sprite;
   protected _fullSprite: PIXI.Sprite;
-  protected _fullSpriteMask: PIXI.Sprite;
+  protected _fullSpriteMask: PIXI.Graphics;
   protected static _barTexture: PIXI.Texture = null;
 
   protected static get WIDTH(): number { return 50; }
@@ -71,17 +71,19 @@ class EnemyHealthBar extends PIXI.Container {
     this._fullSprite.position.set(x, y);
     this.addChild(this._fullSprite);
     // Add clipping mask to full sprite
-    this._fullSpriteMask = new PIXI.Sprite(Color.white.genTexture());
-    this._fullSpriteMask.position.x = 1;
-    this._fullSpriteMask.scale.set(0, this._fullSprite.height);
+    this._fullSpriteMask = new PIXI.Graphics();
     this._fullSprite.mask = this._fullSpriteMask;
     this._fullSprite.addChild(this._fullSpriteMask);
   }
 
   // Update size of green sprite to be proportional to enemy health
   public update(enemy: Enemy): void {
-    this._fullSpriteMask.scale.x = (
-      EnemyHealthBar.WIDTH * enemy.health / enemy.maxHealth
+    this._fullSpriteMask.clear();
+    this._fullSpriteMask.beginFill(0xffffff);
+    this._fullSpriteMask.drawRect(
+      0, 0,
+      1 + this._fullSprite.width * enemy.health / enemy.maxHealth,
+      this._fullSprite.height
     );
   }
 }
