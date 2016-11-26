@@ -1,5 +1,5 @@
 import { Weapon } from './weapon';
-import { Bullet } from '../objects/bullet';
+import { BulletTrail } from '../objects/bullet';
 import { GameInstance } from '../game-instance';
 import { KeyState } from '../input/keystate';
 
@@ -9,16 +9,17 @@ export class Shotgun extends Weapon {
   public cooldown(): number { return 30; }
 
   public fire(game: GameInstance): void {
-    let bullets = [new Bullet(game), new Bullet(game), new Bullet(game)];
-    const rVel = 1;
     const offsetR = 11;
     const offsetTheta = (game.player.facingLeft ? -20 : 20) / game.player.pos.r;
-    bullets[0].vel.r = rVel;
-    bullets[1].vel.r = -rVel;
-    bullets.forEach(bullet => {
-      bullet.pos.r += offsetR;
-      bullet.pos.theta += offsetTheta;
-      game.addGameObject(bullet);
-    });
+    for (let i = 0; i < 3; i++) {
+      const bulletTrail = new BulletTrail(
+        game,
+        300, // max dist
+        offsetR, // origin offset
+        offsetTheta, // origin offset
+        (Math.random() - 0.5) * 0.2, // direction offset R
+      );
+      game.addGameObject(bulletTrail);
+    }
   }
 }

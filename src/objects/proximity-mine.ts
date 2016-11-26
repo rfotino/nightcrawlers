@@ -1,4 +1,3 @@
-import { Bullet } from '../objects/bullet';
 import { Player } from '../objects/player';
 import { Enemy } from '../objects/enemy';
 import * as Terrain from '../objects/terrain';
@@ -9,9 +8,16 @@ import { Collider } from '../math/collider';
 import { Polar } from '../math/polar';
 import { Counter } from '../math/counter';
 
-export class ProximityMine extends Bullet {
+export class ProximityMine extends GameObject {
+  protected _sprite: PIXI.Sprite;
+  // Disappear after not exploding for 5 minutes
+  protected _lifespanCounter: Counter = new Counter(18000);
   // Don't explode immediately after spawning, wait for setup counter
   protected _setupCounter: Counter = new Counter(30);
+
+  protected get _damageAmount(): number {
+    return 20;
+  }
 
   protected get _minExplodeDist(): number {
     return 100;
@@ -37,21 +43,34 @@ export class ProximityMine extends Bullet {
     return 15;
   }
 
+  public get z(): number { return 20; }
+
   public constructor(game: GameInstance) {
     super(game);
-    // Change default bullet texture
-    this._sprite.texture = PIXI.loader.resources['game/mine'].texture;
-    // Drops to ground and stays there
-    this._killedByTerrain = false;
+    this.pos.set(game.player.pos.r, game.player.pos.theta);
+    // Set up sprite
+    this._sprite = new PIXI.Sprite(PIXI.loader.resources['game/mine'].texture);
+    this._sprite.anchor.set(0.5);
+    this._mirrorList.push(this._sprite);
+    this.addChild(this._sprite);
+    // Mines are affected by gravity
     this.accel.r = Terrain.GRAVITY;
-    // Disappears after 5 minutes
-    this._lifespanCounter.max = 18000;
-    // Doesn't fly left or right
-    this.vel.theta = 0;
   }
+
+  public type(): string { return 'mine'; }
+
+  public team(): string { return 'player'; }
 
   public update(): void {
     super.update();
+    // Update the lifespan counter, kill self if it has been in the game too
+    // long without exploding
+    if (this._lifespanCounter.done()) {
+      this.kill();
+      return;
+    } else {
+      this._lifespanCounter.next();
+    }
     // Update setup counter, if it is not finished then do not explode)
     if (!this._setupCounter.done()) {
       this._setupCounter.next();
@@ -75,15 +94,22 @@ export class ProximityMine extends Bullet {
   }
 
   /**
-   * Mines don't do anything when enemies touch them, they only explode
-   * from proximity.
+   * Approximate this Cartesian rectangle as a polar rectangle.
    */
-  public collide(other: GameObject, result: Collider.Result): void {
-    if (other.type() !== 'enemy') {
-      super.collide(other, result);
-    }
+  public getPolarBounds(): Polar.Rect {
+    const widthTheta = this.width / this.pos.r;
+    return new Polar.Rect(
+      this.pos.r + (this.height / 2),
+      this.pos.theta - (widthTheta / 2),
+      this.height,
+      widthTheta
+    );
   }
 
+  /**
+   * Helper function for determining if the proximity mine has a line of sight
+   * to the given enemy.
+   */
   protected _canSee(enemy: Enemy, blockBounds: Polar.Rect[]): boolean {
     let line = new Polar.Line(
       this.pos.r, this.pos.theta,
@@ -109,11 +135,11 @@ export class ProximityMine extends Bullet {
       }
       // Damage has to be after knockback, otherwise blood splatter won't have
       // the correct velocity if damage() ends up killing the enemy
-      let enemyVel = new Polar.Coord(15, 20 / enemy.pos.r);
+      const enemyVel = new Polar.Coord(15, 20 / enemy.pos.r);
       if (enemy.pos.r < this.pos.r) {
         enemyVel.r *= -1;
       }
-      let enemyTheta = Polar.closestTheta(enemy.pos.theta, this.pos.theta);
+      const enemyTheta = Polar.closestTheta(enemy.pos.theta, this.pos.theta);
       if (enemyTheta < this.pos.theta) {
         enemyVel.theta *= -1;
       }

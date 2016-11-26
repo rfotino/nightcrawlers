@@ -1,7 +1,8 @@
 import { Weapon } from './weapon';
-import { Bullet } from '../objects/bullet';
+import { BulletTrail } from '../objects/bullet';
 import { GameInstance } from '../game-instance';
 import { KeyState } from '../input/keystate';
+import { Polar } from '../math/polar';
 
 export class Pistol extends Weapon {
   public type(): string { return 'pistol'; }
@@ -11,9 +12,13 @@ export class Pistol extends Weapon {
   public fire(game: GameInstance): void {
     const offsetR = 9;
     const offsetTheta = (game.player.facingLeft ? -20 : 20) / game.player.pos.r;
-    let bullet = new Bullet(game);
-    bullet.pos.r += offsetR;
-    bullet.pos.theta += offsetTheta;
-    game.addGameObject(bullet);
+    const bulletTrail = new BulletTrail(
+      game,
+      500, // maximum distance
+      offsetR, // position offset
+      offsetTheta, // position offset
+      (Math.random() - 0.5) * 0.1 // direction offset R
+    );
+    game.addGameObject(bulletTrail);
   }
 }

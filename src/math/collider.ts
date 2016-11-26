@@ -142,4 +142,103 @@ export module Collider {
     }
     return new Result(left, right, top, bottom, middle);
   }
+
+  /**
+   * Helper function for getRayRectIntersection().
+   *
+   * Returns the distance t along the ray of the form p(t) = origin + t * dir
+   * that the ray intersects with the horizontal line segment defined by r,
+   * theta, and w (where w is the width in radians of the segment). If the ray
+   * does not intersect with the line segment or if t would be negative, null
+   * is returned.
+   */
+  function _getRayLineHorIntersection(
+    origin: Polar.Coord, dir: Polar.Coord,
+    r: number, theta: number, w: number
+  ): number {
+    // First make sure that the horizontal line has positive width, which is a
+    // requirement for intersection. Also make sure ray is not horizontal
+    if (w <= 0 || dir.r === 0) {
+      return null;
+    }
+    // Normalize theta to be as close to the origin of the ray as possible
+    theta = Polar.closestTheta(theta, origin.theta);
+    // Solve for t2 in the parametric equation of the form p(t) = origin + t*dir
+    // for the ray
+    const t2 = (r - origin.r) / dir.r;
+    if (t2 < 0) {
+      return null;
+    }
+    // Solve for t1 in the parametric equation of the horizontal line segment
+    // of the form p(t) = (r, theta + w*t). If t is not between 0 and 1, there
+    // is no intersection with the line segment
+    const t1 = (origin.theta - theta + (t2 * dir.theta)) / w;
+    if (t1 < 0 || t1 > 1) {
+      return null;
+    }
+    // Return the multiple of dir along the ray that the intersection lies
+    return t2;
+  }
+
+  /**
+   * Helper function for getRayRectIntersection().
+   *
+   * Returns the distance t along the ray of the form p(t) = origin + t * dir
+   * that the ray intersects with the vertical line segment defined by r,
+   * theta, and h (where h is the height of the line segment). If the ray
+   * does not intersect with the line segment or if t would be negative, null
+   * is returned.
+   */
+  function _getRayLineVerIntersection(
+    origin: Polar.Coord, dir: Polar.Coord,
+    r: number, theta: number, h: number
+  ): number {
+    // First make sure that the vertical line has positive height, which is a
+    // requirement for intersection. Also make sure ray is not vertical
+    if (h <= 0 || dir.theta === 0) {
+      return null;
+    }
+    // Normalize theta to be as close to the origin of the ray as possible
+    theta = Polar.closestTheta(theta, origin.theta);
+    // Solve for t2 in the parametric equation of the form p(t) = origin + t*dir
+    // for the ray
+    const t2 = (theta - origin.theta) / dir.theta;
+    if (t2 < 0) {
+      return null;
+    }
+    // Solve for t1 in the parametric equation of the vertical line segment
+    // of the form p(t) = (r, theta + w*t). If t is not between 0 and 1, there
+    // is no intersection with the line segment
+    const t1 = (origin.r - r + (t2 * dir.r)) / h;
+    if (t1 < 0 || t1 > 1) {
+      return null;
+    }
+    // Return the multiple of dir along the ray that the intersection occurs
+    return t2;
+  }
+
+  /**
+   * Returns the point of intersection with the rectangle along the ray.
+   * If there is no intersection with the rectangle, this returns null. If
+   * there is an intersection, a number n is returned such that the point
+   * of intersection is equal to origin + n*direction.
+   */
+  export function getRayRectIntersection(
+    origin: Polar.Coord,
+    dir: Polar.Coord,
+    rect: Polar.Rect
+  ): number {
+    const intersections = [
+      _getRayLineVerIntersection(origin, dir, rect.r - rect.height, rect.theta, rect.height),
+      _getRayLineVerIntersection(origin, dir, rect.r - rect.height, rect.theta + rect.width, rect.height),
+      _getRayLineHorIntersection(origin, dir, rect.r, rect.theta, rect.width),
+      _getRayLineHorIntersection(origin, dir, rect.r - rect.height, rect.theta, rect.width),
+    ];
+    const nonNullIntersections = intersections.filter(val => val !== null);
+    if (nonNullIntersections.length <= 0) {
+      return null;
+    } else {
+      return Math.min.apply(null, nonNullIntersections);
+    }
+  }
 }

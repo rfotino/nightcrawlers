@@ -1,5 +1,5 @@
 import { Weapon } from './weapon';
-import { Bullet } from '../objects/bullet';
+import { BulletTrail } from '../objects/bullet';
 import { GameInstance } from '../game-instance';
 import { KeyState } from '../input/keystate';
 import { Counter } from '../math/counter';
@@ -12,11 +12,15 @@ export class AssaultRifle extends Weapon {
   public isFullAuto(): boolean { return true; }
 
   public fire(game: GameInstance): void {
-    let bullet = new Bullet(game);
     const offsetR = 11;
-    const offsetTheta = (game.player.facingLeft ? -1 : 1) * 20 / bullet.pos.r;
-    bullet.pos.r += offsetR;
-    bullet.pos.theta += offsetTheta;
-    game.addGameObject(bullet);
+    const offsetTheta = (game.player.facingLeft ? -1 : 1) * 20 / game.player.pos.r;
+    const bulletTrail = new BulletTrail(
+      game,
+      500, // max dist
+      offsetR, // origin offset
+      offsetTheta, // origin offset
+      (Math.random() - 0.5) * 0.1 // direction offset
+    );
+    game.addGameObject(bulletTrail);
   }
 }

@@ -7,91 +7,87 @@ import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
 
-export class Bullet extends GameObject {
-  protected _sprite: PIXI.Sprite;
-  protected _damageAmount: number = 10;
-  protected _lifespanCounter: Counter = new Counter(60);
-  protected _killedByTerrain: boolean = true;
+export class BulletTrail extends GameObject {
+  protected _lifetimeCounter: Counter = new Counter(5);
+  public get z(): number { return 20; }
 
-  protected get _knockbackTime(): number {
-    return 5;
-  }
-
-  protected get _stunTime(): number {
-    return 7;
-  }
-
-  protected get _knockbackVel(): number {
-    return this.vel.theta;
-  }
-
-  public get width(): number {
-    return 10;
-  }
-
-  public get height(): number {
-    return 5;
-  }
-
-  public get z(): number {
-    return 20;
-  }
-
-  public constructor(game: GameInstance) {
+  public constructor(
+    game: GameInstance,
+    maxDist: number = 500,
+    originOffsetR: number = 0,
+    originOffsetTheta: number = 0,
+    dirOffsetR: number = 0,
+    knockbackVel: number = game.player.facingLeft ? -20 : 20,
+    knockbackTime: number = 5,
+    stunTime: number = 5,
+    damageAmount: number = 10
+  ) {
     super(game);
-    this.pos.set(game.player.pos.r, game.player.pos.theta);
-    let speed = 20 / this.pos.r;
-    if (game.player.facingLeft) {
-      this.vel.theta = -speed;
-    } else {
-      this.vel.theta = speed;
-    }
-    this._sprite = new PIXI.Sprite(PIXI.loader.resources['game/bullet'].texture);
-    this._sprite.anchor.x = this._sprite.anchor.y = 0.5;
-    this._mirrorList.push(this._sprite);
-    this.addChild(this._sprite);
-  }
-
-  public type(): string {
-    return 'bullet';
-  }
-
-  public team(): string {
-    return 'player';
-  }
-
-  public collide(other: GameObject, result: Collider.Result): void {
-    super.collide(other, result);
-    if (other.team() === 'enemy') {
-      const enemy = <Enemy>other;
+    // Come up with origin and direction of bullet
+    const origin = new Polar.Coord(
+      game.player.pos.r + originOffsetR,
+      game.player.pos.theta + originOffsetTheta
+    );
+    const dir = new Polar.Coord(
+      dirOffsetR,
+      (game.player.facingLeft ? -1 : 1) / game.player.pos.r
+    );
+    // Find intersection point
+    let minHitDist = maxDist;
+    let hitObj: GameObject = null;
+    game.gameObjects.forEach(obj => {
+      if (obj.collidable() && obj.alive) {
+        const hitMultiple = Collider.getRayRectIntersection(
+          origin, dir,
+          obj.getPolarBounds()
+        );
+        if (hitMultiple !== null) {
+          const hitDist = Math.abs(hitMultiple * dir.theta * origin.r);
+          if (hitDist < minHitDist) {
+            minHitDist = hitDist;
+            hitObj = obj;
+          }
+        }
+      }
+    });
+    // If we hit an enemy, do damage to and knock back the enemy
+    if (hitObj !== null && hitObj.team() === 'enemy') {
+      const enemy = <Enemy>hitObj;
       // Damage has to be after knockback, otherwise blood splatter won't have
       // the correct velocity if damage() ends up killing the enemy
-      enemy.knockback(this._knockbackVel, this._knockbackTime, this._stunTime);
-      enemy.damage(this._damageAmount);
-      this.kill();
-    } else if (other.type() === 'block' || other.type() === 'platform') {
-      if (this._killedByTerrain) {
-        this.kill();
-      }
+      enemy.knockback(knockbackVel / enemy.pos.r, knockbackTime, stunTime);
+      enemy.damage(damageAmount);
     }
+    // Draw bullet trail to graphics
+    const pos = origin.clone();
+    const graphics = new PIXI.Graphics();
+    graphics.beginFill(0, 0);
+    graphics.moveTo(pos.x, pos.y);
+    while (Math.abs(pos.theta - origin.theta) * game.player.pos.r < minHitDist) {
+      const alpha = (
+        1 - (Math.abs(pos.theta - origin.theta) * game.player.pos.r / maxDist)
+      );
+      pos.r += dir.r;
+      pos.theta += dir.theta;
+      graphics.lineStyle(1, 0xffffff, alpha);
+      graphics.lineTo(pos.x, pos.y);
+    }
+    graphics.endFill();
+    this.addChild(graphics);
   }
 
-  public getPolarBounds(): Polar.Rect {
-    let widthTheta = this.width / this.pos.r;
-    return new Polar.Rect(
-      this.pos.r + (this.height / 2),
-      this.pos.theta - (widthTheta / 2),
-      this.height,
-      widthTheta
-    );
-  }
+  public getPolarBounds(): Polar.Rect { return new Polar.Rect(); }
+  public type(): string { return 'bullet'; }
+  public team(): string { return 'player'; }
+  public collidable(): boolean { return false; }
+  public movable(): boolean { return false; }
 
   public update(): void {
-    super.update();
-    if (this._lifespanCounter.done()) {
+    if (this._lifetimeCounter.done()) {
       this.kill();
     } else {
-      this._lifespanCounter.next();
+      this.alpha = 1 - this._lifetimeCounter.percent();
+      this._lifetimeCounter.next();
     }
   }
 }
