@@ -10,7 +10,7 @@ export class Shotgun extends Weapon {
 
   public fire(game: GameInstance): void {
     const offsetR = 11;
-    const offsetTheta = (game.player.facingLeft ? -20 : 20) / game.player.pos.r;
+    const offsetTheta = (game.player.facingLeft ? -1 : 1) * 35 / game.player.pos.r;
     for (let i = 0; i < 3; i++) {
       const bulletTrail = new BulletTrail(
         game,

@@ -11,7 +11,7 @@ export class Pistol extends Weapon {
 
   public fire(game: GameInstance): void {
     const offsetR = 9;
-    const offsetTheta = (game.player.facingLeft ? -20 : 20) / game.player.pos.r;
+    const offsetTheta = (game.player.facingLeft ? -1 : 1) * 23 / game.player.pos.r;
     const bulletTrail = new BulletTrail(
       game,
       500, // maximum distance
