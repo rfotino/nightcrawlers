@@ -17,12 +17,16 @@ export class BulletTrail extends GameObject {
     originOffsetR: number = 0,
     originOffsetTheta: number = 0,
     dirOffsetR: number = 0,
-    knockbackVel: number = game.player.facingLeft ? -20 : 20,
+    knockbackVel: number = 20,
     knockbackTime: number = 5,
     stunTime: number = 5,
     damageAmount: number = 10
   ) {
     super(game);
+    // Knock back in direction of the bullet
+    if (game.player.facingLeft) {
+      knockbackVel *= -1;
+    }
     // Come up with origin and direction of bullet
     const origin = new Polar.Coord(
       game.player.pos.r + originOffsetR,
@@ -35,8 +39,12 @@ export class BulletTrail extends GameObject {
     // Find intersection point
     let minHitDist = maxDist;
     let hitObj: GameObject = null;
-    game.gameObjects.forEach(obj => {
-      if (obj.collidable() && obj.alive) {
+    const hittableObjects = game.gameObjects.filter(obj => {
+      const type = obj.type();
+      return type === 'enemy' || type === 'block';
+    });
+    hittableObjects.forEach(obj => {
+      if (obj.alive) {
         const hitMultiple = Collider.getRayRectIntersection(
           origin, dir,
           obj.getPolarBounds()
@@ -65,7 +73,7 @@ export class BulletTrail extends GameObject {
     graphics.moveTo(pos.x, pos.y);
     while (Math.abs(pos.theta - origin.theta) * game.player.pos.r < minHitDist) {
       const alpha = (
-        1 - (Math.abs(pos.theta - origin.theta) * game.player.pos.r / maxDist)
+        Math.abs(pos.theta - origin.theta) * game.player.pos.r / minHitDist
       );
       pos.r += dir.r;
       pos.theta += dir.theta;

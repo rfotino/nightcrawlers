@@ -233,6 +233,7 @@ export module Collider {
       _getRayLineVerIntersection(origin, dir, rect.r - rect.height, rect.theta + rect.width, rect.height),
       _getRayLineHorIntersection(origin, dir, rect.r, rect.theta, rect.width),
       _getRayLineHorIntersection(origin, dir, rect.r - rect.height, rect.theta, rect.width),
+      rect.contains(origin) ? 0 : null, // hack to cause collision when origin is inside rect
     ];
     const nonNullIntersections = intersections.filter(val => val !== null);
     if (nonNullIntersections.length <= 0) {

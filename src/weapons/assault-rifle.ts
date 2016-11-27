@@ -13,7 +13,7 @@ export class AssaultRifle extends Weapon {
 
   public fire(game: GameInstance): void {
     const offsetR = 11;
-    const offsetTheta = (game.player.facingLeft ? -1 : 1) * 35 / game.player.pos.r;
+    const offsetTheta = (game.player.facingLeft ? -1 : 1) * 47 / game.player.pos.r;
     const bulletTrail = new BulletTrail(
       game,
       500, // max dist
