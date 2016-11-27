@@ -3,7 +3,7 @@ import { GameObject } from './game-object';
 import * as Terrain from './terrain';
 import { Player } from './player';
 import { FadingText } from './fading-text';
-import { BloodSplatter } from './blood-splatter';
+import { BloodSplatter } from './particles';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';

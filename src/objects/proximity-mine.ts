@@ -2,6 +2,7 @@ import { Player } from '../objects/player';
 import { Enemy } from '../objects/enemy';
 import * as Terrain from '../objects/terrain';
 import { GameObject } from '../objects/game-object';
+import { Explosion } from '../objects/particles';
 import { GameInstance } from '../game-instance';
 import { KeyState } from '../input/keystate';
 import { Collider } from '../math/collider';
@@ -125,6 +126,9 @@ export class ProximityMine extends GameObject {
   }
 
   protected _explode(enemies: Enemy[], blockBounds: Polar.Rect[]): void {
+    // Add explosion animation
+    this._game.addGameObject(new Explosion(this._game, this.pos, this.vel));
+    // Damage enemies that are in sight and close enough
     enemies.forEach(enemy => {
       // If this enemy is too far away or is obscured by a block, do nothing
       // for this enemy
