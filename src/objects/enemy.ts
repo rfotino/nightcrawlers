@@ -181,6 +181,9 @@ export abstract class Enemy extends GameObject {
    * the enemy used to be
    */
   public kill(): void {
+    if (!this.alive) {
+      return;
+    }
     super.kill();
     this._game.player.score += this.score;
     this._game.addGameObject(new FadingText(

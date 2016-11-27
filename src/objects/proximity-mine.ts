@@ -130,6 +130,10 @@ export class ProximityMine extends GameObject {
     this._game.addGameObject(new Explosion(this._game, this.pos, this.vel));
     // Damage enemies that are in sight and close enough
     enemies.forEach(enemy => {
+      // Do nothing if enemy is no longer alive
+      if (!enemy.alive) {
+        return;
+      }
       // If this enemy is too far away or is obscured by a block, do nothing
       // for this enemy
       let enemyDist = this.pos.dist(enemy.pos);
