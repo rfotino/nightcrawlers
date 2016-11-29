@@ -1,0 +1,225 @@
+{
+  "zombie": {
+    "class": "groundspawn",
+    "health": 20,
+    "damage": 0.25,
+    "moveSpeed": 2.5,
+    "jumpSpeed": 18,
+    "points": 50,
+    "size": {
+      "width": 25,
+      "height": 75
+    },
+    "sprite": {
+      "resource": "game/zombie",
+      "frames": {
+        "width": 8,
+        "height": 2
+      },
+      "anchor": {
+        "x": 0.4,
+        "y": 0.5
+      }
+    },
+    "animations": {
+      "idle": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "spawn": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "walk": {
+        "frames": [8, 9, 10, 11, 12, 13, 14, 15],
+        "ticksPerFrame": 8
+      },
+      "run": {
+        "frames": [8, 9, 10, 11, 12, 13, 14, 15],
+        "ticksPerFrame": 5
+      },
+      "jump": {
+        "frames": [1],
+        "ticksPerFrame": 0
+      },
+      "attack": {
+        "frames": [2, 3, 4, 5, 6, 7],
+        "ticksPerFrame": 3
+      },
+      "stunned": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "die": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      }
+    }
+  },
+  "bat": {
+    "class": "flying",
+    "health": 20,
+    "damage": 0.25,
+    "moveSpeed": 3,
+    "points": 50,
+    "size": {
+      "width": 50,
+      "height": 45
+    },
+    "sprite": {
+      "resource": "game/flying-bat",
+      "frames": {
+        "width": 4,
+        "height": 1
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "animations": {
+      "idle": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "spawn": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "walk": {
+        "frames": [0, 1, 2, 3],
+        "ticksPerFrame": 10
+      },
+      "run": {
+        "frames": [0, 1, 2, 3],
+        "ticksPerFrame": 6
+      },
+      "attack": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "stunned": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "die": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      }
+    }
+  },
+  "skeleton": {
+    "class": "groundspawn",
+    "health": 30,
+    "damage": 0.25,
+    "moveSpeed": 5,
+    "jumpSpeed": 18,
+    "points": 50,
+    "size": {
+      "width": 30,
+      "height": 75
+    },
+    "sprite": {
+      "resource": "game/skeleton",
+      "frames": {
+        "width": 8,
+        "height": 2
+      },
+      "anchor": {
+        "x": 0.4,
+        "y": 0.5
+      }
+    },
+    "animations": {
+      "idle": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "spawn": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "walk": {
+        "frames": [8, 9, 10, 11, 12, 13, 14, 15],
+        "ticksPerFrame": 8
+      },
+      "run": {
+        "frames": [8, 9, 10, 11, 12, 13, 14, 15],
+        "ticksPerFrame": 5
+      },
+      "jump": {
+        "frames": [1],
+        "ticksPerFrame": 0
+      },
+      "attack": {
+        "frames": [2, 3, 4, 5, 6, 7],
+        "ticksPerFrame": 3
+      },
+      "stunned": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "die": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      }
+    }
+  },
+  "spider": {
+    "class": "jumping",
+    "health": 50,
+    "damage": 0.25,
+    "moveSpeed": 5,
+    "jumpSpeed": 22,
+    "points": 50,
+    "size": {
+      "width": 80,
+      "height": 60
+    },
+    "sprite": {
+      "resource": "game/spider",
+      "frames": {
+        "width": 6,
+        "height": 2
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "animations": {
+      "idle": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "spawn": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "walk": {
+        "frames": [0, 1, 2, 3, 4, 5],
+        "ticksPerFrame": 8
+      },
+      "run": {
+        "frames": [0, 1, 2, 3, 4, 5],
+        "ticksPerFrame": 5
+      },
+      "jump": {
+        "frames": [6],
+        "ticksPerFrame": 0
+      },
+      "attack": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "stunned": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "die": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      }
+    }
+  }
+}

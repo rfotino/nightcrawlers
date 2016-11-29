@@ -27,6 +27,11 @@ const enum EnemyState {
 }
 
 /**
+ * Load enemy attributes from a JSON file.
+ */
+const ENEMY_ATTRIBUTES = require('../../assets/enemies.json');
+
+/**
  * Miniature health bar that floats above the head of each enemy. Only has to
  * do with on-screen display of the enemy so this doesn't need to get exported.
  */
@@ -92,14 +97,12 @@ class EnemyHealthBar extends PIXI.Container {
  * General enemy class, moves left and right towards the player but cannot
  * fly or jump. Is affected by gravity by default.
  */
-export abstract class Enemy extends GameObject {
+export class Enemy extends GameObject {
+  protected _enemyType: string;
   protected _sprite: SpriteSheet;
   protected _healthBar: EnemyHealthBar;
-  protected _damageAmount: number = 0.25;
-  protected _score: number = 50;
   protected _shouldGoLeft: boolean = false;
   protected _shouldGoRight: boolean = false;
-  protected _moveSpeed: number = 3;
   protected _knockbackCounter: Counter = new Counter(0);
   protected _stunnedCounter: Counter = new Counter(0);
   protected _state: EnemyState = EnemyState.Searching;
@@ -110,39 +113,52 @@ export abstract class Enemy extends GameObject {
     return 40;
   }
 
-  public get score(): number {
-    return this._score;
+  public get attributes(): any {
+    return ENEMY_ATTRIBUTES[this._enemyType];
   }
 
-  protected get _color(): string {
-    return 'white';
+  public static fromType(game: GameInstance, enemyType: string): Enemy {
+    const attributes = ENEMY_ATTRIBUTES[enemyType];
+    switch (attributes.class) {
+      case 'flying':
+        return new FlyingEnemy(game, enemyType);
+      case 'jumping':
+        return new JumpingEnemy(game, enemyType);
+      case 'groundspawn':
+        return new GroundSpawnEnemy(game, enemyType);
+      default:
+        throw (
+          `Unknown enemy class ${attributes.class} for enemy type ${enemyType}`
+        );
+    }
   }
 
-  protected _createSprite(): SpriteSheet {
-    // Create canvas of appropriate size
-    let canvas = document.createElement('canvas');
-    canvas.width = this.width + 2;
-    canvas.height = this.height + 2;
-    // Draw enemy on the canvas
-    let ctx = canvas.getContext('2d');
-    ctx.fillStyle = this._color;
-    ctx.fillRect(1, 1, this.width, this.height);
-    return new SpriteSheet(PIXI.Texture.fromCanvas(canvas));
-  }
-
+  /**
+   * Default to spawning 300 units above the player and within 200 units to
+   * the left or right. Override this in subclasses to spawn in different
+   * locations.
+   */
   protected _setInitialPos(): void {
-    this.pos.set(
-      this._game.player.pos.r + 300,
-      this._game.player.pos.theta - 0.5 + Math.random()
-    );
+    const r = this._game.player.pos.r + 300;
+    const theta = this._game.player.pos.theta + (Math.random() - 0.5) * 400 / r;
+    this.pos.set(r, theta);
   }
 
-  public constructor(game: GameInstance) {
+  public constructor(game: GameInstance, enemyType: string) {
     super(game);
-    this._maxHealth = 20;
-    this._health = this._maxHealth;
-    this._sprite = this._createSprite();
-    this._sprite.anchor.set(0.5, 0.5);
+    this._enemyType = enemyType;
+    this._health = this._maxHealth = this.attributes.health;
+    this._sprite = new SpriteSheet(
+      PIXI.loader.resources[this.attributes.sprite.resource].texture,
+      this.attributes.sprite.frames.width,
+      this.attributes.sprite.frames.height,
+      'idle', // default animation
+      this.attributes.animations
+    );
+    this._sprite.anchor.set(
+      this.attributes.sprite.anchor.x,
+      this.attributes.sprite.anchor.y
+    );
     this._setInitialPos();
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
@@ -174,7 +190,7 @@ export abstract class Enemy extends GameObject {
 
   public team(): string { return 'enemy'; }
 
-  public abstract enemyType(): string;
+  public enemyType(): string { return this._enemyType; }
 
   /**
    * Add points to player score and show the amount of points where
@@ -185,10 +201,11 @@ export abstract class Enemy extends GameObject {
       return;
     }
     super.kill();
-    this._game.player.score += this.score;
+    const points = this.attributes.points;
+    this._game.player.score += points;
     this._game.addGameObject(new FadingText(
       this._game,
-      `+${this.score}`,
+      `+${points}`,
       this.pos,
       { fontSize: 36, fill: 'white' }
     ));
@@ -247,8 +264,9 @@ export abstract class Enemy extends GameObject {
     }
     // Otherwise, if we are not moving left or right, then choose a new
     // direction
-    let moveDist = Math.abs((this.pos.theta - this.prevPos.theta) * this.pos.r);
-    if (moveDist < this._moveSpeed / 2 ||
+    const moveSpeed = this.attributes.moveSpeed;
+    const moveDist = Math.abs((this.pos.theta - this.prevPos.theta) * this.pos.r);
+    if (moveDist < moveSpeed / 2 ||
         this._searchDir === Direction.None) {
       if (Math.random() < 0.5) {
         this._searchDir = Direction.Left;
@@ -260,12 +278,14 @@ export abstract class Enemy extends GameObject {
     }
     // Update the theta velocity based on the current direction. Search speed
     // is slower than normal movement speed
-    let searchSpeed = 0.6 * this._moveSpeed / this.pos.r;
+    const searchSpeed = 0.6 * moveSpeed / this.pos.r;
     if (this._searchDir === Direction.Left) {
       this.vel.theta = -searchSpeed;
     } else {
       this.vel.theta = searchSpeed;
     }
+    // Set the correct animation
+    this._sprite.playAnim('walk');
   }
 
   /**
@@ -289,17 +309,17 @@ export abstract class Enemy extends GameObject {
     }
     // Decide if we should go left or right
     const player = this._game.player;
-    let closestPos = Polar.closestTheta(this.pos.theta, player.pos.theta);
-    let diffTheta = player.pos.theta - closestPos;
-    let minDiffTheta = (
+    const closestPos = Polar.closestTheta(this.pos.theta, player.pos.theta);
+    const diffTheta = player.pos.theta - closestPos;
+    const minDiffTheta = (
       0.3 *
-      (player.width + this.width) /
+      (player.width + this.attributes.size.width) /
       player.pos.r
     );
     this._shouldGoLeft = diffTheta < -minDiffTheta;
     this._shouldGoRight = diffTheta > minDiffTheta;
     // Handle going left or right
-    let speed = this._moveSpeed / this.pos.r;
+    const speed = this.attributes.moveSpeed / this.pos.r;
     if (this._shouldGoLeft) {
       this.vel.theta = -speed;
       this._sprite.scale.x = -1;
@@ -308,6 +328,16 @@ export abstract class Enemy extends GameObject {
       this._sprite.scale.x = 1;
     } else {
       this.vel.theta = 0;
+    }
+    // Set the correct animation
+    if (this.getPolarBounds().intersects(this._game.player.getPolarBounds())) {
+      // Because temporarily the enemies just do a steady stream of damage when
+      // in contact with the player. The above if condition is a hack and should
+      // be generalized out to be if we are close enough for the hitbox to
+      // intersect.
+      this._sprite.playAnim('attack');
+    } else if (this.attributes.class === 'flying' || this._isOnSolidGround()) {
+      this._sprite.playAnim('run');
     }
   }
 
@@ -326,6 +356,8 @@ export abstract class Enemy extends GameObject {
     } else {
       this._knockbackCounter.next();
     }
+    // Show stunned animation
+    this._sprite.playAnim('stunned');
   }
 
   /**
@@ -346,6 +378,8 @@ export abstract class Enemy extends GameObject {
     } else {
       this._stunnedCounter.next();
     }
+    // Show stunned animation
+    this._sprite.playAnim('stunned');
   }
 
   /**
@@ -388,16 +422,17 @@ export abstract class Enemy extends GameObject {
   public collide(other: GameObject, result: Collider.Result): void {
     super.collide(other, result);
     if (other.team() === 'player') {
-      other.damage(this._damageAmount * LagFactor.get());
+      other.damage(this.attributes.damage * LagFactor.get());
     }
   }
 
   public getPolarBounds(): Polar.Rect {
-    let widthTheta = this.width / this.pos.r;
+    const size = this.attributes.size;
+    const widthTheta = size.width / this.pos.r;
     return new Polar.Rect(
-      this.pos.r + (this.height / 2),
+      this.pos.r + (size.height / 2),
       this.pos.theta - (widthTheta / 2),
-      this.height,
+      size.height,
       widthTheta
     );
   }
@@ -407,12 +442,12 @@ export abstract class Enemy extends GameObject {
  * Class of enemies that can move in all directions (up and down as well as
  * left and right). Not affected by gravity, since they can fly.
  */
-export abstract class FlyingEnemy extends Enemy {
+export class FlyingEnemy extends Enemy {
   protected _shouldGoUp: boolean = false;
   protected _shouldGoDown: boolean = false;
 
-  public constructor(game: GameInstance) {
-    super(game);
+  public constructor(game: GameInstance, enemyType: string) {
+    super(game, enemyType);
     this.accel.r = 0;
   }
 
@@ -441,10 +476,11 @@ export abstract class FlyingEnemy extends Enemy {
     this._shouldGoUp = diffR > minDiffR;
     this._shouldGoDown = diffR < -minDiffR;
     // Go up or down
+    const moveSpeed = this.attributes.moveSpeed;
     if (this._shouldGoUp) {
-      this.vel.r = this._moveSpeed;
+      this.vel.r = moveSpeed;
     } else if (this._shouldGoDown) {
-      this.vel.r = -this._moveSpeed;
+      this.vel.r = -moveSpeed;
     } else {
       this.vel.r = 0;
     }
@@ -455,11 +491,10 @@ export abstract class FlyingEnemy extends Enemy {
  * Class of enemies that are affected by gravity and can only jump if they
  * are on solid ground.
  */
-export abstract class JumpingEnemy extends Enemy {
+export class JumpingEnemy extends Enemy {
   private _searchingJumpCounter: Counter;
   private _chasingJumpCounter: Counter = new Counter(30);
   protected _shouldJump: boolean = false;
-  protected _jumpSpeed: number = 18;
 
   private _getNewJumpCounterInterval(): number {
     return 60 + (90 * Math.random());
@@ -479,7 +514,7 @@ export abstract class JumpingEnemy extends Enemy {
     if (this._isOnSolidGround()) {
       if (this._searchingJumpCounter.done()) {
         // Jump
-        this.vel.r = this._jumpSpeed;
+        this.vel.r = this.attributes.jumpSpeed;
         // Reset jump counter with another randomized interval
         this._searchingJumpCounter.max = this._getNewJumpCounterInterval();
         this._searchingJumpCounter.reset();
@@ -509,8 +544,16 @@ export abstract class JumpingEnemy extends Enemy {
     // Handle jumping if player is above this enemy
     if (this._shouldJump && this._isOnSolidGround() &&
         this._chasingJumpCounter.done()) {
-      this.vel.r = this._jumpSpeed;
+      this.vel.r = this.attributes.jumpSpeed;
       this._chasingJumpCounter.reset();
+    }
+  }
+
+  public update(): void {
+    super.update();
+    // Show jump animation if we're not on solid ground
+    if (!this._isOnSolidGround()) {
+      this._sprite.playAnim('jump');
     }
   }
 }
@@ -520,27 +563,30 @@ export abstract class JumpingEnemy extends Enemy {
  * sky. If you spawn out of the ground, you probably jump, so this class
  * naturally extends JumpingEnemy.
  */
-export abstract class GroundSpawnEnemy extends JumpingEnemy {
+export class GroundSpawnEnemy extends JumpingEnemy {
   protected _setInitialPos(): void {
     const game = this._game;
     // Spawn the enemy on a block near to the player. First choose an angle
     // to spawn at that is between minDist and maxDist radians away from the
     // player.
-    let rand = Math.random();
-    let minDist = 0.2;
-    let maxDist = 0.4;
-    let theta: number;
+    const rand = Math.random();
+    const minDist = 150 / this._game.player.pos.r;
+    const maxDist = 300 / this._game.player.pos.r;
+    const offset = minDist + (rand * (maxDist - minDist));
     if (rand < 0.5) {
-      theta = game.player.pos.theta - minDist - (rand * (maxDist - minDist));
+      this.pos.theta = game.player.pos.theta - offset;
     } else {
-      theta = game.player.pos.theta + minDist + (rand * (maxDist - minDist));
+      this.pos.theta = game.player.pos.theta + offset;
     }
-    this.pos.theta = theta;
     // Then find all blocks that can be found at that angle and sort them by
     // distance from the player.
     const blockBounds = game.level.blocks.map(block => block.getPolarBounds());
     const possibleRects = blockBounds.filter(rect => {
-      return Polar.thetaBetween(theta, rect.theta, rect.theta + rect.width);
+      return Polar.thetaBetween(
+        this.pos.theta,
+        rect.theta,
+        rect.theta + rect.width
+      );
     }).sort((r1, r2) => {
       return (
         Math.abs(game.player.pos.r - r1.r) -

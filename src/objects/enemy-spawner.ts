@@ -1,8 +1,4 @@
 import { Enemy } from './enemy';
-import { FlyingBat } from './flying-bat';
-import { Skeleton } from './skeleton';
-import { Spider } from './spider';
-import { Zombie } from './zombie';
 import { GameInstance } from '../game-instance';
 import { Counter } from '../math/counter';
 
@@ -51,27 +47,11 @@ export class EnemySpawner {
       this._spawnCounter.reset();
     } else {
       this._spawnCounter.next();
-      if (this._spawnCounter.done()) {
-        let newEnemyType = this._enemiesToSpawn.shift();
-        let enemy = null;
-        switch (newEnemyType) {
-          case 'zombie':
-            enemy = new Zombie(game);
-            break;
-          case 'bat':
-            enemy = new FlyingBat(game);
-            break;
-          case 'skeleton':
-            enemy = new Skeleton(game);
-            break;
-          case 'spider':
-            enemy = new Spider(game);
-            break;
-        }
-        if (enemy) {
-          game.addGameObject(enemy);
-          this._enemies.push(enemy);
-        }
+      if (this._spawnCounter.done() && this._enemiesToSpawn.length > 0) {
+        const newEnemyType = this._enemiesToSpawn.shift();
+        const enemy = Enemy.fromType(game, newEnemyType);
+        game.addGameObject(enemy);
+        this._enemies.push(enemy);
         this._spawnCounter.reset();
       }
     }
