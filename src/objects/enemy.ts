@@ -1,5 +1,6 @@
 import { GameInstance } from '../game-instance';
 import { GameObject } from './game-object';
+import { Item } from './item';
 import * as Terrain from './terrain';
 import { Player } from './player';
 import { FadingText } from './fading-text';
@@ -201,6 +202,8 @@ export class Enemy extends GameObject {
       return;
     }
     super.kill();
+    // Add this enemy's points to the score and display the points where the
+    // enemy used to be
     const points = this.attributes.points;
     this._game.player.score += points;
     this._game.addGameObject(new FadingText(
@@ -209,7 +212,25 @@ export class Enemy extends GameObject {
       this.pos,
       { fontSize: 36, fill: 'white' }
     ));
+    // Also add a blood splatter
     this._game.addGameObject(new BloodSplatter(this._game, this.pos, this.vel));
+    // And maybe spawn an item
+    const itemDiceRoll = Math.random();
+    let diceRollFloor = 0;
+    for (let i = 0; i < this.attributes.items.length; i++) {
+      const itemAttr = this.attributes.items[i];
+      const diceRollCeiling = diceRollFloor + itemAttr.chance;
+      if (itemDiceRoll >= diceRollFloor && itemDiceRoll < diceRollCeiling) {
+        const item = new Item(
+          this._game,
+          itemAttr.type,
+          this.pos.r,
+          this.pos.theta
+        );
+        this._game.addGameObject(item);
+      }
+      diceRollFloor = diceRollCeiling;
+    }
   }
 
   /**
