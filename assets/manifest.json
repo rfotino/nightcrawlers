@@ -20,16 +20,6 @@
     ]
   },
   {
-    "name": "game/bullet",
-    "type": "image",
-    "files": [
-      {
-        "src": "assets/images/game/bullet.png",
-        "size": 99
-      }
-    ]
-  },
-  {
     "name": "game/mine",
     "type": "image",
     "files": [
