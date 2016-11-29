@@ -90,6 +90,16 @@
     ]
   },
   {
+    "name": "game/skeleton",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/game/skeleton.png",
+        "size": 36934
+      }
+    ]
+  },
+  {
     "name": "game/spider",
     "type": "image",
     "files": [
