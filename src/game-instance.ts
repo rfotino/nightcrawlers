@@ -23,6 +23,7 @@ import { PauseMenu, GameOverMenu } from './ui/menu';
 import { UIPortrait } from './ui/portrait';
 import { CurrentWeaponIndicator } from './ui/current-weapon';
 import { EnemyIndicator } from './ui/enemy-indicator';
+import { HurtOverlay } from './ui/hurt-overlay';
 
 export class GameInstance extends UIContainer {
   public player: Player;
@@ -54,6 +55,7 @@ export class GameInstance extends UIContainer {
   protected _fadeTransitioningOut: boolean = false;
   protected _fadeTransitionCounter: Counter = new Counter();
   protected _fader: PIXI.Sprite;
+  protected _hurtOverlay: HurtOverlay;
 
   public get options(): Options {
     return this._options;
@@ -121,6 +123,10 @@ export class GameInstance extends UIContainer {
     // Add score label
     this._scoreLabel = new UILabel(game, '0');
     this.addComponent(this._scoreLabel);
+    // Add hurt overlay so that the screen turns red when the player is low
+    // on health
+    this._hurtOverlay = new HurtOverlay(game, this);
+    this.addComponent(this._hurtOverlay);
     // Set initial wave index to zero and seed initial wave of monsters
     this._waveIndex = 0;
     this.enemySpawner.addWave(this.level.getWave(0));
@@ -294,6 +300,13 @@ export class GameInstance extends UIContainer {
     this._fadeTransitionCounter.max = isIn ? 60 : 20;
     this._fadeTransitioningIn = isIn;
     this._fadeTransitioningOut = !isIn;
+  }
+
+  /**
+   * Returns true if this game instance is paused.
+   */
+  public isPaused(): boolean {
+    return this._paused;
   }
 
   /**

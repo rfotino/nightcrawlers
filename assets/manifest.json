@@ -25,7 +25,7 @@
     "files": [
       {
         "src": "assets/images/game/mine.png",
-        "size": 1232
+        "size": 1381
       }
     ]
   },
@@ -366,6 +366,16 @@
       {
         "src": "assets/images/ui/full-armor.png",
         "size": 2611
+      }
+    ]
+  },
+  {
+    "name": "ui/hurt-overlay",
+    "type": "image",
+    "files": [
+      {
+        "src": "assets/images/ui/hurt-overlay.png",
+        "size": 40265
       }
     ]
   },
