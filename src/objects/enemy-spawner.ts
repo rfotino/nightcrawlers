@@ -37,6 +37,8 @@ export class EnemySpawner {
       newEnemiesToSpawn.splice(idx, 1);
       this._enemiesToSpawn.push(enemy);
     }
+    // For each wave added, decrease the time between spawns
+    this._spawnCounter.max *= 0.9;
   }
 
   /**

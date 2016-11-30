@@ -21,6 +21,7 @@ export class Item extends GameObject {
     this._type = type;
     this.pos.r = r;
     this.pos.theta = theta;
+    this.accel.r = Terrain.GRAVITY;
     // Create a canvas for the sprite's texture
     let canvas = document.createElement('canvas');
     canvas.width = this.width + 2;
@@ -63,11 +64,6 @@ export class Item extends GameObject {
       this._addToPlayer(<Player>other);
       this.kill();
     }
-  }
-
-  public update(): void {
-    super.update();
-    this.vel.r += Terrain.GRAVITY;
   }
 
   protected _addToPlayer(player: Player): void {
