@@ -8,9 +8,10 @@ import { KeyState } from '../input/keystate';
 import { Collider } from '../math/collider';
 import { Polar } from '../math/polar';
 import { Counter } from '../math/counter';
+import { SpriteSheet } from '../graphics/spritesheet';
 
 export class ProximityMine extends GameObject {
-  protected _sprite: PIXI.Sprite;
+  protected _sprite: SpriteSheet;
   // Disappear after not exploding for 5 minutes
   protected _lifespanCounter: Counter = new Counter(18000);
   // Don't explode immediately after spawning, wait for setup counter
@@ -41,7 +42,7 @@ export class ProximityMine extends GameObject {
   }
 
   public get height(): number {
-    return 15;
+    return 12;
   }
 
   public get z(): number { return 20; }
@@ -50,7 +51,17 @@ export class ProximityMine extends GameObject {
     super(game);
     this.pos.set(game.player.pos.r, game.player.pos.theta);
     // Set up sprite
-    this._sprite = new PIXI.Sprite(PIXI.loader.resources['game/mine'].texture);
+    this._sprite = new SpriteSheet(
+      PIXI.loader.resources['game/mine'].texture,
+      2, 1,
+      'blink',
+      {
+        blink: {
+          frames: [0, 1, 0],
+          ticksPerFrame: 30,
+        },
+      }
+    );
     this._sprite.anchor.set(0.5);
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
@@ -64,6 +75,8 @@ export class ProximityMine extends GameObject {
 
   public update(): void {
     super.update();
+    // Update animation
+    this._sprite.nextFrame();
     // Update the lifespan counter, kill self if it has been in the game too
     // long without exploding
     if (this._lifespanCounter.done()) {
