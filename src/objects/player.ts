@@ -14,6 +14,71 @@ import { Shotgun } from '../weapons/shotgun';
 import { AssaultRifle } from '../weapons/assault-rifle';
 import { ProximityMine } from '../objects/proximity-mine';
 import { SpriteSheet } from '../graphics/spritesheet';
+import { Color } from '../graphics/color';
+
+/**
+ * Private class for a weapon cooldown bar that floats above the player's head.
+ */
+class PlayerCooldownBar extends PIXI.Container {
+  protected _sprite: PIXI.Sprite;
+  protected _spriteMask: PIXI.Graphics;
+  protected static _barTexture: PIXI.Texture = null;
+
+  protected static get WIDTH(): number { return 50; }
+  protected static get HEIGHT(): number { return 1; }
+
+  protected static _getBarTexture(): PIXI.Texture {
+    if (!PlayerCooldownBar._barTexture) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = PlayerCooldownBar.WIDTH + 2;
+      canvas.height = PlayerCooldownBar.HEIGHT + 2;
+      ctx.fillStyle = 'white';
+      ctx.fillRect(1, 1, PlayerCooldownBar.WIDTH, PlayerCooldownBar.HEIGHT);
+      PlayerCooldownBar._barTexture = PIXI.Texture.fromCanvas(canvas);
+    }
+    return PlayerCooldownBar._barTexture;
+  }
+
+  public constructor(player: Player) {
+    super();
+    const texture = PlayerCooldownBar._getBarTexture();
+    const margin = 10;
+    const width = PlayerCooldownBar.WIDTH;
+    const height = PlayerCooldownBar.HEIGHT;
+    const x = -texture.width / 2;
+    const y = -margin - (0.5 * (player.height + height));
+    // Overlay full sprite on top
+    this._sprite = new PIXI.Sprite(texture);
+    this._sprite.tint = new Color(255, 255, 255).toPixi();
+    this._sprite.position.set(x, y);
+    this.addChild(this._sprite);
+    // Add clipping mask to full sprite
+    this._spriteMask = new PIXI.Graphics();
+    this._sprite.mask = this._spriteMask;
+    this._sprite.addChild(this._spriteMask);
+  }
+
+  // Update size of sprite to be proportional to player cooldown
+  public update(player: Player): void {
+    const maskWidth = (
+      (this._sprite.width - 2) * (1 - player.weaponCooldownCounter.percent())
+    );
+    this._spriteMask.clear();
+    this._spriteMask.beginFill(0xffffff);
+    this._spriteMask.drawRect(
+      (this._sprite.width - maskWidth) / 2,
+      0,
+      maskWidth,
+      this._sprite.height
+    );
+    if (player.weaponCooldownCounter.done()) {
+      this._sprite.alpha = 0;
+    } else {
+      this._sprite.alpha = 0.5;
+    }
+  }
+}
 
 /**
  * Private spritesheet class for the player's bottom that also exposes the
@@ -58,6 +123,7 @@ export class Player extends GameObject {
   protected _maxArmor: number = 50;
   protected _maxEnergy: number = 100;
   protected _energy: number = this._maxEnergy;
+  protected _cooldownBar: PlayerCooldownBar;
   public facingLeft: boolean = false;
   public score: number = 0;
   public weapons: Weapon[];
@@ -175,11 +241,15 @@ export class Player extends GameObject {
         },
       }
     );
-    this._spriteBottom.anchor.set(0.39, 0.5);
-    this._spriteTop.anchor.set(0.39, 0.5);
+    this._spriteBottom.anchor.set(0.36, 0.5);
+    this._spriteTop.anchor.set(0.36, 0.5);
     this._mirrorList.push(this);
     this.addChild(this._spriteBottom);
     this.addChild(this._spriteTop);
+    // Add weapon cooldown bar above player's head
+    // Add health bar
+    this._cooldownBar = new PlayerCooldownBar(this);
+    this.addChild(this._cooldownBar);
     // Spawn the player at a random spawn point
     const spawnPoint = game.level.getPlayerSpawn();
     this.pos.r = spawnPoint.r;
@@ -312,6 +382,8 @@ export class Player extends GameObject {
       this.numMines--;
       this._game.addGameObject(new ProximityMine(this._game));
     }
+    // Update weapon cooldown bar
+    this._cooldownBar.update(this);
     // Offset the sprite top to match the sprite bottom
     this._spriteTop.y = this._spriteBottom.getTopOffset();
   }
