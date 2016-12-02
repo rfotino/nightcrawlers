@@ -25,7 +25,6 @@ export class Options {
   // Default values for options
   protected _debug: boolean = true;
   protected _volume: number = 1;
-  protected _levelData: Object;
 
   // Option getters simply return the protected value
   public get debug(): boolean {
@@ -47,12 +46,7 @@ export class Options {
     this._saveOptions();
   }
 
-  public set levelData(levelData: Object) {
-    this._levelData = levelData;
-  }
-
   public constructor() {
-    this._levelData = require('../assets/levels/survival.json');
     // Load options from local storage, if local storage is available and we
     // have saved options
     if (localStorageAvailable()) {
@@ -63,14 +57,6 @@ export class Options {
         this._volume = savedOptions.volume;
       }
     }
-  }
-
-  /**
-   * Constructs and returns a level from the currently loaded level data.
-   * This is an expensive operation.
-   */
-  public getLevel(game: GameInstance): Level {
-    return new Level(game, this._levelData);
   }
 
   /**

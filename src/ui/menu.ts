@@ -17,7 +17,7 @@ const BUTTON_WIDTH = 380;
 const BUTTON_HEIGHT = 115;
 
 // Background position data to be shared by every menu
-let FOG_ROTATIONS = [
+const FOG_ROTATIONS = [
   {
     rotation: Math.random() * Math.PI * 2,
     rotationVel: 0.001,
@@ -30,7 +30,7 @@ let FOG_ROTATIONS = [
 
 // Generate fog layers for a menu
 function getFogs(): PIXI.Sprite[] {
-  let fogs: PIXI.Sprite[] = [];
+  const fogs: PIXI.Sprite[] = [];
   for (let i = 0; i < FOG_ROTATIONS.length; i++) {
     let fog = new PIXI.Sprite(PIXI.loader.resources['game/clouds'].texture);
     fog.anchor.set(0.5);
@@ -252,23 +252,24 @@ export class UIMenu extends UIContainer {
 }
 
 export class MainMenu extends UIMenu {
-  protected _optionsMenu: OptionsMenu;
+  public optionsMenu: OptionsMenu;
 
   public constructor(game: Game) {
     super(game);
     // Add title
     this.addMenuItem(new UIImageLabel(game, 'ui/menu/nightcrawlers-title', TITLE_WIDTH, TITLE_HEIGHT));
     // Add play game button
+    const levelMenu = new LevelMenu(game, this);
     const playGameBtn = new UIImageButton(game, 'ui/menu/play-game-btn', BUTTON_WIDTH, BUTTON_HEIGHT);
     playGameBtn.addListener('action', () => {
-      game.setActiveScreen(new GameInstance(game, this._optionsMenu.options));
+      game.setActiveScreen(levelMenu);
     });
     this.addMenuItem(playGameBtn);
     // Add options button
-    this._optionsMenu = new OptionsMenu(game, this);
+    this.optionsMenu = new OptionsMenu(game, this);
     const optionsBtn = new UIImageButton(game, 'ui/menu/options-btn', BUTTON_WIDTH, BUTTON_HEIGHT);
     optionsBtn.addListener('action', () => {
-      game.setActiveScreen(this._optionsMenu);
+      game.setActiveScreen(this.optionsMenu);
     });
     this.addMenuItem(optionsBtn);
     // Add credits button
@@ -278,6 +279,59 @@ export class MainMenu extends UIMenu {
       game.setActiveScreen(creditsMenu);
     });
     this.addMenuItem(creditsBtn);
+  }
+}
+
+class LevelMenu extends UIMenu {
+  public constructor(game: Game, previous: MainMenu) {
+    super(game);
+    // Add title
+    this.addMenuItem(new UILabel(game, 'Level Select', { fontSize: TITLE_FONT_SIZE }));
+    // Add level buttons. For now have constant array of level names that we
+    // iterate over. Each level's JSON is loaded with the PIXI loader, and is
+    // parsed into a JavaScript object. When the button for a given level gets
+    // clicked by the user, a new game instance is spun up with the parsed
+    // level object.
+    ['huge', 'tiny'].forEach(levelName => {
+      const levelBtn = new UIButton(game, levelName.toLocaleUpperCase());
+      const levelData = PIXI.loader.resources[`levels/${levelName}`].data;
+      levelBtn.addListener('action', () => {
+        game.setActiveScreen(
+          new GameInstance(game, previous.optionsMenu.options, levelData)
+        );
+      });
+      this.addMenuItem(levelBtn);
+    });
+    // Add option to load a level from a file, useful for debugging
+    const loadFromFileBtn = new UIButton(game, 'Load from File');
+    loadFromFileBtn.addListener('action', () => {
+      const fileChooser = document.createElement('input');
+      fileChooser.type = 'file';
+      fileChooser.addEventListener('change', () => {
+        if (fileChooser.files.length <= 0) {
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const levelData = JSON.parse(reader.result);
+          game.setActiveScreen(
+            new GameInstance(game, previous.optionsMenu.options, levelData)
+          );
+        };
+        reader.readAsText(fileChooser.files[0]);
+      });
+      fileChooser.click();
+    });
+    this.addMenuItem(loadFromFileBtn);
+    // Add back button to return to previous menu
+    const backBtn = new UIImageButton(
+      game, 'ui/menu/back-btn',
+      BUTTON_WIDTH, BUTTON_HEIGHT
+    );
+    backBtn.addListener('action', () => {
+      game.setActiveScreen(previous);
+    });
+    this.addMenuItem(backBtn);
   }
 }
 
@@ -292,7 +346,7 @@ class OptionsMenu extends UIMenu {
     // Add title
     this.addMenuItem(new UIImageLabel(game, 'ui/menu/options-title', TITLE_WIDTH, TITLE_HEIGHT));
     // Add debug on/off button
-    let debugButton = new UIButton(
+    const debugButton = new UIButton(
       game,
       `Debug ${this._options.debug ? 'On' : 'Off'}`
     );
@@ -313,24 +367,6 @@ class OptionsMenu extends UIMenu {
       this._options.volume = volumeSlider.value;
     });
     this.addMenuItem(volumeSlider);
-    // Add load level from file option
-    const loadLevelButton = new UIButton(game, 'Load Level');
-    loadLevelButton.addListener('action', () => {
-      let fileChooser = document.createElement('input');
-      fileChooser.type = 'file';
-      fileChooser.addEventListener('change', () => {
-        if (fileChooser.files.length <= 0) {
-          return;
-        }
-        let reader = new FileReader();
-        reader.onload = () => {
-          this._options.levelData = JSON.parse(reader.result);
-        };
-        reader.readAsText(fileChooser.files[0]);
-      });
-      fileChooser.click();
-    });
-    this.addMenuItem(loadLevelButton);
     // Add back button to return to previous menu
     const backBtn = new UIImageButton(
       game, 'ui/menu/back-btn',
@@ -403,22 +439,22 @@ export class PauseMenu extends UIMenu {
 }
 
 export class GameOverMenu extends UIMenu {
-  public constructor(game: Game, gameInstance: GameInstance) {
+  public constructor(game: Game, gameInst: GameInstance) {
     super(game, false);
     // Add title
     this.addMenuItem(new UILabel(game, 'Game Over', { fontSize: TITLE_FONT_SIZE }));
     // Add button to start a new game
     const playAgainBtn = new UIButton(game, 'Play Again');
     playAgainBtn.addListener('action', () => {
-      let options = gameInstance.options;
-      gameInstance = null;
-      game.setActiveScreen(new GameInstance(game, options));
+      const newGameInst = new GameInstance(game, gameInst.options, gameInst.level);
+      gameInst = null;
+      game.setActiveScreen(newGameInst);
     });
     this.addMenuItem(playAgainBtn);
     // Add button to quit to main menu
-    let mainMenuBtn = new UIButton(game, 'Main Menu');
+    const mainMenuBtn = new UIButton(game, 'Main Menu');
     mainMenuBtn.addListener('action', () => {
-      gameInstance = null;
+      gameInst = null;
       game.setActiveScreen(game.mainMenu);
     });
     this.addMenuItem(mainMenuBtn);

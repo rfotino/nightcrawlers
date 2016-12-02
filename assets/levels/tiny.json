@@ -1,0 +1,85 @@
+{
+  "playerSpawns": [
+    {
+      "r": 325,
+      "theta": -1.775
+    },
+    {
+      "r": 325,
+      "theta": -0.25
+    },
+    {
+      "r": 325,
+      "theta": 2.4
+    }
+  ],
+  "itemSpawns": [],
+  "blocks": [
+    {
+      "r": 150,
+      "theta": 0,
+      "height": 150,
+      "width": 6.3,
+      "type": "stone"
+    },
+    {
+      "r": 250,
+      "theta": 0,
+      "height": 100,
+      "width": 6.283,
+      "type": "grass"
+    }
+  ],
+  "backgroundBlocks": [],
+  "platforms": [],
+  "decorations": [
+    {
+      "r": 250,
+      "theta": -2.95,
+      "type": "gravestone1"
+    },
+    {
+      "r": 250,
+      "theta": -2.725,
+      "type": "tree1"
+    },
+    {
+      "r": 250,
+      "theta": -2.325,
+      "type": "gravestone2"
+    },
+    {
+      "r": 250,
+      "theta": -1.1,
+      "type": "tree1"
+    },
+    {
+      "r": 250,
+      "theta": -0.8,
+      "type": "gravestone1"
+    },
+    {
+      "r": 250,
+      "theta": 0.8,
+      "type": "tree1"
+    },
+    {
+      "r": 250,
+      "theta": 1.075,
+      "type": "gravestone2"
+    },
+    {
+      "r": 250,
+      "theta": 1.925,
+      "type": "gravestone1"
+    }
+  ],
+  "waves": [
+    {
+      "zombie": 5,
+      "bat": 3,
+      "skeleton": 3,
+      "spider": 1
+    }
+  ]
+}

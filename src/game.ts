@@ -94,6 +94,7 @@ export class Game {
       switch (obj['type']) {
         default:
         case 'image':
+        case 'level':
           const file = obj['files'][0];
           fileName = file['src'];
           fileSize = file['size'];

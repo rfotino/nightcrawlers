@@ -1,5 +1,25 @@
 [
   {
+    "name": "levels/huge",
+    "type": "level",
+    "files": [
+      {
+        "src": "assets/levels/huge.json",
+        "size": 8624
+      }
+    ]
+  },
+  {
+    "name": "levels/tiny",
+    "type": "level",
+    "files": [
+      {
+        "src": "assets/levels/tiny.json",
+        "size": 1219
+      }
+    ]
+  },
+  {
     "name": "game/player-bottom",
     "type": "image",
     "files": [

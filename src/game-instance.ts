@@ -65,10 +65,10 @@ export class GameInstance extends UIContainer {
     return this.player.score;
   }
 
-  public constructor(game: Game, options: Options) {
+  public constructor(game: Game, options: Options, levelData: Object) {
     super(game);
     this._options = options;
-    this.level = this._options.getLevel(this);
+    this.level = new Level(this, levelData);
     this._outerViewStage = new PIXI.Container();
     this._innerViewStage = new PIXI.Container();
     this.addChild(this._outerViewStage);
