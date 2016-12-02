@@ -446,7 +446,11 @@ export class GameOverMenu extends UIMenu {
     // Add button to start a new game
     const playAgainBtn = new UIButton(game, 'Play Again');
     playAgainBtn.addListener('action', () => {
-      const newGameInst = new GameInstance(game, gameInst.options, gameInst.level);
+      const newGameInst = new GameInstance(
+        game,
+        gameInst.options,
+        gameInst.level.initialData
+      );
       gameInst = null;
       game.setActiveScreen(newGameInst);
     });

@@ -5,6 +5,7 @@ import { ItemSpawner } from './objects/item-spawner';
 import { GameInstance } from './game-instance';
 
 export class Level {
+  protected _initialData: Object;
   protected _blocks: Terrain.Block[];
   protected _backgroundBlocks: Terrain.BackgroundBlock[];
   protected _platforms: Terrain.Platform[];
@@ -13,16 +14,18 @@ export class Level {
   protected _itemSpawns: ItemSpawner[];
   protected _waves: {[key: string]: number}[];
 
+  public get initialData(): Object { return this._initialData; }
   public get blocks(): Terrain.Block[] { return this._blocks; }
   public get platforms(): Terrain.Platform[] { return this._platforms; }
 
   /**
    * Construct a level from a JSON object saved to a file by the level editor.
    */
-  public constructor(game: GameInstance, objects: Object) {
+  public constructor(game: GameInstance, initialData: Object) {
+    this._initialData = initialData;
     // Add blocks from file data
     this._blocks = [];
-    objects['blocks'].forEach((rectProps: Object) => {
+    initialData['blocks'].forEach((rectProps: Object) => {
       let rect = new Polar.Rect(
         rectProps['r'], rectProps['theta'],
         rectProps['height'], rectProps['width']
@@ -53,7 +56,7 @@ export class Level {
     });
     // Add background blocks from file data
     this._backgroundBlocks = [];
-    objects['backgroundBlocks'].forEach((rectProps: Object) => {
+    initialData['backgroundBlocks'].forEach((rectProps: Object) => {
       let rect = new Polar.Rect(
         rectProps['r'], rectProps['theta'],
         rectProps['height'], rectProps['width']
@@ -84,8 +87,8 @@ export class Level {
     });
     // Add platforms from file data
     this._platforms = [];
-    if (objects['platforms']) {
-      objects['platforms'].forEach((rectProps: Object) => {
+    if (initialData['platforms']) {
+      initialData['platforms'].forEach((rectProps: Object) => {
         let rect = new Polar.Rect(
           rectProps['r'], rectProps['theta'],
           rectProps['height'], rectProps['width']
@@ -122,8 +125,8 @@ export class Level {
     }
     // Add decorations from file data
     this._decorations = [];
-    if (objects['decorations']) {
-      objects['decorations'].forEach((rectProps: Object) => {
+    if (initialData['decorations']) {
+      initialData['decorations'].forEach((rectProps: Object) => {
         // Add leftover piece
         this._decorations.push(new Terrain.Decoration(
           game,
@@ -135,8 +138,8 @@ export class Level {
     }
     // Add spawn points from file data
     this._playerSpawns = [];
-    if (objects['playerSpawns']) {
-      objects['playerSpawns'].forEach((spawnProps: Object) => {
+    if (initialData['playerSpawns']) {
+      initialData['playerSpawns'].forEach((spawnProps: Object) => {
         this._playerSpawns.push(new Polar.Coord(
           spawnProps['r'],
           spawnProps['theta']
@@ -147,8 +150,8 @@ export class Level {
     }
     // Add item spawners from file data
     this._itemSpawns = [];
-    if (objects['itemSpawns']) {
-      objects['itemSpawns'].forEach((spawnProps: Object) => {
+    if (initialData['itemSpawns']) {
+      initialData['itemSpawns'].forEach((spawnProps: Object) => {
         this._itemSpawns.push(new ItemSpawner(
           spawnProps['r'],
           spawnProps['theta'],
@@ -158,7 +161,7 @@ export class Level {
       })
     }
     // Add waves of enemies from file data
-    this._waves = objects['waves'] || [];
+    this._waves = initialData['waves'] || [];
   }
 
   /**
