@@ -45,7 +45,8 @@ export module Polar {
    * Returns true if r1 is to the right of r2.
    */
   export function aside(r1: Polar.Rect, r2: Polar.Rect): boolean {
-    return Polar.closestTheta(r1.theta, r2.theta) >= r2.theta + r2.width;
+    const closest = Polar.closestTheta(r1.theta, r2.theta + (r2.width / 2));
+    return closest >= r2.theta + r2.width;
   }
 
   /**

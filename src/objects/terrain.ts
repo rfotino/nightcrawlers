@@ -23,12 +23,15 @@ function getImageData(resourceName: string): ImageData {
   return cachedImageData[resourceName];
 }
 
+/**
+ * Cache tiles at a fixed height and width so that blocks can use the same
+ * tile multiple times without having to generate it from scratch.
+ */
 interface PolarTile {
   r: number;
   width: number;
   texture: PIXI.Texture;
 }
-
 const TILE_HEIGHT = 75;
 const TILE_SIDE_PADDING = 1.5;
 const TILE_BOTTOM_PADDING = 3;
