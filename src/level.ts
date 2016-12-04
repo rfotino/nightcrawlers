@@ -26,62 +26,24 @@ export class Level {
     // Add blocks from file data
     this._blocks = [];
     initialData['blocks'].forEach((rectProps: Object) => {
-      let rect = new Polar.Rect(
-        rectProps['r'], rectProps['theta'],
-        rectProps['height'], rectProps['width']
-      );
-      // If more than max width, add in pieces
-      let maxWidth = Math.PI / 2;
-      while (rect.width > maxWidth) {
-        this._blocks.push(new Terrain.Block(
-          game,
-          rect.r,
-          rect.theta,
-          rect.height,
-          maxWidth,
-          rectProps['type'] || 'stone'
-        ));
-        rect.theta += maxWidth;
-        rect.width -= maxWidth;
-      }
-      // Add leftover piece
       this._blocks.push(new Terrain.Block(
         game,
-        rect.r,
-        rect.theta,
-        rect.height,
-        rect.width,
+        rectProps['r'],
+        rectProps['theta'],
+        rectProps['height'],
+        rectProps['width'],
         rectProps['type'] || 'stone'
       ));
     });
     // Add background blocks from file data
     this._backgroundBlocks = [];
     initialData['backgroundBlocks'].forEach((rectProps: Object) => {
-      let rect = new Polar.Rect(
-        rectProps['r'], rectProps['theta'],
-        rectProps['height'], rectProps['width']
-      );
-      // If more than max width, add in pieces
-      let maxWidth = Math.PI / 2;
-      while (rect.width > maxWidth) {
-        this._backgroundBlocks.push(new Terrain.BackgroundBlock(
-          game,
-          rect.r,
-          rect.theta,
-          rect.height,
-          maxWidth,
-          rectProps['type']
-        ));
-        rect.theta += maxWidth;
-        rect.width -= maxWidth;
-      }
-      // Add leftover piece
       this._backgroundBlocks.push(new Terrain.BackgroundBlock(
         game,
-        rect.r,
-        rect.theta,
-        rect.height,
-        rect.width,
+        rectProps['r'],
+        rectProps['theta'],
+        rectProps['height'],
+        rectProps['width'],
         rectProps['type']
       ));
     });
@@ -89,37 +51,15 @@ export class Level {
     this._platforms = [];
     if (initialData['platforms']) {
       initialData['platforms'].forEach((rectProps: Object) => {
-        let rect = new Polar.Rect(
-          rectProps['r'], rectProps['theta'],
-          rectProps['height'], rectProps['width']
-        );
-        // If more than max width, add in pieces - in the future this will
-        // be the responsibility of the block and platform classes themselves
-        let maxWidth = Math.PI / 2;
-        while (rect.width > maxWidth) {
-          this._platforms.push(new Terrain.Platform(
-            game,
-            rect.r,
-            rect.theta,
-            rect.height,
-            maxWidth,
-            rectProps['moves'] || false,
-            rectProps['rate'] || 0,
-            rectProps['thetaPrime'] || rect.theta
-          ));
-          rect.theta += maxWidth;
-          rect.width -= maxWidth;
-        }
-        // Add leftover piece
         this._platforms.push(new Terrain.Platform(
           game,
-          rect.r,
-          rect.theta,
-          rect.height,
-          rect.width,
+          rectProps['r'],
+          rectProps['theta'],
+          rectProps['height'],
+          rectProps['width'],
           rectProps['moves'] || false,
           rectProps['rate'] || 0,
-          rectProps['thetaPrime'] || rect.theta
+          rectProps['thetaPrime'] || rectProps['theta']
         ));
       });
     }
@@ -127,7 +67,6 @@ export class Level {
     this._decorations = [];
     if (initialData['decorations']) {
       initialData['decorations'].forEach((rectProps: Object) => {
-        // Add leftover piece
         this._decorations.push(new Terrain.Decoration(
           game,
           rectProps['r'],

@@ -8,68 +8,60 @@ import { Collider } from '../math/collider';
  * Draws resource on a canvas and returns an ImageData object representing the
  * pixel data, memoizing the result for later.
  */
-let cachedImageData: {[key: string]: ImageData} = {};
+const cachedImageData: {[key: string]: ImageData} = {};
 function getImageData(resourceName: string): ImageData {
   if (!cachedImageData[resourceName]) {
-    let texture = PIXI.loader.resources[resourceName].texture;
-    let canvas = document.createElement('canvas');
+    const texture = PIXI.loader.resources[resourceName].texture;
+    const canvas = document.createElement('canvas');
     canvas.width = texture.width;
     canvas.height = texture.height;
-    let ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     ctx.drawImage(texture.baseTexture.source, 0, 0);
-    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     cachedImageData[resourceName] = imageData;
   }
   return cachedImageData[resourceName];
 }
 
-/**
- * Number of extra pixels at the top of the grass texture, where there is
- * texture but should be no collision.
- */
-const GRASS_PADDING = 8;
+interface PolarTile {
+  r: number;
+  width: number;
+  texture: PIXI.Texture;
+}
 
-/**
- * Terrain class used to map rectangular textures to rounded blocks and
- * platforms, also used for shared collision/bounds functionality.
- */
-abstract class Terrain extends GameObject {
-  protected _size: Polar.Coord;
-  protected _solidLeft: boolean;
-  protected _solidRight: boolean;
-  protected _solidTop: boolean;
-  protected _solidBottom: boolean;
-  protected _sprite: PIXI.Sprite;
-
-  public get z(): number {
-    return 10;
+const TILE_HEIGHT = 75;
+const TILE_SIDE_PADDING = 1.5;
+const TILE_BOTTOM_PADDING = 3;
+const cachedTiles: {[key: string]: PolarTile[]} = {};
+function getPolarTile(resourceName: string, r: number): PolarTile {
+  // Make sure the resourceName is valid
+  if (!PIXI.loader.resources[resourceName]) {
+    throw `No texture available for resource ${resourceName}`;
   }
-
-  public get size(): Polar.Coord {
-    return this._size;
+  // Create empty array for resourceName if it doesn't exist
+  if (!cachedTiles[resourceName]) {
+    cachedTiles[resourceName] = [];
   }
-
-  public constructor(game: GameInstance,
-                     r: number, theta: number, height: number, width: number,
-                     pattern: ImageData,
-                     topPadding: number = 0) {
-    super(game);
-    // Set up dimensions
-    this.pos.r = r;
-    this.pos.theta = theta;
-    this._size = new Polar.Coord(height, width);
-    // Generate curved block from rectangular pattern:
-    // Increase visual height and width by 1 pixel to prevent seams between
-    // adjacent terrain elements.
+  // Check for existing texture, if not found then create it
+  const rIndex = Math.max(0, Math.ceil(r / TILE_HEIGHT) - 1);
+  if (!cachedTiles[resourceName][rIndex]) {
+    // Get rectangular texture pattern
+    const pattern = getImageData(resourceName);
+    const topPadding = getTopPadding(resourceName);
+    // Lock r to the nearest multiple of TILE_HEIGHT
+    r = (rIndex + 1) * TILE_HEIGHT;
+    // Get the theta width of this tile, to be stored with the PolarTile obj
+    const width_theta = Math.min(Math.PI / 2, 150 / r);
+    // Add padding, get image width and height
     r += topPadding;
-    height += topPadding + 1.5;
-    width += 1.5 / r;
+    const width = width_theta + (TILE_SIDE_PADDING / r);
+    const height = topPadding + TILE_HEIGHT + TILE_BOTTOM_PADDING;
     // Create canvas to use as sprite texture
     const canvas = document.createElement('canvas');
     const w = 2 * r * Math.sin(width / 2);
     const h = r - ((r - height) * Math.cos(width / 2));
-    canvas.width = w + 2;
-    canvas.height = h + 2;
+    canvas.width = w;
+    canvas.height = h;
     // Draw platform, mapping rectangular textures to curved platforms one
     // pixel at a time
     const ctx = canvas.getContext('2d');
@@ -80,8 +72,8 @@ abstract class Terrain extends GameObject {
     const minTheta = -(Math.PI / 2) - (width / 2);
     const maxTheta = minTheta + width;
     // Center of circles we are drawing
-    const cx = 1 + (w / 2);
-    const cy = 1 + r;
+    const cx = w / 2;
+    const cy = r;
     for (let x = 0; x < pixels.width; x++) {
       for (let y = 0; y < pixels.height; y++) {
         // Coordinates of position we are drawing in cartesian circle space
@@ -116,14 +108,122 @@ abstract class Terrain extends GameObject {
       }
     }
     ctx.putImageData(pixels, 0, 0);
-    // Create sprite from canvas
-    this._sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
-    this._sprite.anchor.x = 0.5;
-    this._sprite.anchor.y = (1 + topPadding) / canvas.height;
-    // Add newly created sprite to the scene
-    this._mirrorList.push(this._sprite);
-    this.addChild(this._sprite);
-    this.rotation = width / 2;
+    // Create and store texture
+    cachedTiles[resourceName][rIndex] = {
+      texture: PIXI.Texture.fromCanvas(canvas),
+      r: r,
+      width: width_theta,
+    };
+  }
+  // Return cached or newly created tile
+  return cachedTiles[resourceName][rIndex];
+}
+
+/**
+ * Number of extra pixels at the top of the grass texture, where there is
+ * texture but should be no collision.
+ */
+const GRASS_PADDING = 8;
+
+/**
+ * Function for getting top padding amount based on resource name.
+ */
+function getTopPadding(resourceName: string): number {
+  switch (resourceName) {
+    case 'game/grass':
+    case 'game/platform':
+      return GRASS_PADDING;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Terrain class used to map rectangular textures to rounded blocks and
+ * platforms, also used for shared collision/bounds functionality.
+ */
+abstract class Terrain extends GameObject {
+  protected _size: Polar.Coord;
+  protected _solidLeft: boolean;
+  protected _solidRight: boolean;
+  protected _solidTop: boolean;
+  protected _solidBottom: boolean;
+  protected _spriteMask: PIXI.Graphics;
+  protected _spriteContainer: PIXI.Container;
+
+  public get z(): number {
+    return 10;
+  }
+
+  public get size(): Polar.Coord {
+    return this._size;
+  }
+
+  public constructor(game: GameInstance,
+                     r: number, theta: number, height: number, width: number,
+                     resourceName: string) {
+    super(game);
+    // Set up dimensions
+    this.pos.r = r;
+    this.pos.theta = theta;
+    this._size = new Polar.Coord(height, width);
+    // Initialize the sprite container that will hold all the tiles
+    this._spriteContainer = new PIXI.Container();
+    this._mirrorList.push(this._spriteContainer);
+    this.addChild(this._spriteContainer);
+    // Add as many tiles as necessary to fill or exceed the terrain width
+    let chainHeight = 0;
+    let tileResource = resourceName;
+    while (chainHeight < height) {
+      const desiredTileR = r - chainHeight;
+      const tile = getPolarTile(tileResource, desiredTileR);
+      const scale = desiredTileR / tile.r;
+      let chainWidth = 0;
+      while (chainWidth < width) {
+        const sprite = new PIXI.Sprite(tile.texture);
+        sprite.anchor.x = 0.5;
+        sprite.anchor.y = getTopPadding(tileResource) / sprite.height;
+        sprite.rotation = (tile.width * scale / 2) + chainWidth;
+        sprite.x = desiredTileR * Math.cos(sprite.rotation);
+        sprite.y = desiredTileR * Math.sin(sprite.rotation);
+        sprite.scale.set(scale);
+        sprite.rotation += Math.PI / 2;
+        this._spriteContainer.addChild(sprite);
+        chainWidth += tile.width * scale;
+      }
+      chainHeight += TILE_HEIGHT * scale;
+      // Hack to switch to stone from grass after first layer of tiles
+      if (tileResource === 'game/grass') {
+        tileResource = 'game/stone';
+      }
+    }
+    // Add sprite mask to hide excess pieces of tiles
+    const topPadding = getTopPadding(resourceName);
+    const minR = Math.max(0, r - height - TILE_BOTTOM_PADDING);
+    const maxR = r + topPadding;
+    const maxTheta = Math.min(Math.PI * 2, width + (TILE_SIDE_PADDING / r));
+    this._spriteMask = new PIXI.Graphics();
+    // Arc twice (once from 0 to halfway, then from halfway to finished)
+    // because PIXI.Graphics draws a segmented circle and we need the segments
+    // to be small enough to not be noticable
+    this._spriteMask
+      .beginFill(Color.white.toPixi())
+      .arc(0, 0, maxR, 0, maxTheta / 2)
+      .arc(0, 0, maxR, maxTheta / 2, maxTheta)
+      .arc(0, 0, minR, maxTheta, maxTheta / 2, true)
+      .arc(0, 0, minR, maxTheta / 2, 0, true)
+      .endFill();
+    this._spriteContainer.mask = this._spriteMask;
+    this._spriteContainer.addChild(this._spriteMask);
+  }
+
+  /**
+   * Override mirror to not affect position, only rotation
+   */
+  public mirror(): void {
+    this._mirrorList.forEach(obj => {
+      obj.rotation = this.pos.theta;
+    });
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
@@ -180,10 +280,7 @@ export class Platform extends Terrain {
                      moves: boolean = false,
                      rate: number = 0,
                      thetaPrime: number = theta) {
-    super(
-      game, r, theta, height, width,
-      getImageData('game/platform'), GRASS_PADDING
-    );
+    super(game, r, theta, height, width, 'game/platform');
     // Assign animation characteristics for moving between theta and thetaPrime
     // every rate frames
     if (moves && rate > 0) {
@@ -215,10 +312,7 @@ export class Block extends Terrain {
   public constructor(game: GameInstance,
                      r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(
-      game, r, theta, height, width,
-      Block._getImageData(blockType), Block._getTopPadding(blockType)
-    );
+    super(game, r, theta, height, width, `game/${blockType}`);
     // Blocks can't be entered from any side, unlike platforms
     this._solidLeft = true;
     this._solidRight = true;
@@ -227,26 +321,6 @@ export class Block extends Terrain {
   }
 
   public movable(): boolean { return false; }
-
-  private static _getImageData(type: string): ImageData {
-    switch (type) {
-      case 'grass':
-        return getImageData('game/grass');
-      case 'stone':
-      default:
-        return getImageData('game/stone');
-    }
-  }
-
-  private static _getTopPadding(type: string): number {
-    switch(type) {
-      case 'grass':
-        return GRASS_PADDING;
-      case 'stone':
-      default:
-        return 0;
-    }
-  }
 
   public type(): string { return 'block'; }
 }
@@ -261,7 +335,7 @@ export class BackgroundBlock extends Terrain {
   public constructor(game: GameInstance,
                      r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(game, r, theta, height, width, getImageData(`game/${blockType}`), 0);
+    super(game, r, theta, height, width, `game/${blockType}`);
     // Blocks can't be collided with from any side
     this._solidLeft = false;
     this._solidRight = false;

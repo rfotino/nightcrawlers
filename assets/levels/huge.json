@@ -117,13 +117,6 @@
     },
     {
       "r": 1500,
-      "theta": 2,
-      "height": 75,
-      "width": 1.25,
-      "type": "stone"
-    },
-    {
-      "r": 1500,
       "theta": 3.75,
       "height": 75,
       "width": 1,
@@ -146,7 +139,7 @@
     {
       "r": 1575,
       "theta": 2,
-      "height": 75,
+      "height": 150,
       "width": 1.25,
       "type": "grass"
     },
