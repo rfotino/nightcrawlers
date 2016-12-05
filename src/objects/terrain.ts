@@ -33,6 +33,7 @@ interface PolarTile {
   texture: PIXI.Texture;
 }
 const TILE_HEIGHT = 75;
+const TILE_MIN_WIDTH = 125;
 const TILE_SIDE_PADDING = 1.5;
 const TILE_BOTTOM_PADDING = 3;
 const cachedTiles: {[key: string]: PolarTile[]} = {};
@@ -54,7 +55,7 @@ function getPolarTile(resourceName: string, r: number): PolarTile {
     // Lock r to the nearest multiple of TILE_HEIGHT
     r = (rIndex + 1) * TILE_HEIGHT;
     // Get the theta width of this tile, to be stored with the PolarTile obj
-    const width_theta = Math.min(Math.PI / 2, 150 / r);
+    const width_theta = Math.min(Math.PI / 2, TILE_MIN_WIDTH / r);
     // Add padding, get image width and height
     r += topPadding;
     const width = width_theta + (TILE_SIDE_PADDING / r);
@@ -114,7 +115,7 @@ function getPolarTile(resourceName: string, r: number): PolarTile {
     // Create and store texture
     cachedTiles[resourceName][rIndex] = {
       texture: PIXI.Texture.fromCanvas(canvas),
-      r: r,
+      r: (rIndex + 1) * TILE_HEIGHT,
       width: width_theta,
     };
   }
@@ -177,16 +178,32 @@ abstract class Terrain extends GameObject {
     // Add as many tiles as necessary to fill or exceed the terrain width
     let chainHeight = 0;
     let tileResource = resourceName;
+    let maskRequired = false;
     while (chainHeight < height) {
-      const desiredTileR = r - chainHeight;
+      const desiredTileR = Math.max(r - height + chainHeight, r - chainHeight);
       const tile = getPolarTile(tileResource, desiredTileR);
       const scale = desiredTileR / tile.r;
       let chainWidth = 0;
       while (chainWidth < width) {
+        const tileR = tile.r * scale;
+        const tileTheta = chainWidth;
+        const tileHeight = TILE_HEIGHT * scale;
+        const tileWidth = tile.width * scale;
         const sprite = new PIXI.Sprite(tile.texture);
+        // Check if we need to add a mask
+        if (tileR - tileHeight < r - height) {
+          maskRequired = true;
+        }
         sprite.anchor.x = 0.5;
         sprite.anchor.y = getTopPadding(tileResource) / sprite.height;
         sprite.rotation = (tile.width * scale / 2) + chainWidth;
+        if (tileTheta + tileWidth > width) {
+          if (width < TILE_MIN_WIDTH / tileR) {
+            maskRequired = true;
+          } else {
+            sprite.rotation -= tileTheta + tileWidth - width;
+          }
+        }
         sprite.x = desiredTileR * Math.cos(sprite.rotation);
         sprite.y = desiredTileR * Math.sin(sprite.rotation);
         sprite.scale.set(scale);
@@ -200,24 +217,26 @@ abstract class Terrain extends GameObject {
         tileResource = 'game/stone';
       }
     }
-    // Add sprite mask to hide excess pieces of tiles
-    const topPadding = getTopPadding(resourceName);
-    const minR = Math.max(0, r - height - TILE_BOTTOM_PADDING);
-    const maxR = r + topPadding;
-    const maxTheta = Math.min(Math.PI * 2, width + (TILE_SIDE_PADDING / r));
-    this._spriteMask = new PIXI.Graphics();
-    // Arc twice (once from 0 to halfway, then from halfway to finished)
-    // because PIXI.Graphics draws a segmented circle and we need the segments
-    // to be small enough to not be noticable
-    this._spriteMask
-      .beginFill(Color.white.toPixi())
-      .arc(0, 0, maxR, 0, maxTheta / 2)
-      .arc(0, 0, maxR, maxTheta / 2, maxTheta)
-      .arc(0, 0, minR, maxTheta, maxTheta / 2, true)
-      .arc(0, 0, minR, maxTheta / 2, 0, true)
-      .endFill();
-    this._spriteContainer.mask = this._spriteMask;
-    this._spriteContainer.addChild(this._spriteMask);
+    // Add sprite mask to hide excess pieces of tiles, if necessary
+    if (maskRequired) {
+      this._spriteMask = new PIXI.Graphics();
+      const topPadding = getTopPadding(resourceName);
+      const minR = Math.max(0, r - height - TILE_BOTTOM_PADDING);
+      const maxR = r + topPadding;
+      const maxTheta = Math.min(Math.PI * 2, width + (TILE_SIDE_PADDING / r));
+      // Arc twice (once from 0 to halfway, then from halfway to finished)
+      // because PIXI.Graphics draws a segmented circle and we need the segments
+      // to be small enough to not be noticable
+      this._spriteMask
+        .beginFill(Color.white.toPixi())
+        .arc(0, 0, maxR, 0, maxTheta / 2)
+        .arc(0, 0, maxR, maxTheta / 2, maxTheta)
+        .arc(0, 0, minR, maxTheta, maxTheta / 2, true)
+        .arc(0, 0, minR, maxTheta / 2, 0, true)
+        .endFill();;
+      this._spriteContainer.mask = this._spriteMask;
+      this._spriteContainer.addChild(this._spriteMask);
+    }
   }
 
   /**
