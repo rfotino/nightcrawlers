@@ -180,7 +180,10 @@ abstract class Terrain extends GameObject {
     let tileResource = resourceName;
     let maskRequired = false;
     while (chainHeight < height) {
-      const desiredTileR = Math.max(r - height + chainHeight, r - chainHeight);
+      const desiredTileR = r - chainHeight;
+      if (desiredTileR <= 0) {
+        break;
+      }
       const tile = getPolarTile(tileResource, desiredTileR);
       const scale = desiredTileR / tile.r;
       let chainWidth = 0;
@@ -191,7 +194,7 @@ abstract class Terrain extends GameObject {
         const tileWidth = tile.width * scale;
         const sprite = new PIXI.Sprite(tile.texture);
         // Check if we need to add a mask
-        if (tileR - tileHeight < r - height) {
+        if (chainHeight + tileHeight > height) {
           maskRequired = true;
         }
         sprite.anchor.x = 0.5;
@@ -233,7 +236,7 @@ abstract class Terrain extends GameObject {
         .arc(0, 0, maxR, maxTheta / 2, maxTheta)
         .arc(0, 0, minR, maxTheta, maxTheta / 2, true)
         .arc(0, 0, minR, maxTheta / 2, 0, true)
-        .endFill();;
+        .endFill();
       this._spriteContainer.mask = this._spriteMask;
       this._spriteContainer.addChild(this._spriteMask);
     }
