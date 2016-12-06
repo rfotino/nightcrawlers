@@ -5,7 +5,7 @@
     "files": [
       {
         "src": "assets/levels/huge.json",
-        "size": 8624
+        "size": 8514
       }
     ]
   },
@@ -15,7 +15,7 @@
     "files": [
       {
         "src": "assets/levels/tiny.json",
-        "size": 1219
+        "size": 1109
       }
     ]
   },
