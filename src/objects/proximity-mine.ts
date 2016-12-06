@@ -42,7 +42,7 @@ export class ProximityMine extends GameObject {
   }
 
   public get height(): number {
-    return 12;
+    return 10;
   }
 
   public get z(): number { return 20; }
