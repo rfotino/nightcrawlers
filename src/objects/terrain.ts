@@ -394,9 +394,19 @@ export class Decoration extends GameObject {
 
   public get z(): number { return 0; }
 
+  public get width(): number {
+    return Math.max(this._daySprite.width, this._nightSprite.width);
+  }
+
+  public get height(): number {
+    return Math.max(this._daySprite.height, this._nightSprite.height);
+  }
+
   public constructor(game: GameInstance,
                      r: number, theta: number, blockType: string) {
     super(game);
+    // Decorations are affected by gravity
+    this.accel.r = GRAVITY;
     // Initialize sprites with different textures
     this._daySprite = new PIXI.Sprite(
       PIXI.loader.resources[`game/day/${blockType}`].texture
@@ -404,14 +414,13 @@ export class Decoration extends GameObject {
     this._nightSprite = new PIXI.Sprite(
       PIXI.loader.resources[`game/night/${blockType}`].texture
     );
-    // Get maximum dimensions of day/night sprites
-    let width = Math.max(this._daySprite.width, this._nightSprite.width);
-    let height = Math.max(this._nightSprite.height, this._nightSprite.height);
-    // Position the sprite 5% lower than requested since there's some
-    // transparency on the bottom and we don't want floating sprites
-    this.pos.set(r - (height * 0.05), theta);
-    this._daySprite.anchor.set(0.5, 1);
-    this._nightSprite.anchor.set(0.5, 1);
+    // The r position fed in is where the bottom of the decoration should go,
+    // since it's not easy in the level editor to know how tall a sprite is.
+    // Add extra 5px so that the sprite starts about slightly above ground and
+    // falls to earth rather than clipping through the earth.
+    this.pos.set(r + (this.height / 2) + 5, theta);
+    this._daySprite.anchor.set(0.5, 0.5);
+    this._nightSprite.anchor.set(0.5, 0.5);
     // Add sprites to mirrorlist for (x, y) positioning
     this._mirrorList.push(this._daySprite);
     this._mirrorList.push(this._nightSprite);
@@ -434,7 +443,7 @@ export class Decoration extends GameObject {
     // slide down into the ground)
     let mask = new PIXI.Graphics();
     mask.beginFill(0xffffff);
-    mask.drawRect(-width / 2, -height, width, height);
+    mask.drawRect(-this.width / 2, -this.height / 2, this.width, this.height);
     mask.endFill();
     this._mirrorList.push(mask);
     this.addChild(mask);
@@ -484,17 +493,22 @@ export class Decoration extends GameObject {
         this._nightSprite.alpha = night;
         break;
       case TransitionType.POPUP:
-        this._daySprite.anchor.y = day;
-        this._nightSprite.anchor.y = night;
+        this._daySprite.anchor.y = day - 0.5;
+        this._nightSprite.anchor.y = night - 0.5;
         break;
     }
   }
 
-  public collidable(): boolean { return false; }
-
-  public movable(): boolean { return false; }
-
-  public getPolarBounds(): Polar.Rect { return new Polar.Rect(); }
+  public getPolarBounds(): Polar.Rect {
+    const widthTheta = this._daySprite.width / this.pos.r;
+    const boundsHeight = 0.9 * this.height;
+    return new Polar.Rect(
+      this.pos.r + (boundsHeight / 2),
+      this.pos.theta - (widthTheta / 2),
+      boundsHeight,
+      widthTheta
+    );
+  }
 
   public type(): string { return 'decoration'; }
 }
