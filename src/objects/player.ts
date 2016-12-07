@@ -25,7 +25,8 @@ class PlayerCooldownBar extends PIXI.Container {
   protected static _barTexture: PIXI.Texture = null;
 
   protected static get WIDTH(): number { return 50; }
-  protected static get HEIGHT(): number { return 1; }
+  protected static get HEIGHT(): number { return 5; }
+  protected static get MARGIN(): number { return 10; }
 
   protected static _getBarTexture(): PIXI.Texture {
     if (!PlayerCooldownBar._barTexture) {
@@ -33,8 +34,19 @@ class PlayerCooldownBar extends PIXI.Container {
       const ctx = canvas.getContext('2d');
       canvas.width = PlayerCooldownBar.WIDTH + 2;
       canvas.height = PlayerCooldownBar.HEIGHT + 2;
-      ctx.fillStyle = 'white';
-      ctx.fillRect(1, 1, PlayerCooldownBar.WIDTH, PlayerCooldownBar.HEIGHT);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const radius = 350;
+      const theta = canvas.width / radius;
+      ctx.arc(
+        canvas.width / 2,
+        radius + (canvas.height / 2),
+        radius,
+        (-theta / 2) - (Math.PI / 2),
+        (theta / 2) - (Math.PI / 2)
+      );
+      ctx.stroke();
       PlayerCooldownBar._barTexture = PIXI.Texture.fromCanvas(canvas);
     }
     return PlayerCooldownBar._barTexture;
@@ -43,7 +55,7 @@ class PlayerCooldownBar extends PIXI.Container {
   public constructor(player: Player) {
     super();
     const texture = PlayerCooldownBar._getBarTexture();
-    const margin = 10;
+    const margin = PlayerCooldownBar.MARGIN;
     const width = PlayerCooldownBar.WIDTH;
     const height = PlayerCooldownBar.HEIGHT;
     const x = -texture.width / 2;

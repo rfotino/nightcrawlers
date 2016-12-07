@@ -42,8 +42,9 @@ class EnemyHealthBar extends PIXI.Container {
   protected _fullSpriteMask: PIXI.Graphics;
   protected static _barTexture: PIXI.Texture = null;
 
-  protected static get WIDTH(): number { return 50; }
-  protected static get HEIGHT(): number { return 6; }
+  protected static get WIDTH(): number { return 45; }
+  protected static get HEIGHT(): number { return 8; }
+  protected static get MARGIN(): number { return 8; }
 
   protected static _getBarTexture(): PIXI.Texture {
     if (!EnemyHealthBar._barTexture) {
@@ -51,8 +52,19 @@ class EnemyHealthBar extends PIXI.Container {
       const ctx = canvas.getContext('2d');
       canvas.width = EnemyHealthBar.WIDTH + 2;
       canvas.height = EnemyHealthBar.HEIGHT + 2;
-      ctx.fillStyle = 'white';
-      ctx.fillRect(1, 1, EnemyHealthBar.WIDTH, EnemyHealthBar.HEIGHT);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = EnemyHealthBar.HEIGHT - 2;
+      ctx.beginPath();
+      const radius = 350;
+      const theta = canvas.width / radius;
+      ctx.arc(
+        canvas.width / 2,
+        radius + (canvas.height / 2),
+        radius,
+        (-theta / 2) - (Math.PI / 2),
+        (theta / 2) - (Math.PI / 2)
+      );
+      ctx.stroke();
       EnemyHealthBar._barTexture = PIXI.Texture.fromCanvas(canvas);
     }
     return EnemyHealthBar._barTexture;
@@ -61,7 +73,7 @@ class EnemyHealthBar extends PIXI.Container {
   public constructor(enemy: Enemy) {
     super();
     const texture = EnemyHealthBar._getBarTexture();
-    const margin = 10;
+    const margin = EnemyHealthBar.MARGIN;
     const width = EnemyHealthBar.WIDTH;
     const height = EnemyHealthBar.HEIGHT;
     const x = -texture.width / 2;
