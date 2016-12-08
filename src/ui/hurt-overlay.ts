@@ -5,16 +5,21 @@ import { UIContainer } from './container';
 
 export class HurtOverlay extends UIContainer {
   protected _gameInst: GameInstance;
-  protected _sprite: PIXI.Sprite;
+  protected _badlyHurtSprite: PIXI.Sprite;
+  protected _recentlyHurtSprite: PIXI.Sprite;
   protected _heartTimer: number = 0;
 
   public constructor(game: Game, gameInst: GameInstance) {
     super(game);
     this._gameInst = gameInst;
-    this._sprite = new PIXI.Sprite(
+    this._badlyHurtSprite = new PIXI.Sprite(
       PIXI.loader.resources['ui/hurt-overlay'].texture
     );
-    this.addChild(this._sprite);
+    this._recentlyHurtSprite = new PIXI.Sprite(
+      PIXI.loader.resources['ui/hurt-overlay'].texture
+    );
+    this.addChild(this._badlyHurtSprite);
+    this.addChild(this._recentlyHurtSprite);
   }
 
   /**
@@ -22,8 +27,8 @@ export class HurtOverlay extends UIContainer {
    */
   public doLayout(): void {
     super.doLayout();
-    this._sprite.width = this._game.view.width;
-    this._sprite.height = this._game.view.height;
+    this._badlyHurtSprite.width = this._recentlyHurtSprite.width = this._game.view.width;
+    this._badlyHurtSprite.height = this._recentlyHurtSprite.height = this._game.view.height;
   }
 
   /**
@@ -35,24 +40,17 @@ export class HurtOverlay extends UIContainer {
     if (this._gameInst.isPaused()) {
       return;
     }
-    // Tweak the constant here to make the heartbeat faster or slower
-    this._heartTimer += 0.04 * LagFactor.get();
+    // If the player has more than half health, don't show any badly hurt overlay.
+    // Otherwise show it linearly more opaque as the the player loses health.
     const healthPercent = (
       this._gameInst.player.health / this._gameInst.player.maxHealth
     );
-    // If the player has more than half health, don't show any hurt overlay.
-    // Otherwise show it linearly more opaque as the the player loses health.
-    let alpha = 0;
+    let badlyHurtAlpha = 0;
     if (healthPercent < 0.5) {
-      alpha = 1 - (healthPercent * 2);
-      // Get a heartbeat pattern going
-      /*
-      alpha *= Math.abs(
-        Math.sin(this._heartTimer) *
-        Math.sin(this._heartTimer * 2)
-      );
-      */
+      badlyHurtAlpha = 1 - (healthPercent * 2);
     }
-    this.alpha = alpha;
+    this._badlyHurtSprite.alpha = badlyHurtAlpha;
+    // Mimic the player's fade % for the recently hurt sprite
+    this._recentlyHurtSprite.alpha = this._gameInst.player.hurtFadePercent;
   }
 }

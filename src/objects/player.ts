@@ -102,12 +102,17 @@ export class Player extends GameObject {
   protected _maxEnergy: number;
   protected _energy: number;
   protected _cooldownBar: PlayerCooldownBar;
+  protected _hurtFade: number = 0;
   public facingLeft: boolean = false;
   public score: number = 0;
   public weapons: Weapon[];
   public equippedWeapon: Weapon;
   public weaponCooldownCounter: Counter = new Counter();
   public numMines: number;
+
+  public get hurtFadePercent(): number {
+    return this._hurtFade;
+  }
 
   public get width(): number {
     return 25;
@@ -204,11 +209,16 @@ export class Player extends GameObject {
    * Damage armor before health.
    */
   public damage(amount: number): void {
-    // In lieu of fading the player to red when damaged (for now), just spawn
-    // a fading text that says "Ow"
+    // Add to the percentage of the player's red fade, up to a certain
+    // maximum. Taking more damage in a short period makes you more red
+    this._hurtFade += Config.player.hurtFadePerDamage * amount;
+    if (this._hurtFade > Config.player.hurtFadeMax) {
+      this._hurtFade = Config.player.hurtFadeMax;
+    }
+    // Also spawn a red fading text with the amount of damage shown
     this._game.addGameObject(new FadingText(
       this._game,
-      'Ow!',
+      `-${amount.toFixed()}`,
       this.pos,
       { fontSize: 24, fill: 'red' }
     ));
@@ -235,6 +245,13 @@ export class Player extends GameObject {
     if (this._armor < 0) {
       this._armor = 0;
     }
+    // Decrease hurt fade, also update the tint on the player sprite
+    this._hurtFade -= Config.player.hurtFadeSpeed * LagFactor.get();
+    if (this._hurtFade < 0) {
+      this._hurtFade = 0;
+    }
+    const hurtColor = Color.white.blend(new Color(255, 0, 0), this._hurtFade);
+    this._spriteTop.tint = this._spriteBottom.tint = hurtColor.toPixi();
     // Handle walking and running due to user input
     const walkSpeed = Config.player.walkSpeed / this.pos.r;
     const runSpeed = Config.player.runSpeed / this.pos.r;

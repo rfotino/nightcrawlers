@@ -7,6 +7,9 @@
   "runSpeed": 10,
   "energyLossRate": 0.5,
   "energyGainRate": 0.2,
+  "hurtFadeSpeed": 0.01,
+  "hurtFadePerDamage": 0.075,
+  "hurtFadeMax": 0.75,
   "jumpSpeed": 20,
   "topHalf": {
     "sprite": {
