@@ -25,6 +25,8 @@ const enum EnemyState {
   Spawning,
   Searching,
   Chasing,
+  AttackingWindUp,
+  AttackingRecovery,
   Knockback,
   Stunned,
 }
@@ -71,7 +73,6 @@ class EnemyHealthBar extends PIXI.Container {
     super();
     const texture = EnemyHealthBar._getBarTexture();
     const margin = EnemyHealthBar.MARGIN;
-    const width = EnemyHealthBar.WIDTH;
     const height = EnemyHealthBar.HEIGHT;
     const x = -texture.width / 2;
     const y = -margin - (0.5 * (enemy.height + height));
@@ -119,6 +120,9 @@ export class Enemy extends GameObject {
   protected _searchDir: Direction = Direction.None;
   protected _chasingCounter: Counter = new Counter(45);
   protected _spawningCounter: Counter;
+  protected _attackWindUpCounter: Counter;
+  protected _attackRecoveryCounter: Counter;
+  protected _facingLeft: boolean = false;
 
   public get z(): number {
     return 40;
@@ -160,6 +164,8 @@ export class Enemy extends GameObject {
     this._enemyType = enemyType;
     this._health = this._maxHealth = this.attributes.health;
     this._spawningCounter = new Counter(this.attributes.spawnTime);
+    this._attackWindUpCounter = new Counter(this.attributes.attack.windUpTime);
+    this._attackRecoveryCounter = new Counter(this.attributes.attack.recoveryTime);
     this._sprite = new SpriteSheet(
       PIXI.loader.resources[this.attributes.sprite.resource].texture,
       this.attributes.sprite.frames.width,
@@ -196,13 +202,8 @@ export class Enemy extends GameObject {
     // Push the enemy up a bit so that it doesn't fall through the block below
     // it in the first frame after it spawns
     this.pos.r += Math.abs(Terrain.GRAVITY) + 0.1;
-    // Always spawn facing the enemy
-    if (Polar.closestTheta(
-          this.pos.theta,
-          this._game.player.pos.theta
-        ) > this._game.player.pos.theta) {
-      this._sprite.scale.x = -1;
-    }
+    // Always spawn facing the player
+    this._facePlayer();
   }
 
   public type(): string { return 'enemy'; }
@@ -271,7 +272,7 @@ export class Enemy extends GameObject {
    * 1 vertical line taken from the block bounds.
    */
   protected _canSeePlayer(): boolean {
-    let line = new Polar.Line(
+    const line = new Polar.Line(
       this.pos.r,
       this.pos.theta,
       this._game.player.pos.r,
@@ -287,6 +288,68 @@ export class Enemy extends GameObject {
       if (result.right) { numVer++; }
     });
     return numHor <= 1 && numVer <= 1;
+  }
+
+  /**
+   * Check if we are close enough to attack the player
+   */
+  protected _canAttackPlayer(): boolean {
+    const player = this._game.player;
+    const rDistToPlayer = Math.abs(player.pos.r - this.pos.r);
+    const thetaDistToPlayer = (
+      Math.abs(player.pos.theta - this.pos.theta) % (Math.PI * 2)
+    );
+    const arcDistToPlayer = thetaDistToPlayer * this.pos.r;
+    const rAttackDist = this.attributes.attack.distances.y;
+    const arcAttackDist = this.attributes.attack.distances.x;
+    return rDistToPlayer < rAttackDist && arcDistToPlayer < arcAttackDist;
+  }
+
+  /**
+   * Creates a polar rectangle of the hitbox location, to use for attacking
+   * the player.
+   */
+  protected _getHitbox(): Polar.Rect {
+    const height = this.attributes.size.height;
+    const arcWidth = (
+      this.attributes.attack.reach +
+      (this.attributes.size.width / 2)
+    );
+    const thetaWidth = arcWidth / this.pos.r;
+    return new Polar.Rect(
+      this.pos.r + (this.attributes.size.height / 2),
+      this._facingLeft ? this.pos.theta - thetaWidth : this.pos.theta,
+      height,
+      thetaWidth
+    );
+  }
+
+  /**
+   * Make the sprite face right or left depending on the closest position
+   * of the player.
+   */
+  protected _facePlayer(): void {
+    const player = this._game.player;
+    const closestPos = Polar.closestTheta(this.pos.theta, player.pos.theta);
+    const diffTheta = player.pos.theta - closestPos;
+    if (diffTheta < 0) {
+      this._sprite.scale.x = -1;
+      this._facingLeft = true;
+    } else if (diffTheta > 0) {
+      this._sprite.scale.x = 1;
+      this._facingLeft = false;
+    }
+  }
+
+  /**
+   * Initialize an attack by playing the proper animation, transitioning to the
+   * correct state, etc.
+   */
+  protected _initAttack(): void {
+    this._state = EnemyState.AttackingWindUp;
+    this._attackWindUpCounter.reset();
+    this._sprite.stopAnim();
+    this._sprite.playAnimOnce('attack');
   }
 
   /**
@@ -328,9 +391,11 @@ export class Enemy extends GameObject {
       if (Math.random() < 0.5) {
         this._searchDir = Direction.Left;
         this._sprite.scale.x = -1;
+        this._facingLeft = true;
       } else {
         this._searchDir = Direction.Right;
         this._sprite.scale.x = 1;
+        this._facingLeft = false;
       }
     }
     // Update the theta velocity based on the current direction. Search speed
@@ -350,6 +415,11 @@ export class Enemy extends GameObject {
    * player, and if they go out of sight then go back to the "searching" state.
    */
   protected _updateChasing(): void {
+    // If we can attack the player, definitely do that instead
+    if (this._canAttackPlayer()) {
+      this._initAttack();
+      return;
+    }
     // If we can't see the player, switch to searching after chasingCounter
     // is up. The small timer period that the enemy continues chasing after it
     // has lost sight of the player can help it to get the player in its line
@@ -368,11 +438,9 @@ export class Enemy extends GameObject {
     const player = this._game.player;
     const closestPos = Polar.closestTheta(this.pos.theta, player.pos.theta);
     const diffTheta = player.pos.theta - closestPos;
-    const minDiffTheta = (
-      0.3 *
-      (player.width + this.attributes.size.width) /
-      player.pos.r
-    );
+    // Use min diff to prevent flicker from one side to another when very close
+    // to the player's theta
+    const minDiffTheta = this.attributes.attack.distances.x / this.pos.r;
     this._shouldGoLeft = diffTheta < -minDiffTheta;
     this._shouldGoRight = diffTheta > minDiffTheta;
     // Handle going left or right
@@ -380,21 +448,58 @@ export class Enemy extends GameObject {
     if (this._shouldGoLeft) {
       this.vel.theta = -speed;
       this._sprite.scale.x = -1;
+      this._facingLeft = true;
     } else if (this._shouldGoRight) {
       this.vel.theta = speed;
       this._sprite.scale.x = 1;
+      this._facingLeft = false;
     } else {
       this.vel.theta = 0;
     }
-    // Set the correct animation
-    if (this.getPolarBounds().intersects(this._game.player.getPolarBounds())) {
-      // Because temporarily the enemies just do a steady stream of damage when
-      // in contact with the player. The above if condition is a hack and should
-      // be generalized out to be if we are close enough for the hitbox to
-      // intersect.
-      this._sprite.playAnim('attack');
-    } else if (this.attributes.class === 'flying' || this._isOnSolidGround()) {
-      this._sprite.playAnim('run');
+    // Play the run animation when in chase mode by default
+    this._sprite.playAnim('run');
+  }
+
+  /**
+   * Update the enemy if it is in the "attacking wind up" state. Go through the
+   * attack animation, spawn a hitbox, then go to the recovery state.
+   */
+  protected _updateAttackingWindUp(): void {
+    // Shouldn't be moving left and right, should be still and facing the player
+    this.vel.theta = 0;
+    this._facePlayer();
+    // Check If we're done
+    if (this._attackWindUpCounter.done()) {
+      // Spawn hitbox, hurt the player if it intersects with them
+      const hitbox = this._getHitbox();
+      const playerBounds = this._game.player.getPolarBounds();
+      if (hitbox.intersects(playerBounds)) {
+        this._game.player.damage(this.attributes.attack.damage);
+      }
+      // Transition to the attack recovery stage
+      this._attackRecoveryCounter.reset();
+      this._state = EnemyState.AttackingRecovery;
+    } else {
+      this._attackWindUpCounter.next();
+    }
+  }
+
+  /**
+   * Update the enemy if it is in the "attacking recovery" state. Just wait a
+   * bit without moving anywhere, then check if we should go back to attack
+   * wind up or back to chasing.
+   */
+  protected _updateAttackingRecovery(): void {
+    if (this._attackRecoveryCounter.done()) {
+      // If we are still close enough to the player, attack again
+      if (this._canAttackPlayer()) {
+        this._initAttack();
+      } else {
+        // Otherwise just chase them
+        this._state = EnemyState.Chasing;
+      }
+    } else {
+      this._attackRecoveryCounter.next();
     }
   }
 
@@ -460,6 +565,12 @@ export class Enemy extends GameObject {
       case EnemyState.Chasing:
         this._updateChasing();
         break;
+      case EnemyState.AttackingWindUp:
+        this._updateAttackingWindUp();
+        break;
+      case EnemyState.AttackingRecovery:
+        this._updateAttackingRecovery();
+        break;
       case EnemyState.Knockback:
         this._updateKnockback();
         break;
@@ -479,13 +590,6 @@ export class Enemy extends GameObject {
     this._knockbackCounter.max = knockbackTime;
     this._stunnedCounter.reset();
     this._stunnedCounter.max = stunTime;
-  }
-
-  public collide(other: GameObject, result: Collider.Result): void {
-    super.collide(other, result);
-    if (other.team() === 'player') {
-      other.damage(this.attributes.damage * LagFactor.get());
-    }
   }
 
   public getPolarBounds(): Polar.Rect {
@@ -546,6 +650,24 @@ export class FlyingEnemy extends Enemy {
     } else {
       this.vel.r = 0;
     }
+  }
+
+  /**
+   * Flying enemies don't move up and down while attacking.
+   */
+  protected _updateAttackingWindUp(): void {
+    super._updateAttackingWindUp();
+    this.accel.r = 0;
+    this.vel.r = 0;
+  }
+
+  /**
+   * Flying enemies don't move up and down while attacking.
+   */
+  protected _updateAttackingRecovery(): void {
+    super._updateAttackingRecovery();
+    this.accel.r = 0;
+    this.vel.r = 0;
   }
 }
 

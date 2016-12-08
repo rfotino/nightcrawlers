@@ -12,7 +12,8 @@ import { BaseballBat } from '../weapons/baseball-bat';
 import { Pistol } from '../weapons/pistol';
 import { Shotgun } from '../weapons/shotgun';
 import { AssaultRifle } from '../weapons/assault-rifle';
-import { ProximityMine } from '../objects/proximity-mine';
+import { FadingText } from './fading-text';
+import { ProximityMine } from './proximity-mine';
 import { SpriteSheet } from '../graphics/spritesheet';
 import { Color } from '../graphics/color';
 import { Config } from '../config';
@@ -57,7 +58,6 @@ class PlayerCooldownBar extends PIXI.Container {
     super();
     const texture = PlayerCooldownBar._getBarTexture();
     const margin = PlayerCooldownBar.MARGIN;
-    const width = PlayerCooldownBar.WIDTH;
     const height = PlayerCooldownBar.HEIGHT;
     const x = -texture.width / 2;
     const y = -margin - (0.5 * (player.height + height));
@@ -204,12 +204,22 @@ export class Player extends GameObject {
    * Damage armor before health.
    */
   public damage(amount: number): void {
+    // In lieu of fading the player to red when damaged (for now), just spawn
+    // a fading text that says "Ow"
+    this._game.addGameObject(new FadingText(
+      this._game,
+      'Ow!',
+      this.pos,
+      { fontSize: 24, fill: 'red' }
+    ));
+    // Actually subtract the damage
     if (amount <= this._armor) {
       this.armor -= amount;
     } else {
       this.health -= amount - this._armor;
       this.armor = 0;
     }
+    // Check if the player is dead
     if (this.health <= 0) {
       this.kill();
     }

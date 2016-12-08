@@ -2,11 +2,20 @@
   "zombie": {
     "class": "groundspawn",
     "health": 20,
-    "damage": 0.25,
     "moveSpeed": 2.5,
     "jumpSpeed": 18,
     "points": 50,
     "spawnTime": 30,
+    "attack": {
+      "damage": 5,
+      "windUpTime": 10,
+      "recoveryTime": 20,
+      "reach": 20,
+      "distances": {
+        "x": 40,
+        "y": 10
+      }
+    },
     "size": {
       "width": 25,
       "height": 75
@@ -82,10 +91,19 @@
   "bat": {
     "class": "flying",
     "health": 20,
-    "damage": 0.25,
     "moveSpeed": 3,
     "points": 50,
     "spawnTime": 30,
+    "attack": {
+      "damage": 5,
+      "windUpTime": 10,
+      "recoveryTime": 20,
+      "reach": 20,
+      "distances": {
+        "x": 50,
+        "y": 50
+      }
+    },
     "size": {
       "width": 50,
       "height": 45
@@ -157,11 +175,20 @@
   "skeleton": {
     "class": "groundspawn",
     "health": 30,
-    "damage": 0.25,
     "moveSpeed": 5,
     "jumpSpeed": 18,
     "points": 50,
     "spawnTime": 50,
+    "attack": {
+      "damage": 5,
+      "windUpTime": 10,
+      "recoveryTime": 20,
+      "reach": 25,
+      "distances": {
+        "x": 50,
+        "y": 10
+      }
+    },
     "size": {
       "width": 30,
       "height": 75
@@ -237,11 +264,20 @@
   "spider": {
     "class": "jumping",
     "health": 50,
-    "damage": 0.25,
     "moveSpeed": 5,
     "jumpSpeed": 22,
     "points": 150,
     "spawnTime": 60,
+    "attack": {
+      "damage": 5,
+      "windUpTime": 10,
+      "recoveryTime": 20,
+      "reach": 20,
+      "distances": {
+        "x": 60,
+        "y": 10
+      }
+    },
     "size": {
       "width": 80,
       "height": 60
