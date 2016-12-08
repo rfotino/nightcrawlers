@@ -11,6 +11,7 @@ import { Counter } from '../math/counter';
 import { Color } from '../graphics/color';
 import { SpriteSheet } from '../graphics/spritesheet';
 import { LagFactor } from '../math/lag-factor';
+import { Config } from '../config';
 
 const enum Direction {
   None,
@@ -26,11 +27,6 @@ const enum EnemyState {
   Knockback,
   Stunned,
 }
-
-/**
- * Load enemy attributes from a JSON file.
- */
-const ENEMY_ATTRIBUTES = require('../../assets/enemies.json');
 
 /**
  * Miniature health bar that floats above the head of each enemy. Only has to
@@ -127,11 +123,11 @@ export class Enemy extends GameObject {
   }
 
   public get attributes(): any {
-    return ENEMY_ATTRIBUTES[this._enemyType];
+    return Config.enemies[this._enemyType];
   }
 
   public static fromType(game: GameInstance, enemyType: string): Enemy {
-    const attributes = ENEMY_ATTRIBUTES[enemyType];
+    const attributes = Config.enemies[enemyType];
     switch (attributes.class) {
       case 'flying':
         return new FlyingEnemy(game, enemyType);
@@ -252,7 +248,7 @@ export class Enemy extends GameObject {
     super.damage(amount);
     this._game.addGameObject(new FadingText(
       this._game,
-      `-${amount}`,
+      `-${amount.toFixed()}`,
       this.pos,
       { fontSize: 28, fill: 'red' },
       15 // timer

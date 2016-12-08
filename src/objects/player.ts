@@ -15,6 +15,7 @@ import { AssaultRifle } from '../weapons/assault-rifle';
 import { ProximityMine } from '../objects/proximity-mine';
 import { SpriteSheet } from '../graphics/spritesheet';
 import { Color } from '../graphics/color';
+import { Config } from '../config';
 
 /**
  * Private class for a weapon cooldown bar that floats above the player's head.
@@ -92,49 +93,14 @@ class PlayerCooldownBar extends PIXI.Container {
   }
 }
 
-/**
- * Private spritesheet class for the player's bottom that also exposes the
- * offset that the player's top should be placed at.
- */
-class PlayerBottom extends SpriteSheet {
-  public getTopOffset(): number {
-    if (!this._current) {
-      return 0;
-    }
-    switch (this._current.frames[this._currentFrameIndex]) {
-      default:
-      case 0:
-        return 0;
-      case 1:
-        return -1;
-      case 2:
-        return -1;
-      case 3:
-        return 4;
-      case 4:
-        return 1;
-      case 5:
-        return -1;
-      case 6:
-        return -1;
-      case 7:
-        return 4;
-      case 8:
-        return 1;
-      case 9:
-        return -1;
-    }
-  }
-}
-
 export class Player extends GameObject {
-  private _spriteBottom: PlayerBottom;
+  private _spriteBottom: SpriteSheet;
   private _spriteTop: SpriteSheet;
   protected _baseballBat: BaseballBat;
-  protected _armor: number = 0;
-  protected _maxArmor: number = 50;
-  protected _maxEnergy: number = 100;
-  protected _energy: number = this._maxEnergy;
+  protected _maxArmor: number;
+  protected _armor: number;
+  protected _maxEnergy: number;
+  protected _energy: number;
   protected _cooldownBar: PlayerCooldownBar;
   public facingLeft: boolean = false;
   public score: number = 0;
@@ -177,8 +143,14 @@ export class Player extends GameObject {
 
   public constructor(game: GameInstance) {
     super(game);
-    this._maxHealth = 100;
+    // Get player maximums from config
+    this._maxHealth = Config.player.maxHealth;
+    this._maxArmor = Config.player.maxArmor;
+    this._maxEnergy = Config.player.maxEnergy;
+    // Set up defaults
     this._health = this._maxHealth;
+    this._armor = 0;
+    this._energy = this._maxEnergy;
     // Set up weapons
     this.weapons = [
       new BaseballBat(),
@@ -189,72 +161,28 @@ export class Player extends GameObject {
     this._baseballBat = this.equippedWeapon = this.weapons[0];
     this.numMines = 100;
     // Add spritesheet
-    this._spriteBottom = new PlayerBottom(
-      PIXI.loader.resources['game/player-bottom'].texture,
-      10, // images wide
-      1, // images high
-      'idle', // default anim
-      {
-        idle: {
-          frames: [0],
-          ticksPerFrame: 0,
-        },
-        jump: {
-          frames: [1],
-          ticksPerFrame: 0,
-        },
-        walk: {
-          frames: [2, 3, 4, 5, 6, 7, 8, 9],
-          ticksPerFrame: 7,
-        },
-        run: {
-          frames: [2, 3, 4, 5, 6, 7, 8, 9],
-          ticksPerFrame: 3,
-        },
-      }
+    this._spriteBottom = new SpriteSheet(
+      PIXI.loader.resources[Config.player.bottomHalf.sprite.resource].texture,
+      Config.player.bottomHalf.sprite.frames.width,
+      Config.player.bottomHalf.sprite.frames.height,
+      Config.player.bottomHalf.defaultAnim,
+      Config.player.bottomHalf.animations
     );
     this._spriteTop = new SpriteSheet(
-      PIXI.loader.resources['game/player-top'].texture,
-      10, // images wide
-      4, // images high
-      'baseball-bat-idle', // default anim
-      {
-        'baseball-bat-idle': {
-          frames: [0, 1, 2, 3],
-          ticksPerFrame: 10,
-        },
-        'baseball-bat-attack': {
-          frames: [4, 4, 5, 6, 7, 7, 7, 7, 7],
-          ticksPerFrame: 1,
-        },
-        'pistol-idle': {
-          frames: [10, 11, 12, 13],
-          ticksPerFrame: 10,
-        },
-        'pistol-attack': {
-          frames: [14, 15, 16, 17],
-          ticksPerFrame: 3,
-        },
-        'shotgun-idle': {
-          frames: [20, 21, 22, 23],
-          ticksPerFrame: 10,
-        },
-        'shotgun-attack': {
-          frames: [24, 25, 26, 27, 27, 28, 29],
-          ticksPerFrame: 5,
-        },
-        'assault-idle': {
-          frames: [30, 31, 32, 33],
-          ticksPerFrame: 10,
-        },
-        'assault-attack': {
-          frames: [34, 35, 36],
-          ticksPerFrame: 2,
-        },
-      }
+      PIXI.loader.resources[Config.player.topHalf.sprite.resource].texture,
+      Config.player.topHalf.sprite.frames.width,
+      Config.player.topHalf.sprite.frames.height,
+      Config.player.topHalf.defaultAnim,
+      Config.player.topHalf.animations
     );
-    this._spriteBottom.anchor.set(0.36, 0.5);
-    this._spriteTop.anchor.set(0.36, 0.5);
+    this._spriteBottom.anchor.set(
+      Config.player.bottomHalf.sprite.anchor.x,
+      Config.player.bottomHalf.sprite.anchor.y
+    );
+    this._spriteTop.anchor.set(
+      Config.player.topHalf.sprite.anchor.x,
+      Config.player.topHalf.sprite.anchor.y
+    );
     this._mirrorList.push(this);
     this.addChild(this._spriteBottom);
     this.addChild(this._spriteTop);
@@ -293,20 +221,19 @@ export class Player extends GameObject {
     this._spriteBottom.nextFrame();
     this._spriteTop.nextFrame();
     // Drain armor by small amount each tick
-    const ARMOR_DRAIN_SPEED = 0.01;
-    this._armor -= ARMOR_DRAIN_SPEED * LagFactor.get();
+    this._armor -= Config.player.armorDrainSpeed * LagFactor.get();
     if (this._armor < 0) {
       this._armor = 0;
     }
     // Handle walking and running due to user input
-    const walkSpeed = 7 / this.pos.r;
-    const runSpeed = 10 / this.pos.r;
+    const walkSpeed = Config.player.walkSpeed / this.pos.r;
+    const runSpeed = Config.player.runSpeed / this.pos.r;
     const leftArrow = this._game.keyState.isDown(KeyState.LEFTARROW);
     const rightArrow = this._game.keyState.isDown(KeyState.RIGHTARROW);
     const shift = this._game.keyState.isDown(KeyState.SHIFT);
     const running = shift && (leftArrow !== rightArrow);
-    const energyLossRate = 0.5;
-    const energyGainRate = 0.2;
+    const energyLossRate = Config.player.energyLossRate;
+    const energyGainRate = Config.player.energyGainRate;
     const speed = running && this.energy > 0 ? runSpeed : walkSpeed;
     const anim = running && this.energy > 0 ? 'run' : 'walk';
     if (running) {
@@ -341,10 +268,9 @@ export class Player extends GameObject {
     // Set acceleration due to gravity
     this.accel.r = Terrain.GRAVITY;
     // Handle jumping due to user input
-    const jumpSpeed = 20;
     const upArrow = this._game.keyState.isPressed(KeyState.UPARROW);
     if (upArrow && this._isOnSolidGround()) {
-      this.vel.r = jumpSpeed;
+      this.vel.r = Config.player.jumpSpeed;
     }
     // Change weapons if we pressed the button to do so and the corresponding
     // weapon has ammo left. Switch the default idle animation as we switch
@@ -397,7 +323,8 @@ export class Player extends GameObject {
     // Update weapon cooldown bar
     this._cooldownBar.update(this);
     // Offset the sprite top to match the sprite bottom
-    this._spriteTop.y = this._spriteBottom.getTopOffset();
+    const bottomFrame = this._spriteBottom.getVisibleFrame();
+    this._spriteTop.y = Config.player.offsetsForBottomHalf[bottomFrame];
   }
 
   public getPolarBounds(): Polar.Rect {

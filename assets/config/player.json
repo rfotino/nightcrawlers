@@ -1,0 +1,92 @@
+{
+  "maxHealth": 100,
+  "maxArmor": 50,
+  "maxEnergy": 100,
+  "armorDrainSpeed": 0.01,
+  "walkSpeed": 7,
+  "runSpeed": 10,
+  "energyLossRate": 0.5,
+  "energyGainRate": 0.2,
+  "jumpSpeed": 20,
+  "topHalf": {
+    "sprite": {
+      "resource": "game/player-top",
+      "frames": {
+        "width": 10,
+        "height": 4
+      },
+      "anchor": {
+        "x": 0.36,
+        "y": 0.5
+      }
+    },
+    "defaultAnim": "baseball-bat-idle",
+    "animations": {
+      "baseball-bat-idle": {
+        "frames": [0, 1, 2, 3],
+        "ticksPerFrame": 10
+      },
+      "baseball-bat-attack": {
+        "frames": [4, 4, 5, 6, 7, 7, 7, 7, 7],
+        "ticksPerFrame": 1
+      },
+      "pistol-idle": {
+        "frames": [10, 11, 12, 13],
+        "ticksPerFrame": 10
+      },
+      "pistol-attack": {
+        "frames": [14, 15, 16, 17],
+        "ticksPerFrame": 3
+      },
+      "shotgun-idle": {
+        "frames": [20, 21, 22, 23],
+        "ticksPerFrame": 10
+      },
+      "shotgun-attack": {
+        "frames": [24, 25, 26, 27, 27, 28, 29],
+        "ticksPerFrame": 5
+      },
+      "assault-idle": {
+        "frames": [30, 31, 32, 33],
+        "ticksPerFrame": 10
+      },
+      "assault-attack": {
+        "frames": [34, 35, 36],
+        "ticksPerFrame": 2
+      }
+    }
+  },
+  "bottomHalf": {
+    "sprite": {
+      "resource": "game/player-bottom",
+      "frames": {
+        "width": 10,
+        "height": 1
+      },
+      "anchor": {
+        "x": 0.36,
+        "y": 0.5
+      }
+    },
+    "defaultAnim": "idle",
+    "animations": {
+      "idle": {
+        "frames": [0],
+        "ticksPerFrame": 0
+      },
+      "jump": {
+        "frames": [1],
+        "ticksPerFrame": 0
+      },
+      "walk": {
+        "frames": [2, 3, 4, 5, 6, 7, 8, 9],
+        "ticksPerFrame": 7
+      },
+      "run": {
+        "frames": [2, 3, 4, 5, 6, 7, 8, 9],
+        "ticksPerFrame": 3
+      }
+    }
+  },
+  "offsetsForBottomHalf": [0, -1, -1, 4, 1, -1, -1, 4, 1, -1]
+}

@@ -9,40 +9,45 @@ import { Collider } from '../math/collider';
 import { Polar } from '../math/polar';
 import { Counter } from '../math/counter';
 import { SpriteSheet } from '../graphics/spritesheet';
+import { Config } from '../config';
 
 export class ProximityMine extends GameObject {
   protected _sprite: SpriteSheet;
   // Disappear after not exploding for 5 minutes
-  protected _lifespanCounter: Counter = new Counter(18000);
+  protected _lifespanCounter: Counter = new Counter(
+    Config.weapons.mine.maxLifespan
+  );
   // Don't explode immediately after spawning, wait for setup counter
-  protected _setupCounter: Counter = new Counter(30);
+  protected _setupCounter: Counter = new Counter(
+    Config.weapons.mine.setupTime
+  );
 
   protected get _damageAmount(): number {
-    return 20;
+    return Config.weapons.mine.damage;
   }
 
   protected get _minExplodeDist(): number {
-    return 100;
+    return Config.weapons.mine.minExplodeDist;
   }
   
-  protected get _minDamageDist(): number {
-    return 200;
+  protected get _maxDamageDist(): number {
+    return Config.weapons.mine.maxDamageDist;
   }
 
   protected get _knockbackTime(): number {
-    return 10;
+    return Config.weapons.mine.knockbackTime;
   }
 
   protected get _stunTime(): number {
-    return 30;
+    return Config.weapons.mine.stunTime;
   }
 
   public get width(): number {
-    return 20;
+    return Config.weapons.mine.bounds.width;
   }
 
   public get height(): number {
-    return 10;
+    return Config.weapons.mine.bounds.height;
   }
 
   public get z(): number { return 20; }
@@ -52,17 +57,16 @@ export class ProximityMine extends GameObject {
     this.pos.set(game.player.pos.r, game.player.pos.theta);
     // Set up sprite
     this._sprite = new SpriteSheet(
-      PIXI.loader.resources['game/mine'].texture,
-      2, 1,
+      PIXI.loader.resources[Config.weapons.mine.sprite.resource].texture,
+      Config.weapons.mine.sprite.frames.width,
+      Config.weapons.mine.sprite.frames.height,
       'blink',
-      {
-        blink: {
-          frames: [0, 1, 0],
-          ticksPerFrame: 30,
-        },
-      }
+      Config.weapons.mine.animations
     );
-    this._sprite.anchor.set(0.5);
+    this._sprite.anchor.set(
+      Config.weapons.mine.sprite.anchor.x,
+      Config.weapons.mine.sprite.anchor.y
+    );
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
     // Mines are affected by gravity
@@ -150,7 +154,7 @@ export class ProximityMine extends GameObject {
       // If this enemy is too far away or is obscured by a block, do nothing
       // for this enemy
       let enemyDist = this.pos.dist(enemy.pos);
-      if (enemyDist > this._minDamageDist ||
+      if (enemyDist > this._maxDamageDist ||
           !this._canSee(enemy, blockBounds)) {
         return;
       }

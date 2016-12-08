@@ -1,5 +1,35 @@
 [
   {
+    "name": "config/enemies",
+    "type": "config",
+    "files": [
+      {
+        "src": "assets/config/enemies.json",
+        "size": 5556
+      }
+    ]
+  },
+  {
+    "name": "config/weapons",
+    "type": "config",
+    "files": [
+      {
+        "src": "assets/config/weapons.json",
+        "size": 1424
+      }
+    ]
+  },
+  {
+    "name": "config/player",
+    "type": "config",
+    "files": [
+      {
+        "src": "assets/config/player.json",
+        "size": 1943
+      }
+    ]
+  },
+  {
     "name": "levels/huge",
     "type": "level",
     "files": [

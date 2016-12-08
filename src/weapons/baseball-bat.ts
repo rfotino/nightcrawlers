@@ -7,23 +7,24 @@ import { KeyState } from '../input/keystate';
 import { Counter } from '../math/counter';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
+import { Config } from '../config';
 
 class BaseballBatBullet extends GameObject {
   // Bat swings last a short amount of time
   protected _lifespanCounter: Counter = new Counter(10);
 
-  public get width(): number { return 60; }
-  public get height(): number { return 70; }
+  public get width(): number { return Config.weapons.bat.hitbox.width; }
+  public get height(): number { return Config.weapons.bat.hitbox.height; }
 
   // Bat knocks back enemies more than other weapons
   protected get _knockbackVel(): number {
-    const speed = 30 / this.pos.r;
+    const speed = Config.weapons.bat.knockbackVel / this.pos.r;
     return this._game.player.facingLeft ? -speed : speed;
   }
-  protected get _knockbackTime(): number { return 7; }
-  protected get _stunTime(): number { return 15; }
+  protected get _knockbackTime(): number { return Config.weapons.bat.knockbackTime; }
+  protected get _stunTime(): number { return Config.weapons.bat.stunTime; }
 
-  protected get _damageAmount(): number { return 15; }
+  protected get _damageAmount(): number { return Config.weapons.bat.damage; }
 
   public collidable(): boolean {
     // Short delay before baseball bat hitbox becomes collidable (have to
@@ -60,20 +61,20 @@ class BaseballBatBullet extends GameObject {
     // left or right depending on where the player is facing
     const ownerBounds = this._game.player.getPolarBounds();
     const thisBounds = this.getPolarBounds();
-    if (this._game.player.facingLeft) {
-      this.pos.theta = (
-        ownerBounds.theta +
-        (ownerBounds.width / 2) -
-        (thisBounds.width / 2)
-      );
-    } else {
-      this.pos.theta = (
-        ownerBounds.theta +
-        (ownerBounds.width / 2) +
-        (thisBounds.width / 2)
-      );
-    }
-    this.pos.r = ownerBounds.r - (ownerBounds.height / 2) + 10;
+    const thetaOffset = (
+      (thisBounds.width / 2) +
+      (Config.weapons.bat.offset.x / this.pos.r)
+    );
+    this.pos.theta = (
+      ownerBounds.theta +
+      (ownerBounds.width / 2) +
+      ((this._game.player.facingLeft ? -1 : 1) * thetaOffset)
+    );
+    this.pos.r = (
+      ownerBounds.r -
+      (ownerBounds.height / 2) +
+      Config.weapons.bat.offset.y
+    );
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
@@ -96,7 +97,7 @@ export class BaseballBat extends Weapon {
 
   public type(): string { return 'baseball-bat'; }
 
-  public cooldown(): number { return 15; }
+  public cooldown(): number { return Config.weapons.bat.cooldown; }
 
   public fire(game: GameInstance): void {
     game.addGameObject(new BaseballBatBullet(game));

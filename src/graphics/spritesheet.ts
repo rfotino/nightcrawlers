@@ -98,6 +98,13 @@ export class SpriteSheet extends PIXI.Sprite {
   }
 
   /**
+   * Returns the index of the currently visible frame.
+   */
+  public getVisibleFrame(): number {
+    return this._current.frames[this._currentFrameIndex];
+  }
+
+  /**
    * Adds an animation to the list of possible animations. After adding
    * an animation, it can be played by name.
    */

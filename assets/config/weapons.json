@@ -1,0 +1,87 @@
+{
+  "bat": {
+    "damage": 15,
+    "cooldown": 15,
+    "knockbackVel": 30,
+    "knockbackTime": 7,
+    "stunTime": 15,
+    "hitbox": {
+      "width": 60,
+      "height": 70
+    },
+    "offset": {
+      "x": 0,
+      "y": 10
+    }
+  },
+  "pistol": {
+    "damage": 10,
+    "spread": 0.1,
+    "cooldown": 10,
+    "range": 500,
+    "knockbackVel": 20,
+    "knockbackTime": 5,
+    "stunTime": 5,
+    "offset": {
+      "x": 23,
+      "y": 9
+    }
+  },
+  "shotgun": {
+    "damage": 30,
+    "spread": 0.1,
+    "cooldown": 30,
+    "range": 300,
+    "knockbackVel": 20,
+    "knockbackTime": 5,
+    "stunTime": 5,
+    "numBullets": 3,
+    "offset": {
+      "x": 45,
+      "y": 11
+    }
+  },
+  "assault": {
+    "damage": 10,
+    "spread": 0.1,
+    "cooldown": 6,
+    "range": 500,
+    "knockbackVel": 20,
+    "knockbackTime": 5,
+    "stunTime": 5,
+    "offset": {
+      "x": 47,
+      "y": 11
+    }
+  },
+  "mine": {
+    "damage": 20,
+    "minExplodeDist": 100,
+    "maxDamageDist": 200,
+    "knockbackTime": 10,
+    "stunTime": 30,
+    "maxLifespan": 18000,
+    "setupTime": 30,
+    "bounds": {
+      "width": 20,
+      "height": 10
+    },
+    "sprite": {
+      "resource": "game/mine",
+      "frames": {
+        "width": 2,
+        "height": 1
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "animations": {
+      "blink": {
+        "frames": [0, 1, 0],
+        "ticksPerFrame": 30
+      }
+    }
+  }
+}

@@ -13,14 +13,14 @@ export class BulletTrail extends GameObject {
 
   public constructor(
     game: GameInstance,
-    maxDist: number = 500,
-    originOffsetR: number = 0,
-    originOffsetTheta: number = 0,
-    dirOffsetR: number = 0,
-    knockbackVel: number = 20,
-    knockbackTime: number = 5,
-    stunTime: number = 5,
-    damageAmount: number = 10
+    maxDist: number,
+    originOffsetR: number,
+    originOffsetTheta: number,
+    dirOffsetR: number,
+    knockbackVel: number,
+    knockbackTime: number,
+    stunTime: number,
+    damageAmount: number
   ) {
     super(game);
     // Knock back in direction of the bullet
