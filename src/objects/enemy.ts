@@ -22,6 +22,7 @@ const enum Direction {
 }
 
 const enum EnemyState {
+  Spawning,
   Searching,
   Chasing,
   Knockback,
@@ -114,9 +115,10 @@ export class Enemy extends GameObject {
   protected _shouldGoRight: boolean = false;
   protected _knockbackCounter: Counter = new Counter(0);
   protected _stunnedCounter: Counter = new Counter(0);
-  protected _state: EnemyState = EnemyState.Searching;
+  protected _state: EnemyState = EnemyState.Spawning;
   protected _searchDir: Direction = Direction.None;
   protected _chasingCounter: Counter = new Counter(45);
+  protected _spawningCounter: Counter;
 
   public get z(): number {
     return 40;
@@ -157,6 +159,7 @@ export class Enemy extends GameObject {
     super(game);
     this._enemyType = enemyType;
     this._health = this._maxHealth = this.attributes.health;
+    this._spawningCounter = new Counter(this.attributes.spawnTime);
     this._sprite = new SpriteSheet(
       PIXI.loader.resources[this.attributes.sprite.resource].texture,
       this.attributes.sprite.frames.width,
@@ -193,6 +196,13 @@ export class Enemy extends GameObject {
     // Push the enemy up a bit so that it doesn't fall through the block below
     // it in the first frame after it spawns
     this.pos.r += Math.abs(Terrain.GRAVITY) + 0.1;
+    // Always spawn facing the enemy
+    if (Polar.closestTheta(
+          this.pos.theta,
+          this._game.player.pos.theta
+        ) > this._game.player.pos.theta) {
+      this._sprite.scale.x = -1;
+    }
   }
 
   public type(): string { return 'enemy'; }
@@ -277,6 +287,24 @@ export class Enemy extends GameObject {
       if (result.right) { numVer++; }
     });
     return numHor <= 1 && numVer <= 1;
+  }
+
+  /**
+   * Update the enemy if it is in the "spawning" state, where it can't attack
+   * or chase the player but just fades into play so the player has some
+   * warning.
+   */
+  protected _updateSpawning(): void {
+    if (this._spawningCounter.done()) {
+      this._state = EnemyState.Searching;
+    } else {
+      this._spawningCounter.next();
+      // While spawning, enemies fade in, are not affected by gravity, and
+      // play the 'spawn' animation if available
+      this.alpha = this._spawningCounter.percent();
+      this.accel.r = 0;
+      this._sprite.playAnim('spawn');
+    }
   }
 
   /**
@@ -419,8 +447,13 @@ export class Enemy extends GameObject {
     this._healthBar.update(this);
     // All enemies are affected by gravity by default
     this.accel.r = Terrain.GRAVITY;
+    // Enemies are opaque by default
+    this.alpha = 1;
     // Do something different depending on the enemy state
     switch (this._state) {
+      case EnemyState.Spawning:
+        this._updateSpawning();
+        break;
       case EnemyState.Searching:
         this._updateSearching();
         break;
@@ -555,6 +588,10 @@ export class JumpingEnemy extends Enemy {
       // Not on solid ground, reset the jump counter
       this._searchingJumpCounter.reset();
     }
+    // Show jump animation if we're not on solid ground
+    if (!this._isOnSolidGround()) {
+      this._sprite.playAnim('jump');
+    }
   }
 
   protected _updateChasing(): void {
@@ -576,10 +613,6 @@ export class JumpingEnemy extends Enemy {
       this.vel.r = this.attributes.jumpSpeed;
       this._chasingJumpCounter.reset();
     }
-  }
-
-  public update(): void {
-    super.update();
     // Show jump animation if we're not on solid ground
     if (!this._isOnSolidGround()) {
       this._sprite.playAnim('jump');
