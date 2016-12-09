@@ -5,7 +5,7 @@
     "files": [
       {
         "src": "assets/config/enemies.json",
-        "size": 6252
+        "size": 6264
       }
     ]
   },
@@ -135,7 +135,7 @@
     "files": [
       {
         "src": "assets/images/game/flying-bat.png",
-        "size": 8640
+        "size": 19033
       }
     ]
   },
