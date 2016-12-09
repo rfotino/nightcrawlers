@@ -269,8 +269,8 @@
     "points": 150,
     "spawnTime": 60,
     "attack": {
-      "damage": 5,
-      "windUpTime": 10,
+      "damage": 10,
+      "windUpTime": 20,
       "recoveryTime": 20,
       "reach": 20,
       "distances": {
@@ -337,8 +337,8 @@
         "ticksPerFrame": 0
       },
       "attack": {
-        "frames": [0],
-        "ticksPerFrame": 0
+        "frames": [7, 8, 9, 10, 11, 0],
+        "ticksPerFrame": 5
       },
       "stunned": {
         "frames": [0],

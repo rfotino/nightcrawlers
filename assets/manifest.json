@@ -5,7 +5,7 @@
     "files": [
       {
         "src": "assets/config/enemies.json",
-        "size": 6264
+        "size": 6282
       }
     ]
   },
@@ -155,7 +155,7 @@
     "files": [
       {
         "src": "assets/images/game/spider.png",
-        "size": 35073
+        "size": 62252
       }
     ]
   },
