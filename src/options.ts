@@ -25,26 +25,32 @@ export class Options {
   // Default values for options
   protected _debug: boolean = true;
   protected _volume: number = 1;
+  protected _blood: number = Options.BLOOD_NORMAL;
 
   // Option getters simply return the protected value
-  public get debug(): boolean {
-    return this._debug;
-  }
-
-  public get volume(): number {
-    return this._volume;
-  }
+  public get debug(): boolean { return this._debug; }
+  public get volume(): number { return this._volume; }
+  public get blood(): number { return this._blood; }
 
   // Option setters usually save the options to local storage
   public set debug(debug: boolean) {
     this._debug = debug;
     this._saveOptions();
   }
-
   public set volume(volume: number) {
     this._volume = volume;
     this._saveOptions();
   }
+  public set blood(blood: number) {
+    this._blood = blood;
+    this._saveOptions();
+  }
+
+  /**
+   * Options for blood level.
+   */
+  public static readonly BLOOD_NORMAL: number = 1;
+  public static readonly BLOOD_EXTRA: number = 2;
 
   public constructor() {
     // Load options from local storage, if local storage is available and we
@@ -55,6 +61,7 @@ export class Options {
         let savedOptions = JSON.parse(savedOptionsJson);
         this._debug = savedOptions.debug;
         this._volume = savedOptions.volume;
+        this._blood = savedOptions.blood || this._blood;
       }
     }
   }
@@ -68,6 +75,7 @@ export class Options {
       localStorage.setItem(optionsLocalStorageKey, JSON.stringify({
         debug: this._debug,
         volume: this._volume,
+        blood: this._blood,
       }));
     }
   }

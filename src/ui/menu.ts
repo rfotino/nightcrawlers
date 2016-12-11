@@ -367,6 +367,24 @@ class OptionsMenu extends UIMenu {
       this._options.volume = volumeSlider.value;
     });
     this.addMenuItem(volumeSlider);
+    // Add blood level option
+    const getBloodLevelText = () => {
+      if (this._options.blood === Options.BLOOD_NORMAL) {
+        return 'Blood: Normal';
+      } else {
+        return 'Blood: Extra';
+      }
+    }
+    const bloodLevelButton = new UIButton(game, getBloodLevelText());
+    bloodLevelButton.addListener('action', () => {
+      if (Options.BLOOD_NORMAL === this._options.blood) {
+        this._options.blood = Options.BLOOD_EXTRA;
+      } else {
+        this._options.blood = Options.BLOOD_NORMAL;
+      }
+      bloodLevelButton.title = getBloodLevelText();
+    });
+    this.addMenuItem(bloodLevelButton);
     // Add back button to return to previous menu
     const backBtn = new UIImageButton(
       game, 'ui/menu/back-btn',

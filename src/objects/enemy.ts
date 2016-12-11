@@ -4,7 +4,7 @@ import { Item } from './item';
 import * as Terrain from './terrain';
 import { Player } from './player';
 import { FadingText } from './fading-text';
-import { BloodSplatter } from './particles';
+import { BloodSplatter, BigBloodSplatter } from './particles';
 import { Polar } from '../math/polar';
 import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
@@ -12,6 +12,7 @@ import { Color } from '../graphics/color';
 import { SpriteSheet } from '../graphics/spritesheet';
 import { LagFactor } from '../math/lag-factor';
 import { Config } from '../config';
+import { Options } from '../options';
 
 const enum Direction {
   None,
@@ -246,8 +247,11 @@ export class Enemy extends GameObject {
       this.pos,
       { fontSize: 36, fill: 'white' }
     ));
-    // Also add a blood splatter
-    this._game.addGameObject(new BloodSplatter(this._game, this.pos, this.vel));
+    // Also add a blood splatter if on normal blood level
+    if (Options.BLOOD_EXTRA === this._game.options.blood) {
+      const splatter = new BloodSplatter(this._game, this.pos, this.vel);
+      this._game.addGameObject(splatter);
+    }
     // And maybe spawn an item
     const itemDiceRoll = Math.random();
     let diceRollFloor = 0;
@@ -268,10 +272,11 @@ export class Enemy extends GameObject {
   }
 
   /**
-   * Show little red number that shows how much the enemy was damaged.
+   * Show visual indication that the enemy was damaged.
    */
   public damage(amount: number): void {
     super.damage(amount);
+    // Add red fading text with amount of damage, like "-10"
     this._game.addGameObject(new FadingText(
       this._game,
       `-${amount.toFixed()}`,
@@ -279,6 +284,11 @@ export class Enemy extends GameObject {
       { fontSize: 28, fill: 'red' },
       15 // timer
     ));
+    // Add blood splatter if on blood level extra
+    if (Options.BLOOD_EXTRA === this._game.options.blood) {
+      const splatter = new BigBloodSplatter(this._game, this.pos, this.vel);
+      this._game.addGameObject(splatter);
+    }
   }
 
   /**
