@@ -562,8 +562,8 @@ export class Enemy extends GameObject {
   /**
    * Update the enemy behavior based on its current state.
    */
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     this._healthBar.update(this);
     // All enemies are affected by gravity by default
     this.accel.r = Terrain.GRAVITY;

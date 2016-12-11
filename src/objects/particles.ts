@@ -81,8 +81,8 @@ export class ParticleGroup extends GameObject {
     return new Polar.Rect(this.pos.r, this.pos.theta, 0, 0);
   }
 
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     this._lifeCounter.next();
     if (this._lifeCounter.done()) {
       this.kill();

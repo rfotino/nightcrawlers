@@ -37,8 +37,8 @@ export class Fog extends GameObject {
     return new Polar.Rect();
   }
 
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     // Update the fog to be the appropriate color based on time of day
     if (this._game.timeKeeper.isDay) {
       this._daySprite.alpha = 0.75 * (1 - this._game.timeKeeper.transition);

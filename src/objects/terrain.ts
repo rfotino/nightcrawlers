@@ -326,8 +326,8 @@ export class Platform extends Terrain {
 
   public type(): string { return 'platform'; }
 
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     if (this.pos.theta <= this._thetaMin) {
       this.vel.theta = this._thetaSpeed;
     } else if (this.pos.theta >= this._thetaMax) {
@@ -456,8 +456,8 @@ export class Decoration extends GameObject {
    * Linearly interpolate between day and night sprites based on the
    * decoration's transition type.
    */
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     let day: number, night: number;
     if (this._game.timeKeeper.isDay) {
       // Put night sprite in front because it is out of sight during day so it

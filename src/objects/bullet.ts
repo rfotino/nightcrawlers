@@ -90,7 +90,7 @@ export class BulletTrail extends GameObject {
   public collidesWith(otherType: string): boolean { return false; }
   public collidable(): boolean { return false; }
 
-  public update(): void {
+  public updatePreCollision(): void {
     if (this._lifetimeCounter.done()) {
       this.kill();
     } else {

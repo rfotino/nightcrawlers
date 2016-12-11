@@ -35,8 +35,8 @@ export class Moon extends GameObject {
   /**
    * Make the moon rise and set.
    */
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     // Update state machine for handling moonrise and moonset
     const FAST_TANGENTIAL_SPEED = 0.01;
     const SLOW_TANGENTIAL_SPEED = 0.0005;

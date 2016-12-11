@@ -250,8 +250,8 @@ export class Player extends GameObject {
     }
   }
 
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     // Update sprite animation
     this._spriteBottom.nextFrame();
     this._spriteTop.nextFrame();
@@ -314,6 +314,19 @@ export class Player extends GameObject {
     if (upArrow && this._isOnSolidGround()) {
       this.vel.r = Config.player.jumpSpeed;
     }
+    // Offset the sprite top to match the sprite bottom
+    const bottomFrame = this._spriteBottom.getVisibleFrame();
+    this._spriteTop.y = Config.player.offsetsForBottomHalf[bottomFrame];
+  }
+
+  /**
+   * Some things, such as spawning objects based on the player's position,
+   * need to be done after collision - specificially after collision with the
+   * terrain, so that if the player sinks into the terrain during pre-update
+   * and is pushed out during collision, bullets/mines/etc still spawn in the
+   * appropriate position.
+   */
+  public updatePostCollision(): void {
     // Change weapons if we pressed the button to do so and the corresponding
     // weapon has ammo left. Switch the default idle animation as we switch
     // weapons.
@@ -364,9 +377,6 @@ export class Player extends GameObject {
     }
     // Update weapon cooldown bar
     this._cooldownBar.update(this);
-    // Offset the sprite top to match the sprite bottom
-    const bottomFrame = this._spriteBottom.getVisibleFrame();
-    this._spriteTop.y = Config.player.offsetsForBottomHalf[bottomFrame];
   }
 
   public getPolarBounds(): Polar.Rect {

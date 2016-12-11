@@ -48,8 +48,8 @@ class BaseballBatBullet extends GameObject {
     );
   }
 
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     // If the lifespan has run out, remove this object from the scene
     if (this._lifespanCounter.done()) {
       this.kill();

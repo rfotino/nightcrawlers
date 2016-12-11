@@ -90,18 +90,25 @@ export class ProximityMine extends GameObject {
 
   public team(): string { return 'player'; }
 
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     // Update animation
     this._sprite.nextFrame();
     // Update the lifespan counter, kill self if it has been in the game too
     // long without exploding
     if (this._lifespanCounter.done()) {
       this.kill();
-      return;
     } else {
       this._lifespanCounter.next();
     }
+  }
+
+  /**
+   * During pre-update we may slip into the ground due to gravity and a low
+   * frame rate, so we need to wait until after collision to check for
+   * visibility with enemies.
+   */
+  public updatePostCollision(): void {
     // Update setup counter, if it is not finished then do not explode)
     if (!this._setupCounter.done()) {
       this._setupCounter.next();

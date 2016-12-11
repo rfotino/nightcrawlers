@@ -47,8 +47,8 @@ export class FadingText extends GameObject {
     return new Polar.Rect(this.pos.r, this.pos.theta);
   }
 
-  public update(): void {
-    super.update();
+  public updatePreCollision(): void {
+    super.updatePreCollision();
     if (this._counter.done()) {
       this.kill();
     } else {

@@ -98,7 +98,7 @@ export abstract class GameObject extends PIXI.Container {
     });
   }
 
-  public update(): void {
+  public updatePreCollision(): void {
     const lagFactor = LagFactor.get();
     this.vel.r += this.accel.r * lagFactor;
     this.vel.theta += this.accel.theta * lagFactor;
@@ -110,6 +110,8 @@ export abstract class GameObject extends PIXI.Container {
     }
     this._groundVel = 0;
   }
+
+  public updatePostCollision(): void { }
 
   public kill(): void {
     this._alive = false;

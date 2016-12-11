@@ -361,10 +361,16 @@ export class GameInstance extends UIContainer {
     } else {
       this.bgcolor = nightColor.blend(dayColor, this.timeKeeper.transition);
     }
-    // Call each game object's update function
-    this.gameObjects.forEach(obj => obj.update());
+    // Call each game object's pre-collision update function
+    this.gameObjects.forEach(obj => obj.updatePreCollision());
     // Collide objects
     this._collide();
+    // Call each game object's post-collision update function
+    this.gameObjects.forEach(obj => {
+      if (obj.alive) {
+        obj.updatePostCollision();
+      }
+    });
     // Remove dead game objects
     this.gameObjects.forEach(obj => {
       if (!obj.alive) {
