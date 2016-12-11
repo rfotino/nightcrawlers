@@ -75,8 +75,6 @@ export class ParticleGroup extends GameObject {
 
   public collidable(): boolean { return false; }
 
-  public movable(): boolean { return false; }
-
   public type(): string { return 'blood'; }
 
   public getPolarBounds(): Polar.Rect {

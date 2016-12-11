@@ -46,6 +46,17 @@ export class Item extends GameObject {
     this._mirrorList.push(this._sprite);
   }
 
+  public collidesWith(otherType: string): boolean {
+    switch (otherType) {
+      case 'block':
+      case 'platform':
+      case 'player':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   public type(): string { return 'item'; }
 
   public getPolarBounds(): Polar.Rect {

@@ -201,6 +201,21 @@ export class Player extends GameObject {
     this.pos.theta = spawnPoint.theta;
   }
 
+  /**
+   * Only collide with terrain and items. May need to be augmented for things
+   * like enemy hitboxes or enemy projectiles.
+   */
+  public collidesWith(otherType: string): boolean {
+    switch (otherType) {
+      case 'block':
+      case 'platform':
+      case 'item':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   public type(): string { return 'player'; }
 
   public team(): string { return 'player'; }

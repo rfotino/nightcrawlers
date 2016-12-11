@@ -77,6 +77,15 @@ class BaseballBatBullet extends GameObject {
     );
   }
 
+  public collidesWith(otherType: string): boolean {
+    switch (otherType) {
+      case 'enemy':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   public collide(other: GameObject, result: Collider.Result): void {
     super.collide(other, result);
     if (other.team() === 'enemy') {

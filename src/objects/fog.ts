@@ -28,6 +28,9 @@ export class Fog extends GameObject {
     this.vel.theta = 0.001;
   }
 
+  public collidesWith(otherType: string): boolean { return false; }
+  public collidable(): boolean { return false; }
+
   public type(): string { return 'fog'; }
 
   public getPolarBounds(): Polar.Rect {

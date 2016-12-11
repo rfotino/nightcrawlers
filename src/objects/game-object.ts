@@ -75,9 +75,20 @@ export abstract class GameObject extends PIXI.Container {
     this._accel = new Polar.Coord();
   }
 
-  public collidable(): boolean { return true; }
+  /**
+   * Optimization to check whether this object can collide with anything.
+   */
+  public collidable(): boolean {
+    return true;
+  }
 
-  public movable(): boolean { return true; }
+  /**
+   * Optimization to white/blacklist collision checking between certain types of
+   * game objects.
+   */
+  public collidesWith(otherType: string) {
+    return true;
+  }
 
   public mirror(): void {
     this._mirrorList.forEach(obj => {

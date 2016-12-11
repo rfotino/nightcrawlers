@@ -73,6 +73,19 @@ export class ProximityMine extends GameObject {
     this.accel.r = Terrain.GRAVITY;
   }
 
+  /**
+   * Only collide with terrain, since it explodes due to proximity.
+   */
+  public collidesWith(otherType: string): boolean {
+    switch (otherType) {
+      case 'block':
+      case 'platform':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   public type(): string { return 'mine'; }
 
   public team(): string { return 'player'; }

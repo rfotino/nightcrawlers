@@ -251,11 +251,17 @@ abstract class Terrain extends GameObject {
     });
   }
 
-  public collide(other: GameObject, result: Collider.Result): void {
-    // Do nothing if the other object is not movable
-    if (!other.movable()) {
-      return;
+  public collidesWith(otherType: string): boolean {
+    switch (otherType) {
+      case 'block':
+      case 'platform':
+        return false;
+      default:
+        return true;
     }
+  }
+
+  public collide(other: GameObject, result: Collider.Result): void {
     // Otherwise move the other object out of this terrain object and
     // stop it from moving
     let bounds = other.getPolarBounds();
@@ -345,8 +351,6 @@ export class Block extends Terrain {
     this._solidTop = true;
   }
 
-  public movable(): boolean { return false; }
-
   public type(): string { return 'block'; }
 }
 
@@ -368,10 +372,8 @@ export class BackgroundBlock extends Terrain {
     this._solidTop = false;
   }
 
+  public collidesWith(otherType: string): boolean { return false; }
   public collidable(): boolean { return false; }
-
-  public movable(): boolean { return false; }
-
   public type(): string { return 'background-block'; }
 }
 
@@ -508,6 +510,16 @@ export class Decoration extends GameObject {
       boundsHeight,
       widthTheta
     );
+  }
+
+  public collidesWith(otherType: string): boolean {
+    switch (otherType) {
+      case 'block':
+      case 'platform':
+        return true;
+      default:
+        return false;
+    }
   }
 
   public type(): string { return 'decoration'; }

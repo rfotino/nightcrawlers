@@ -160,7 +160,7 @@ export class GameInstance extends UIContainer {
    */
   private _collide(): void {
     // Precalculate all starting bounds
-    let currentCollisions = new Collider.Previous();
+    const currentCollisions = new Collider.Previous();
     this.gameObjects.forEach(obj => {
       if (obj.collidable()) {
         currentCollisions.setBounds(obj, obj.getPolarBounds());
@@ -168,32 +168,32 @@ export class GameInstance extends UIContainer {
     });
     // Do collision against each pair of live and collidable objects
     for (let i = 0; i < this.gameObjects.length; i++) {
-      let obj1 = this.gameObjects[i];
+      const obj1 = this.gameObjects[i];
       if (!obj1.alive || !obj1.collidable()) {
         continue;
       }
       for (let j = i + 1; j < this.gameObjects.length; j++) {
-        let obj2 = this.gameObjects[j];
+        const obj2 = this.gameObjects[j];
         if (!obj2.alive || !obj2.collidable()) {
           continue;
         }
-        // No use colliding two immobile objects
-        if (!obj1.movable() && !obj2.movable()) {
+        // No use bounds checking if the objects don't affect each other
+        if (!obj1.collidesWith(obj2.type()) && !obj2.collidesWith(obj2.type())) {
           continue;
         }
         // Grab precalculated bounds, do a quick bounds check before doing
         // anything too heavy
-        let bounds1 = currentCollisions.getBounds(obj1);
-        let bounds2 = currentCollisions.getBounds(obj2);
+        const bounds1 = currentCollisions.getBounds(obj1);
+        const bounds2 = currentCollisions.getBounds(obj2);
         if (!bounds2.intersects(bounds1)) {
           continue;
         }
         // Grab previous bounds and result, we're going to do a full collision
         // test
-        let prevBounds1 = this._previousCollisions.getBounds(obj1) || bounds1;
-        let prevBounds2 = this._previousCollisions.getBounds(obj2) || bounds2;
-        let prevResult = this._previousCollisions.getResult(obj1, obj2);
-        let relativeVel = new Polar.Coord(
+        const prevBounds1 = this._previousCollisions.getBounds(obj1) || bounds1;
+        const prevBounds2 = this._previousCollisions.getBounds(obj2) || bounds2;
+        const prevResult = this._previousCollisions.getResult(obj1, obj2);
+        const relativeVel = new Polar.Coord(
           obj2.vel.r - obj1.vel.r,
           obj2.vel.theta - obj1.vel.theta
         );
@@ -224,7 +224,7 @@ export class GameInstance extends UIContainer {
     // bounds for the next frame accurately represent the positions of the
     // objects
     this.gameObjects.forEach(obj => {
-      if (obj.collidable() && obj.movable()) {
+      if (obj.collidable()) {
         currentCollisions.setBounds(obj, obj.getPolarBounds());
       }
     });

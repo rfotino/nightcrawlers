@@ -87,8 +87,8 @@ export class BulletTrail extends GameObject {
   public getPolarBounds(): Polar.Rect { return new Polar.Rect(); }
   public type(): string { return 'bullet'; }
   public team(): string { return 'player'; }
+  public collidesWith(otherType: string): boolean { return false; }
   public collidable(): boolean { return false; }
-  public movable(): boolean { return false; }
 
   public update(): void {
     if (this._lifetimeCounter.done()) {

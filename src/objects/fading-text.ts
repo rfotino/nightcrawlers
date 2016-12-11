@@ -40,7 +40,7 @@ export class FadingText extends GameObject {
   }
 
   public collidable(): boolean { return false; }
-  public movable(): boolean { return false; }
+
   public type(): string { return 'text'; }
 
   public getPolarBounds(): Polar.Rect {

@@ -206,6 +206,21 @@ export class Enemy extends GameObject {
     this._facePlayer();
   }
 
+  /**
+   * Optimization so that we don't check collision of enemies with each other,
+   * etc. May need to be augmented with things like player projectiles in the
+   * future.
+   */
+  public collidesWith(otherType: string): boolean {
+    switch (otherType) {
+      case 'block':
+      case 'platform':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   public type(): string { return 'enemy'; }
 
   public team(): string { return 'enemy'; }

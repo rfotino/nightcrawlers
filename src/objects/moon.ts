@@ -29,9 +29,8 @@ export class Moon extends GameObject {
     this.addChild(this._sprite);
   }
 
+  public collidesWith(otherType: string): boolean { return false; }
   public collidable(): boolean { return false; }
-
-  public movable(): boolean { return false; }
 
   /**
    * Make the moon rise and set.
@@ -122,9 +121,8 @@ export class Moonlight extends GameObject {
     this.addChild(this._sprite);
   }
 
+  public collidesWith(otherType: string): boolean { return false; }
   public collidable(): boolean { return false; }
-
-  public movable(): boolean { return false; }
 
   public type(): string { return 'moonlight'; }
 

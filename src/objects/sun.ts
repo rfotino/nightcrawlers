@@ -32,9 +32,8 @@ export class Sun extends GameObject {
     this.addChild(this._sprite);
   }
 
+  public collidesWith(otherType: string): boolean { return false; }
   public collidable(): boolean { return false; }
-
-  public movable(): boolean { return false; }
 
   /**
    * Make the moon rise and set.
