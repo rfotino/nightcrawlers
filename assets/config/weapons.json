@@ -1,4 +1,27 @@
 {
+  "blood": {
+    "color": {
+      "r": 255,
+      "g": 0,
+      "b": 0
+    },
+    "splatterNormal": {
+      "speed": 5,
+      "speedRandom": 5,
+      "radius": 7,
+      "radiusRandom": 3,
+      "lifespan": 15,
+      "numParticles": 10
+    },
+    "splatterExtra": {
+      "speed": 3,
+      "speedRandom": 20,
+      "radius": 7,
+      "radiusRandom": 5,
+      "lifespan": 15,
+      "numParticles": 8
+    }
+  },
   "bat": {
     "damage": 15,
     "cooldown": 15,

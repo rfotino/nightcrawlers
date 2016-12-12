@@ -4,6 +4,7 @@ import { Counter } from '../math/counter';
 import { LagFactor } from '../math/lag-factor';
 import { Color } from '../graphics/color';
 import { GameInstance } from '../game-instance';
+import { Config } from '../config';
 
 interface Particle {
   x: number;
@@ -111,36 +112,34 @@ export class ParticleGroup extends GameObject {
 
 export class BloodSplatter extends ParticleGroup {
   public constructor(game: GameInstance, pos: Polar.Coord, vel: Polar.Coord) {
-    const bloodColor = new Color(255, 0, 0);
+    const bloodColor = new Color(
+      Config.weapons.blood.color.r,
+      Config.weapons.blood.color.g,
+      Config.weapons.blood.color.b
+    );
     super(game, {
       pos: pos,
       vel: vel,
       getColor: () => bloodColor,
       getRadiusFactor: (n) => 1 - n,
-      speed: 5,
-      speedRandom: 2,
-      radius: 3,
-      radiusRandom: 3,
-      lifespan: 15,
-      numParticles: 10,
+      ...Config.weapons.blood.splatterNormal,
     });
   }
 }
 
 export class BigBloodSplatter extends ParticleGroup {
   public constructor(game: GameInstance, pos: Polar.Coord, vel: Polar.Coord) {
-    const bloodColor = new Color(255, 0, 0);
+    const bloodColor = new Color(
+      Config.weapons.blood.color.r,
+      Config.weapons.blood.color.g,
+      Config.weapons.blood.color.b
+    );
     super(game, {
       pos: pos,
       vel: vel,
       getColor: () => bloodColor,
       getRadiusFactor: (n) => 1 - n,
-      speed: 3,
-      speedRandom: 7,
-      radius: 7,
-      radiusRandom: 5,
-      lifespan: 15,
-      numParticles: 8,
+      ...Config.weapons.blood.splatterExtra,
     });
   }
 }

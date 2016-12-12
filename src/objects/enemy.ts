@@ -248,7 +248,7 @@ export class Enemy extends GameObject {
       { fontSize: 36, fill: 'white' }
     ));
     // Also add a blood splatter if on normal blood level
-    if (Options.BLOOD_EXTRA === this._game.options.blood) {
+    if (Options.BLOOD_NORMAL === this._game.options.blood) {
       const splatter = new BloodSplatter(this._game, this.pos, this.vel);
       this._game.addGameObject(splatter);
     }
