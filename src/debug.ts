@@ -44,12 +44,20 @@ export class Debugger extends UIContainer {
     const frameTimeSum = this._frameTimes.reduce((p, c) => p + c);
     const frameAvg = frameTimeSum / this._frameTimes.length;
     const fps = frameAvg === 0 ? 0 : 1000 / frameAvg;
+    // Get number of game objects and number of visible game objects
+    const numGameObjs = this._gameInstance.gameObjects.length;
+    let numVisibleObjs = 0;
+    this._gameInstance.gameObjects.forEach(obj => {
+      if (obj.visible) {
+        numVisibleObjs++;
+      }
+    });
     // Update text display
     this._text.text =
       `FPS:     ${fps.toFixed(0)}\n` +
       `r:       ${this._gameInstance.player.pos.r.toFixed(0)}\n` +
       `θ:       ${(this._gameInstance.player.pos.theta / Math.PI).toFixed(2)}π\n` +
-      `objects: ${this._gameInstance.gameObjects.length}\n` +
+      `objects: ${numGameObjs} (${numVisibleObjs})\n` +
       `render:  ${this._game.isWebGL() ? 'WebGL' : 'Canvas'}`;
   }
 }

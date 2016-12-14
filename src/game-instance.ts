@@ -238,6 +238,43 @@ export class GameInstance extends UIContainer {
   }
 
   /**
+   * Do view frustrum culling, making game objects invisible if they aren't
+   * contained within the view bounds.
+   */
+  protected _doViewFrustrumCulling(): void {
+    // Returns true if b <= a <= c
+    function between(a, b, c) {
+      return b <= a && a <= c;
+    }
+    // Returns true if the two rectangles intersect
+    function intersects(a: PIXI.Rectangle, b: PIXI.Rectangle): boolean {
+      if (between(a.x, b.x, b.x + b.width) ||
+          between(a.x + a.width, b.x, b.x + b.width) ||
+          between(b.x, a.x, a.x + a.width) ||
+          between(b.x + b.width, a.x, a.x + a.width)) {
+        if (between(a.y, b.y, b.y + b.height) ||
+            between(a.y + a.height, b.y, b.y + b.height) ||
+            between(b.y, a.y, a.y + a.height) ||
+            between(b.y + b.height, a.y, a.y + a.height)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    // Set each game object's visiblility to whether or not the object is
+    // within the view bounds
+    const viewBounds = new PIXI.Rectangle(
+      0, 0, this.view.width, this.view.height
+    );
+    this.gameObjects.forEach(obj => {
+      // Hack, set to true first so we can correctly get bounds
+      obj.visible = true;
+      // Then set to the value we really want
+      obj.visible = intersects(viewBounds, obj.getBounds());
+    });
+  }
+
+  /**
    * Update the view to be centered on the player.
    */
   public doLayout(): void {
@@ -409,6 +446,9 @@ export class GameInstance extends UIContainer {
     });
     // Mirror sprite positions of game objects
     this.gameObjects.forEach(obj => obj.mirror());
+    // Do view frustrum culling - set game objects to invisible if they aren't
+    // within the view bounds
+    this._doViewFrustrumCulling();
     // Roll over previous game object positions
     this.gameObjects.forEach(obj => obj.rollOver());
     // Update the score label

@@ -109,14 +109,14 @@ export class EnemyIndicator extends UIContainer {
   public update(): void {
     super.update();
     // Get view bounds, player position, and array of all enemies
-    let viewBounds = this.getBounds();
-    let playerCenter = getCenter(this._gameInst.player.getBounds());
-    let enemies = <Enemy[]>this._gameInst.gameObjects.filter(obj => {
+    const viewBounds = this.getBounds();
+    const playerCenter = getCenter(this._gameInst.player.getBounds());
+    const enemies = <Enemy[]>this._gameInst.gameObjects.filter(obj => {
       return obj.type() === 'enemy';
     });
     // Mark all arrows as dead, any still marked as dead at the end will
     // be cleaned up
-    for (let id in this._arrows) {
+    for (const id in this._arrows) {
       if (this._arrows.hasOwnProperty(id)) {
         this._arrows[id].alive = false;
       }
@@ -125,12 +125,17 @@ export class EnemyIndicator extends UIContainer {
     enemies.forEach(enemy => {
       // Add an indicator arrow for this enemy if one doesn't exist
       if (!this._arrows[enemy.id]) {
-        let newArrow = new IndicatorArrow(enemy.enemyType());
+        const newArrow = new IndicatorArrow(enemy.enemyType());
         this.addChild(newArrow);
         this._arrows[enemy.id] = newArrow;
       }
-      let arrow = this._arrows[enemy.id];
-      let enemyCenter = getCenter(enemy.getBounds());
+      const arrow = this._arrows[enemy.id];
+      // Weird hack - need to set enemy to visible in order to get correct
+      // bounds. Then set it back to whatever it was before.
+      const enemyVisible = enemy.visible;
+      enemy.visible = true;
+      const enemyCenter = getCenter(enemy.getBounds());
+      enemy.visible = enemyVisible;
       arrow.alive = true;
       // If the enemy is on screen, make arrow invisible and do nothing else
       if (viewBounds.contains(enemyCenter.x, enemyCenter.y)) {
@@ -140,7 +145,7 @@ export class EnemyIndicator extends UIContainer {
         arrow.visible = true;
       }
       // Place the arrow at the edge of the screen in the direction of the enemy
-      let playerToEnemy = new PIXI.Point(
+      const playerToEnemy = new PIXI.Point(
         enemyCenter.x - playerCenter.x,
         enemyCenter.y - playerCenter.y
       );
@@ -151,12 +156,12 @@ export class EnemyIndicator extends UIContainer {
       if (playerToEnemyDist === 0) {
         playerToEnemyDist = 1;
       }
-      let playerToEnemyUnit = new PIXI.Point(
+      const playerToEnemyUnit = new PIXI.Point(
         playerToEnemy.x / playerToEnemyDist,
         playerToEnemy.y / playerToEnemyDist
       );
-      let up = enemyCenter.y < playerCenter.y;
-      let left = enemyCenter.x < playerCenter.x;
+      const up = enemyCenter.y < playerCenter.y;
+      const left = enemyCenter.x < playerCenter.x;
       let slope: number;
       if (playerToEnemyUnit.x === 0) {
         // Slope should be infinite, instead just make it some arbitrarily
@@ -165,18 +170,18 @@ export class EnemyIndicator extends UIContainer {
       } else {
         slope = playerToEnemyUnit.y / playerToEnemyUnit.x;
       }
-      let minY = EnemyIndicator.DIST_FROM_EDGE;
-      let maxY = this.height - EnemyIndicator.DIST_FROM_EDGE;
-      let desiredY = up ? minY : maxY;
-      let minX = EnemyIndicator.DIST_FROM_EDGE;
-      let maxX = this.width - EnemyIndicator.DIST_FROM_EDGE;
-      let desiredX = left ? minX : maxX;
-      let actualX = ((desiredY - playerCenter.y) / slope) + playerCenter.x;
-      let actualY = (slope * (desiredX - playerCenter.x)) + playerCenter.y;
+      const minY = EnemyIndicator.DIST_FROM_EDGE;
+      const maxY = this.height - EnemyIndicator.DIST_FROM_EDGE;
+      const desiredY = up ? minY : maxY;
+      const minX = EnemyIndicator.DIST_FROM_EDGE;
+      const maxX = this.width - EnemyIndicator.DIST_FROM_EDGE;
+      const desiredX = left ? minX : maxX;
+      const actualX = ((desiredY - playerCenter.y) / slope) + playerCenter.x;
+      const actualY = (slope * (desiredX - playerCenter.x)) + playerCenter.y;
       arrow.position.x = Math.min(Math.max(minX, actualX), maxX);
       arrow.position.y = Math.min(Math.max(minY, actualY), maxY);
       // Make the arrow point at the enemy
-      let arrowToEnemy = new PIXI.Point(
+      const arrowToEnemy = new PIXI.Point(
         enemyCenter.x - arrow.position.x,
         enemyCenter.y - arrow.position.y
       );
@@ -185,18 +190,18 @@ export class EnemyIndicator extends UIContainer {
       if (arrowToEnemyDist === 0) {
         arrowToEnemyDist = 1;
       }
-      let arrowToEnemyUnit = new PIXI.Point(
+      const arrowToEnemyUnit = new PIXI.Point(
         arrowToEnemy.x / arrowToEnemyDist,
         arrowToEnemy.y / arrowToEnemyDist
       );
       arrow.setDir(arrowToEnemyUnit);
       // Shrink the arrow depending on its distance from the enemy
       const maxDist = this._gameInst.level.getOuterRadius() * 2;
-      let scale = Math.max(0.5, (maxDist - arrowToEnemyDist) / maxDist);
-      arrow.scale.x = arrow.scale.y = scale;
+      const scale = Math.max(0.5, (maxDist - arrowToEnemyDist) / maxDist);
+      arrow.scale.set(scale);
     });
     // Clean up arrows pointing to dead enemies
-    for (let id in this._arrows) {
+    for (const id in this._arrows) {
       if (this._arrows.hasOwnProperty(id) && !this._arrows[id].alive) {
         this.removeChild(this._arrows[id]);
         delete this._arrows[id];
