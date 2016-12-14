@@ -33,9 +33,10 @@ export class ScoreMultiplier extends UIContainer {
    * Increase multiplier according to the number of points earned.
    */
   public increase(points: number): void {
+    const EPSILON = 0.01;
     this._trueValue = Math.min(
       this._trueValue + (points * Config.player.scoreMultiplierBonusPerPoint),
-      Config.player.maxScoreMultiplier
+      Config.player.maxScoreMultiplier + 1 - EPSILON
     );
   }
 
@@ -69,7 +70,17 @@ export class ScoreMultiplier extends UIContainer {
       return;
     }
     // Drain score multiplier
-    this._trueValue -= Config.player.scoreMultiplierDrainSpeed * LagFactor.get();
+    const drainAmount = (
+      Config.player.scoreMultiplierDrainSpeedMin +
+      (
+        (
+          Config.player.scoreMultiplierDrainSpeedMax -
+          Config.player.scoreMultiplierDrainSpeedMin
+        ) *
+        ((this._displayedValue - 1) / Config.player.maxScoreMultiplier)
+      )
+    );
+    this._trueValue -= drainAmount * LagFactor.get();
     if (this._trueValue < 1) {
       this._trueValue = 1;
     }
