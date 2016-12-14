@@ -239,8 +239,12 @@ export class Enemy extends GameObject {
     super.kill();
     // Add this enemy's points to the score and display the points where the
     // enemy used to be
-    const points = this.attributes.points;
+    const points = (
+      this.attributes.points *
+      this._game.scoreMultiplier.value
+    );
     this._game.player.score += points;
+    this._game.scoreMultiplier.increase(this.attributes.points);
     this._game.addGameObject(new FadingText(
       this._game,
       `+${points}`,

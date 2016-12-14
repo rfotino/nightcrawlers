@@ -24,6 +24,7 @@ import { UIPortrait } from './ui/portrait';
 import { CurrentWeaponIndicator } from './ui/current-weapon';
 import { EnemyIndicator } from './ui/enemy-indicator';
 import { HurtOverlay } from './ui/hurt-overlay';
+import { ScoreMultiplier } from './ui/score-multiplier';
 
 export class GameInstance extends UIContainer {
   public player: Player;
@@ -36,6 +37,7 @@ export class GameInstance extends UIContainer {
   public level: Level;
   public gameObjects: GameObject[];
   public playerView: Polar.Coord;
+  public scoreMultiplier: ScoreMultiplier;
   protected _options: Options;
   protected _outerViewStage: PIXI.Container;
   protected _innerViewStage: PIXI.Container;
@@ -123,6 +125,9 @@ export class GameInstance extends UIContainer {
     // Add score label
     this._scoreLabel = new UILabel(game, '0');
     this.addComponent(this._scoreLabel);
+    // Add score multiplier
+    this.scoreMultiplier = new ScoreMultiplier(game, this);
+    this.addComponent(this.scoreMultiplier);
     // Add hurt overlay so that the screen turns red when the player is low
     // on health
     this._hurtOverlay = new HurtOverlay(game, this);
@@ -267,11 +272,18 @@ export class GameInstance extends UIContainer {
     this._enemyIndicator.width = this.view.width;
     this._enemyIndicator.height = this.view.height;
     // Update player portrait's position
-    this._playerPortrait.x = Math.min(50, 0.05* this.view.width);
+    this._playerPortrait.x = Math.min(50, 0.05 * this.view.width);
     this._playerPortrait.y = Math.min(50, 0.05 * this.view.height);
+    // Update sore multiplier position
+    this.scoreMultiplier.x = (this.view.width - this.scoreMultiplier.width) / 2;
+    this.scoreMultiplier.y = this.view.height * 0.05;
     // Update score label position
     this._scoreLabel.height = this.view.height * 0.15;
-    this._scoreLabel.x = (this.view.width - this._scoreLabel.width) / 2;
+    this._scoreLabel.x = (
+      this.view.width -
+      this._scoreLabel.width -
+      (this.view.width * 0.05)
+    );
     this._scoreLabel.y = Math.min(20, this.view.height * 0.02);
     // Update current weapon indicator position
     this._currentWeaponIndicator.x = this._playerPortrait.x + 20;

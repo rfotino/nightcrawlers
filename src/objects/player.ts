@@ -93,6 +93,9 @@ class PlayerCooldownBar extends PIXI.Container {
   }
 }
 
+/**
+ * Player class; handles input, animation, etc for the player.
+ */
 export class Player extends GameObject {
   private _spriteBottom: SpriteSheet;
   private _spriteTop: SpriteSheet;
@@ -192,7 +195,6 @@ export class Player extends GameObject {
     this.addChild(this._spriteBottom);
     this.addChild(this._spriteTop);
     // Add weapon cooldown bar above player's head
-    // Add health bar
     this._cooldownBar = new PlayerCooldownBar(this);
     this.addChild(this._cooldownBar);
     // Spawn the player at a random spawn point
@@ -237,6 +239,8 @@ export class Player extends GameObject {
       this.pos,
       { fontSize: 24, fill: 'red' }
     ));
+    // Reduce the score multiplier
+    this._game.scoreMultiplier.decrease(amount);
     // Actually subtract the damage
     if (amount <= this._armor) {
       this.armor -= amount;

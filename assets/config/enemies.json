@@ -177,7 +177,7 @@
     "health": 30,
     "moveSpeed": 5,
     "jumpSpeed": 18,
-    "points": 50,
+    "points": 75,
     "spawnTime": 50,
     "attack": {
       "damage": 5,
@@ -266,7 +266,7 @@
     "health": 50,
     "moveSpeed": 5,
     "jumpSpeed": 22,
-    "points": 150,
+    "points": 100,
     "spawnTime": 60,
     "attack": {
       "damage": 10,
