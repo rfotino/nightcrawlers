@@ -50,6 +50,7 @@ export class GameInstance extends UIContainer {
   protected _playerPortrait: UIPortrait;
   protected _currentWeaponIndicator: CurrentWeaponIndicator;
   protected _scoreLabel: UILabel;
+  protected _dayNumLabel: UILabel;
   protected _waveIndex: number;
   protected _nightMusic: Howl;
   protected _nightMusicId: number;
@@ -125,6 +126,9 @@ export class GameInstance extends UIContainer {
     // Add score label
     this._scoreLabel = new UILabel(game, '0');
     this.addComponent(this._scoreLabel);
+    // Add day number label
+    this._dayNumLabel = new UILabel(game, 'Day 1', {fontSize: 36});
+    this.addComponent(this._dayNumLabel);
     // Add score multiplier
     this.scoreMultiplier = new ScoreMultiplier(game, this);
     this.addComponent(this.scoreMultiplier);
@@ -315,13 +319,19 @@ export class GameInstance extends UIContainer {
     this.scoreMultiplier.x = (this.view.width - this.scoreMultiplier.width) / 2;
     this.scoreMultiplier.y = this.view.height * 0.05;
     // Update score label position
-    this._scoreLabel.height = this.view.height * 0.15;
     this._scoreLabel.x = (
       this.view.width -
       this._scoreLabel.width -
       (this.view.width * 0.05)
     );
-    this._scoreLabel.y = Math.min(20, this.view.height * 0.02);
+    this._scoreLabel.y = this.view.height * 0.05;
+    // Update day number label position
+    this._dayNumLabel.x = (
+      this.view.width -
+      this._dayNumLabel.width -
+      (this.view.width * 0.05)
+    );
+    this._dayNumLabel.y = this._scoreLabel.y + this._scoreLabel.height;
     // Update current weapon indicator position
     this._currentWeaponIndicator.x = this._playerPortrait.x + 20;
     this._currentWeaponIndicator.y = (
@@ -453,6 +463,9 @@ export class GameInstance extends UIContainer {
     this.gameObjects.forEach(obj => obj.rollOver());
     // Update the score label
     this._scoreLabel.title = `${this.score}`;
+    // Update the day number label
+    this._dayNumLabel.title =
+      `${this.timeKeeper.isDay ? 'Day' : 'Night'} ${this.timeKeeper.dayNum}`;
   }
 
   /**

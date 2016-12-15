@@ -1,6 +1,7 @@
 import { LagFactor } from './math/lag-factor';
 
 export class TimeKeeper {
+  protected _dayNum: number = 1;
   protected _counter: number = 0;
   protected _isDay: boolean = true;
   protected _dayLength: number = 400;
@@ -8,6 +9,14 @@ export class TimeKeeper {
   protected _transition: number = 0;
   protected _transitionLength: number = 50;
   protected _listeners: {[key: string]: Function[]} = {};
+
+  /**
+   * Returns the current day number so that the player can know how long they
+   * have survived.
+   */
+  public get dayNum(): number {
+    return this._dayNum;
+  }
 
   /**
    * Returns true if it is currently day, false otherwise.
@@ -49,6 +58,7 @@ export class TimeKeeper {
         this._isDay = !this._isDay;
         this._transitioning = false;
         if (this._isDay) {
+          this._dayNum++;
           this.trigger('daystart');
         } else {
           this.trigger('nightstart');
