@@ -104,8 +104,6 @@ export class PolarRectMesh extends PIXI.mesh.Mesh {
     this.uvs = new Float32Array(uvs);
     this.indices = new Uint16Array(indices);
 
-    console.log(this.vertices.length, this.uvs.length, this.indices.length);
-
     // Mark UVs and indices as dirty
     this.dirty++;
     // TODO: marking indices as dirty causes horrible, horrible WebGL errors.
