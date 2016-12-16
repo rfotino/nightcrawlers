@@ -447,8 +447,7 @@ export class PauseMenu extends UIMenu {
     // Add quit button
     const quitBtn = new UIButton(game, 'Quit');
     quitBtn.addListener('action', () => {
-      gameInstance.cleanup();
-      game.setActiveScreen(game.mainMenu);
+      game.setActiveScreen(game.mainMenu, true);
     });
     this.addMenuItem(quitBtn);
     // Have dark semi-transparent background
@@ -469,15 +468,13 @@ export class GameOverMenu extends UIMenu {
         gameInst.options,
         gameInst.level.initialData
       );
-      gameInst = null;
-      game.setActiveScreen(newGameInst);
+      game.setActiveScreen(newGameInst, true);
     });
     this.addMenuItem(playAgainBtn);
     // Add button to quit to main menu
     const mainMenuBtn = new UIButton(game, 'Main Menu');
     mainMenuBtn.addListener('action', () => {
-      gameInst = null;
-      game.setActiveScreen(game.mainMenu);
+      game.setActiveScreen(game.mainMenu, true);
     });
     this.addMenuItem(mainMenuBtn);
     // Make background semi transparent

@@ -27,6 +27,7 @@ export class Game {
   protected _mouseState: MouseState;
   protected _touchState: TouchState;
   protected _transitionState: TransitionState = TransitionState.NONE;
+  protected _destroyOldScreen: boolean;
   private _prevTime: number;
   private _currentTime: number;
   private _prevLagFactors: number[] = [];
@@ -40,11 +41,13 @@ export class Game {
     return this._renderer.view;
   }
 
-  public setActiveScreen(screen: UIContainer) {
+  public setActiveScreen(screen: UIContainer,
+                         destroyOldScreen: boolean = false) {
     screen.doLayout();
     this._activeScreen.startTransition(false);
     this._transitionState = TransitionState.OUT;
     this._nextScreen = screen;
+    this._destroyOldScreen = destroyOldScreen;
   }
 
   public constructor() {
@@ -175,10 +178,14 @@ export class Game {
     // Handle transitioning and screen switching logic
     if (this._transitionState === TransitionState.OUT) {
       if (this._activeScreen.isTransitionDone()) {
+        const oldScreen = this._activeScreen;
         this._activeScreen = this._nextScreen;
         this._nextScreen = null;
         this._activeScreen.startTransition(true);
         this._transitionState = TransitionState.IN;
+        if (this._destroyOldScreen) {
+          oldScreen.destroy();
+        }
       }
     } else if (this._transitionState === TransitionState.IN) {
       if (this._activeScreen.isTransitionDone) {

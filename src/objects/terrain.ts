@@ -2,126 +2,8 @@ import { GameObject } from './game-object';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
 import { Color } from '../graphics/color';
+import { PolarRectMesh } from '../graphics/polar-rect-mesh';
 import { Collider } from '../math/collider';
-
-/**
- * Draws resource on a canvas and returns an ImageData object representing the
- * pixel data, memoizing the result for later.
- */
-const cachedImageData: {[key: string]: ImageData} = {};
-function getImageData(resourceName: string): ImageData {
-  if (!cachedImageData[resourceName]) {
-    const texture = PIXI.loader.resources[resourceName].texture;
-    const canvas = document.createElement('canvas');
-    canvas.width = texture.width;
-    canvas.height = texture.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(texture.baseTexture.source, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    cachedImageData[resourceName] = imageData;
-  }
-  return cachedImageData[resourceName];
-}
-
-/**
- * Cache tiles at a fixed height and width so that blocks can use the same
- * tile multiple times without having to generate it from scratch.
- */
-interface PolarTile {
-  r: number;
-  width: number;
-  texture: PIXI.Texture;
-}
-const TILE_HEIGHT = 75;
-const TILE_MIN_WIDTH = 125;
-const TILE_SIDE_PADDING = 1.5;
-const TILE_BOTTOM_PADDING = 3;
-const cachedTiles: {[key: string]: PolarTile[]} = {};
-function getPolarTile(resourceName: string, r: number): PolarTile {
-  // Make sure the resourceName is valid
-  if (!PIXI.loader.resources[resourceName]) {
-    throw `No texture available for resource ${resourceName}`;
-  }
-  // Create empty array for resourceName if it doesn't exist
-  if (!cachedTiles[resourceName]) {
-    cachedTiles[resourceName] = [];
-  }
-  // Check for existing texture, if not found then create it
-  const rIndex = Math.max(0, Math.ceil(r / TILE_HEIGHT) - 1);
-  if (!cachedTiles[resourceName][rIndex]) {
-    // Get rectangular texture pattern
-    const pattern = getImageData(resourceName);
-    const topPadding = getTopPadding(resourceName);
-    // Lock r to the nearest multiple of TILE_HEIGHT
-    r = (rIndex + 1) * TILE_HEIGHT;
-    // Get the theta width of this tile, to be stored with the PolarTile obj
-    const width_theta = Math.min(Math.PI / 2, TILE_MIN_WIDTH / r);
-    // Add padding, get image width and height
-    r += topPadding;
-    const width = width_theta + (TILE_SIDE_PADDING / r);
-    const height = topPadding + TILE_HEIGHT + TILE_BOTTOM_PADDING;
-    // Create canvas to use as sprite texture
-    const canvas = document.createElement('canvas');
-    const w = 2 * r * Math.sin(width / 2);
-    const h = r - ((r - height) * Math.cos(width / 2));
-    canvas.width = w;
-    canvas.height = h;
-    // Draw platform, mapping rectangular textures to curved platforms one
-    // pixel at a time
-    const ctx = canvas.getContext('2d');
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    // Min/max r and theta for telling if we are inside the polar rectangle
-    const minR = r - height;
-    const maxR = r;
-    const minTheta = -(Math.PI / 2) - (width / 2);
-    const maxTheta = minTheta + width;
-    // Center of circles we are drawing
-    const cx = w / 2;
-    const cy = r;
-    for (let x = 0; x < pixels.width; x++) {
-      for (let y = 0; y < pixels.height; y++) {
-        // Coordinates of position we are drawing in cartesian circle space
-        const px = x - cx;
-        const py = y - cy;
-        // Coordinates of position we are drawing in polar circle space
-        const pr = Math.sqrt(px*px + py*py);
-        const ptheta = Math.atan2(py, px);
-        // If we are inside the polar rectangle of this terrain piece, draw
-        // a pixel from the pattern
-        if (Polar.rBetween(pr, minR, maxR) &&
-            Polar.thetaBetween(ptheta, minTheta, maxTheta)) {
-          // Determine radial and angular offsets into the pattern texture
-          let dtheta = (ptheta - minTheta) % (Math.PI * 2);
-          if (dtheta < 0) {
-            dtheta += Math.PI * 2;
-          }
-          let dr = (maxR - pr) % pattern.height;
-          if (dr < 0) {
-            dr += pattern.height;
-          }
-          // Pattern coordinates
-          const qx = Math.floor((dtheta * maxR) % pattern.width);
-          const qy = Math.floor(dr);
-          // Copy pattern color over to image data
-          let pixelIdx = (y*pixels.width + x)*4;
-          let patternIdx = (qy*pattern.width + qx)*4;
-          for (let i = 0; i < 4; i++, pixelIdx++, patternIdx++) {
-            pixels.data[pixelIdx] += pattern.data[patternIdx];
-          }
-        }
-      }
-    }
-    ctx.putImageData(pixels, 0, 0);
-    // Create and store texture
-    cachedTiles[resourceName][rIndex] = {
-      texture: PIXI.Texture.fromCanvas(canvas),
-      r: (rIndex + 1) * TILE_HEIGHT,
-      width: width_theta,
-    };
-  }
-  // Return cached or newly created tile
-  return cachedTiles[resourceName][rIndex];
-}
 
 /**
  * Number of extra pixels at the top of the grass texture, where there is
@@ -152,8 +34,8 @@ abstract class Terrain extends GameObject {
   protected _solidRight: boolean;
   protected _solidTop: boolean;
   protected _solidBottom: boolean;
-  protected _spriteMask: PIXI.Graphics;
-  protected _spriteContainer: PIXI.Container;
+  protected _mesh: PolarRectMesh;
+  protected _padding: number;
 
   public get z(): number {
     return 10;
@@ -171,75 +53,33 @@ abstract class Terrain extends GameObject {
     this.pos.r = r;
     this.pos.theta = theta;
     this._size = new Polar.Coord(height, width);
-    // Initialize the sprite container that will hold all the tiles
-    this._spriteContainer = new PIXI.Container();
-    this._mirrorList.push(this._spriteContainer);
-    this.addChild(this._spriteContainer);
-    // Add as many tiles as necessary to fill or exceed the terrain width
-    let chainHeight = 0;
-    let tileResource = resourceName;
-    let maskRequired = false;
-    while (chainHeight < height) {
-      const desiredTileR = r - chainHeight;
-      if (desiredTileR <= 0) {
-        break;
-      }
-      const tile = getPolarTile(tileResource, desiredTileR);
-      const scale = desiredTileR / tile.r;
-      let chainWidth = 0;
-      while (chainWidth < width) {
-        const tileR = tile.r * scale;
-        const tileTheta = chainWidth;
-        const tileHeight = TILE_HEIGHT * scale;
-        const tileWidth = tile.width * scale;
-        const sprite = new PIXI.Sprite(tile.texture);
-        // Check if we need to add a mask
-        if (chainHeight + tileHeight > height) {
-          maskRequired = true;
-        }
-        sprite.anchor.x = 0.5;
-        sprite.anchor.y = getTopPadding(tileResource) / sprite.height;
-        sprite.rotation = (tile.width * scale / 2) + chainWidth;
-        if (tileTheta + tileWidth > width) {
-          if (width < TILE_MIN_WIDTH / tileR) {
-            maskRequired = true;
-          } else {
-            sprite.rotation -= tileTheta + tileWidth - width;
-          }
-        }
-        sprite.x = desiredTileR * Math.cos(sprite.rotation);
-        sprite.y = desiredTileR * Math.sin(sprite.rotation);
-        sprite.scale.set(scale);
-        sprite.rotation += Math.PI / 2;
-        this._spriteContainer.addChild(sprite);
-        chainWidth += tile.width * scale;
-      }
-      chainHeight += TILE_HEIGHT * scale;
-      // Hack to switch to stone from grass after first layer of tiles
-      if (tileResource === 'game/grass') {
-        tileResource = 'game/stone';
-      }
-    }
-    // Add sprite mask to hide excess pieces of tiles, if necessary
-    if (maskRequired) {
-      this._spriteMask = new PIXI.Graphics();
-      const topPadding = getTopPadding(resourceName);
-      const minR = Math.max(0, r - height - TILE_BOTTOM_PADDING);
-      const maxR = r + topPadding;
-      const maxTheta = Math.min(Math.PI * 2, width + (TILE_SIDE_PADDING / r));
-      // Arc twice (once from 0 to halfway, then from halfway to finished)
-      // because PIXI.Graphics draws a segmented circle and we need the segments
-      // to be small enough to not be noticable
-      this._spriteMask
-        .beginFill(Color.white.toPixi())
-        .arc(0, 0, maxR, 0, maxTheta / 2)
-        .arc(0, 0, maxR, maxTheta / 2, maxTheta)
-        .arc(0, 0, minR, maxTheta, maxTheta / 2, true)
-        .arc(0, 0, minR, maxTheta / 2, 0, true)
-        .endFill();
-      this._spriteContainer.mask = this._spriteMask;
-      this._spriteContainer.addChild(this._spriteMask);
-    }
+    this._padding = getTopPadding(resourceName);
+    // Create the mesh
+    const texture = PIXI.loader.resources[resourceName].texture;
+    const meshBounds = this._getMeshBounds();
+    this._mesh = new PolarRectMesh(texture, meshBounds);
+    this.addChild(this._mesh);
+  }
+
+  /**
+   * The bounds of the polar-rectangular mesh are not quite the same as the
+   * bounds used for collision returned by getPolarBounds(). This utility
+   * function accounts for padding and margins.
+   */
+  protected _getMeshBounds(): Polar.Rect {
+    const bounds = this.getPolarBounds();
+
+    // Add a bit to the top to account for padding, e.g. for grass
+    bounds.r += this._padding;
+    bounds.height += this._padding;
+
+    // Add a bit to the right and bottom so that adjacent terrain objects
+    // overlap
+    const OVERLAP = 1.5;
+    bounds.width += OVERLAP / bounds.r;
+    bounds.height += OVERLAP;
+
+    return bounds;
   }
 
   /**
@@ -287,6 +127,14 @@ abstract class Terrain extends GameObject {
       other.pos.r = prevMax;
       other.vel.r = Math.min(0, other.vel.r);
     }
+  }
+
+  /**
+   * Update the mesh's bounds.
+   */
+  public updatePostCollision(): void {
+    super.updatePostCollision();
+    this._mesh.setRect(this._getMeshBounds());
   }
 
   public getPolarBounds(): Polar.Rect {

@@ -231,5 +231,18 @@ export module Polar {
       }
       return false;
     }
+
+    public clone(): Rect {
+      return new Polar.Rect(this.r, this.theta, this.height, this.width);
+    }
+
+    public equals(other: Rect): boolean {
+      return (
+        this.r === other.r &&
+        this.theta === other.theta &&
+        this.height === other.height &&
+        this.width === other.width
+      );
+    }
   }
 }

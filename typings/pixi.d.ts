@@ -1648,10 +1648,11 @@ declare namespace PIXI {
             constructor(texture: Texture, vertices?: number[], uvs?: number[], indices?: number[], drawMode?: number);
 
             texture: Texture;
-            uvs: number[];
-            vertices: number[];
-            indices: number[];
-            dirty: boolean;
+            uvs: Float32Array;
+            vertices: Float32Array;
+            indices: Uint16Array;
+            dirty: number;
+            indexDirty: number;
             blendMode: number;
             canvasPadding: number;
             drawMode: number;

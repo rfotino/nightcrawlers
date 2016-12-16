@@ -504,7 +504,11 @@ export class GameInstance extends UIContainer {
   /**
    * Clean up resources from game instance.
    */
-  public cleanup(): void {
+  public destroy(options?: boolean): void {
+    super.destroy(options);
     this._nightMusic.stop();
+    this.gameObjects.forEach(obj => {
+      obj.destroy(options);
+    });
   }
 }
