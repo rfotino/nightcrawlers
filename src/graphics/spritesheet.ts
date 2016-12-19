@@ -23,7 +23,7 @@ function getTextureFrames(texture: PIXI.Texture,
         Math.floor(frameWidth),
         Math.floor(frameHeight)
       );
-      frames.push(new PIXI.Texture(texture, frameRect));
+      frames.push(new PIXI.Texture(texture.baseTexture, frameRect));
     }
   }
   return frames;

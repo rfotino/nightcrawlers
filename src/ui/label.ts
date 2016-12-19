@@ -53,7 +53,8 @@ export class UILabel extends UIContainer {
     this._sizer.height = height;
   }
 
-  public constructor(game: Game, title: string, style: PIXI.TextStyle = {}) {
+  public constructor(game: Game, title: string,
+                     style: PIXI.TextStyle = new PIXI.TextStyle()) {
     super(game);
     this._title = title;
     style.align = style.align || 'center';

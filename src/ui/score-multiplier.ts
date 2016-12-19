@@ -22,7 +22,11 @@ export class ScoreMultiplier extends UIContainer {
   public constructor(game: Game, gameInst: GameInstance) {
     super(game);
     this._gameInst = gameInst;
-    this._label = new UILabel(game, '', {fontSize: 36});
+    this._label = new UILabel(
+      game,
+      '',
+      new PIXI.TextStyle({ fontSize: 36, fill: 'white' })
+    );
     this._progress = new PIXI.Graphics();
     this.addChild(this._progress);
     this.addComponent(this._label);

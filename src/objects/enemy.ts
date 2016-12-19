@@ -249,7 +249,7 @@ export class Enemy extends GameObject {
       this._game,
       `+${points}`,
       this.pos,
-      { fontSize: 36, fill: 'white' }
+      new PIXI.TextStyle({ fontSize: 36, fill: 'white' })
     ));
     // Also add a blood splatter if on normal blood level
     if (Options.BLOOD_NORMAL === this._game.options.blood) {
@@ -285,7 +285,7 @@ export class Enemy extends GameObject {
       this._game,
       `-${amount.toFixed()}`,
       this.pos,
-      { fontSize: 28, fill: 'red' },
+      new PIXI.TextStyle({ fontSize: 28, fill: 'red' }),
       15 // timer
     ));
     // Add blood splatter if on blood level extra

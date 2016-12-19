@@ -237,7 +237,7 @@ export class Player extends GameObject {
       this._game,
       `-${amount.toFixed()}`,
       this.pos,
-      { fontSize: 24, fill: 'red' }
+      new PIXI.TextStyle({ fontSize: 24, fill: 'red' })
     ));
     // Reduce the score multiplier
     this._game.scoreMultiplier.decrease(amount);

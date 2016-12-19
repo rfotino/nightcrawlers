@@ -13,6 +13,7 @@ import { Options } from '../options';
 const TITLE_FONT_SIZE = 130;
 const TITLE_WIDTH = 600;
 const TITLE_HEIGHT = 220;
+const BUTTON_FONT_SIZE = 64;
 const BUTTON_WIDTH = 380;
 const BUTTON_HEIGHT = 115;
 
@@ -286,14 +287,22 @@ class LevelMenu extends UIMenu {
   public constructor(game: Game, previous: MainMenu) {
     super(game);
     // Add title
-    this.addMenuItem(new UILabel(game, 'Level Select', { fontSize: TITLE_FONT_SIZE }));
+    this.addMenuItem(new UILabel(
+      game,
+      'Level Select',
+      new PIXI.TextStyle({ fontSize: TITLE_FONT_SIZE, fill: 'white' })
+    ));
     // Add level buttons. For now have constant array of level names that we
     // iterate over. Each level's JSON is loaded with the PIXI loader, and is
     // parsed into a JavaScript object. When the button for a given level gets
     // clicked by the user, a new game instance is spun up with the parsed
     // level object.
     ['huge', 'tiny'].forEach(levelName => {
-      const levelBtn = new UIButton(game, levelName.toLocaleUpperCase());
+      const levelBtn = new UIButton(
+        game,
+        levelName.toLocaleUpperCase(),
+        new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
+      );
       const levelData = PIXI.loader.resources[`levels/${levelName}`].data;
       levelBtn.addListener('action', () => {
         game.setActiveScreen(
@@ -303,7 +312,11 @@ class LevelMenu extends UIMenu {
       this.addMenuItem(levelBtn);
     });
     // Add option to load a level from a file, useful for debugging
-    const loadFromFileBtn = new UIButton(game, 'Load from File');
+    const loadFromFileBtn = new UIButton(
+      game,
+      'Load from File',
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
+    );
     loadFromFileBtn.addListener('action', () => {
       const fileChooser = document.createElement('input');
       fileChooser.type = 'file';
@@ -348,7 +361,8 @@ class OptionsMenu extends UIMenu {
     // Add debug on/off button
     const debugButton = new UIButton(
       game,
-      `Debug ${this._options.debug ? 'On' : 'Off'}`
+      `Debug ${this._options.debug ? 'On' : 'Off'}`,
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
     );
     debugButton.addListener('action', () => {
       this._options.debug = !this._options.debug;
@@ -359,7 +373,10 @@ class OptionsMenu extends UIMenu {
     const volumeSlider = new UISliderWithLabel(
       game,
       'Volume',
-      this._options.volume
+      this._options.volume,
+      0, // min
+      1, // max
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
     );
     Howler.volume(this._options.volume);
     volumeSlider.addListener('change', () => {
@@ -375,7 +392,11 @@ class OptionsMenu extends UIMenu {
         return 'Blood: Extra';
       }
     }
-    const bloodLevelButton = new UIButton(game, getBloodLevelText());
+    const bloodLevelButton = new UIButton(
+      game,
+      getBloodLevelText(),
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
+    );
     bloodLevelButton.addListener('action', () => {
       if (Options.BLOOD_NORMAL === this._options.blood) {
         this._options.blood = Options.BLOOD_EXTRA;
@@ -437,15 +458,27 @@ export class PauseMenu extends UIMenu {
   public constructor(game: Game, gameInstance: GameInstance) {
     super(game, false);
     // Add title
-    this.addMenuItem(new UILabel(game, 'Paused', { fontSize: TITLE_FONT_SIZE }));
+    this.addMenuItem(new UILabel(
+      game,
+      'Paused',
+      new PIXI.TextStyle({ fontSize: TITLE_FONT_SIZE, fill: 'white' })
+    ));
     // Add resume button
-    const resumeBtn = new UIButton(game, 'Resume');
+    const resumeBtn = new UIButton(
+      game,
+      'Resume',
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
+    );
     resumeBtn.addListener('action', () => {
       gameInstance.resume();
     });
     this.addMenuItem(resumeBtn);
     // Add quit button
-    const quitBtn = new UIButton(game, 'Quit');
+    const quitBtn = new UIButton(
+      game,
+      'Quit',
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
+    );
     quitBtn.addListener('action', () => {
       game.setActiveScreen(game.mainMenu, true);
     });
@@ -459,9 +492,17 @@ export class GameOverMenu extends UIMenu {
   public constructor(game: Game, gameInst: GameInstance) {
     super(game, false);
     // Add title
-    this.addMenuItem(new UILabel(game, 'Game Over', { fontSize: TITLE_FONT_SIZE }));
+    this.addMenuItem(new UILabel(
+      game,
+      'Game Over',
+      new PIXI.TextStyle({ fontSize: TITLE_FONT_SIZE, fill: 'white' })
+    ));
     // Add button to start a new game
-    const playAgainBtn = new UIButton(game, 'Play Again');
+    const playAgainBtn = new UIButton(
+      game,
+      'Play Again',
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
+    );
     playAgainBtn.addListener('action', () => {
       const newGameInst = new GameInstance(
         game,
@@ -472,7 +513,11 @@ export class GameOverMenu extends UIMenu {
     });
     this.addMenuItem(playAgainBtn);
     // Add button to quit to main menu
-    const mainMenuBtn = new UIButton(game, 'Main Menu');
+    const mainMenuBtn = new UIButton(
+      game,
+      'Main Menu',
+      new PIXI.TextStyle({ fontSize: BUTTON_FONT_SIZE, fill: 'white' })
+    );
     mainMenuBtn.addListener('action', () => {
       game.setActiveScreen(game.mainMenu, true);
     });

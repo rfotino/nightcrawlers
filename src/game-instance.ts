@@ -124,10 +124,18 @@ export class GameInstance extends UIContainer {
     );
     this.addComponent(this._currentWeaponIndicator);
     // Add score label
-    this._scoreLabel = new UILabel(game, '0');
+    this._scoreLabel = new UILabel(
+      game,
+      '0',
+      new PIXI.TextStyle({ fontSize: 64, fill: 'white' })
+    );
     this.addComponent(this._scoreLabel);
     // Add day number label
-    this._dayNumLabel = new UILabel(game, 'Day 1', {fontSize: 36});
+    this._dayNumLabel = new UILabel(
+      game,
+      'Day 1',
+      new PIXI.TextStyle({ fontSize: 36, fill: 'white' })
+    );
     this.addComponent(this._dayNumLabel);
     // Add score multiplier
     this.scoreMultiplier = new ScoreMultiplier(game, this);

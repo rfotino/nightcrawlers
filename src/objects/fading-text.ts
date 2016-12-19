@@ -16,7 +16,7 @@ export class FadingText extends GameObject {
   public constructor(game: GameInstance,
                      text: string,
                      pos: Polar.Coord,
-                     style: PIXI.TextStyle = {},
+                     style: PIXI.TextStyle = new PIXI.TextStyle(),
                      time: number = 30) {
     super(game);
     this.pos.set(pos.r, pos.theta);

@@ -135,10 +135,10 @@ export class Item extends GameObject {
         this._game,
         text,
         player.pos,
-        {
+        new PIXI.TextStyle({
           fontSize: 30,
           fill: color,
-        },
+        }),
         60 // timer
       ));
     }

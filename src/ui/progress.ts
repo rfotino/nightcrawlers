@@ -57,7 +57,11 @@ export class MainProgressScreen extends UIContainer {
 
   public constructor(game: Game) {
     super(game);
-    this._percentLabel = new UILabel(game, '0%', { fill: FGCOLOR.toString() });
+    this._percentLabel = new UILabel(
+      game,
+      '0%',
+      new PIXI.TextStyle({ fill: FGCOLOR.toString(), fontSize: 64 })
+    );
     this._progressBar = new UIProgressBar(game);
     this.addComponent(this._percentLabel);
     this.addComponent(this._progressBar);
