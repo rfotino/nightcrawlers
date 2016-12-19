@@ -12,15 +12,41 @@ import { Collider } from '../math/collider';
 const GRASS_PADDING = 8;
 
 /**
- * Function for getting top padding amount based on resource name.
+ * Function for getting top padding amount based on the type of terrain block.
  */
-function getTopPadding(resourceName: string): number {
-  switch (resourceName) {
-    case 'game/grass':
-    case 'game/platform':
+function getTopPadding(blockType: string): number {
+  switch (blockType) {
+    case 'grass':
+    case 'platform':
       return GRASS_PADDING;
     default:
       return 0;
+  }
+}
+
+/**
+ * Get the main texture for a given terrain block type.
+ */
+function getTexture(blockType: string): PIXI.Texture {
+  switch (blockType) {
+    case 'grass':
+    case 'platform':
+      return PIXI.loader.resources['game/stone'].texture;
+    default:
+      return PIXI.loader.resources[`game/${blockType}`].texture;
+  }
+}
+
+/**
+ * Get the top texture for a given terrain block type.
+ */
+function getTopTexture(blockType: string): PIXI.Texture {
+  switch (blockType) {
+    case 'grass':
+    case 'platform':
+      return PIXI.loader.resources['game/grass'].texture;
+    default:
+      return null;
   }
 }
 
@@ -29,13 +55,16 @@ function getTopPadding(resourceName: string): number {
  * platforms, also used for shared collision/bounds functionality.
  */
 abstract class Terrain extends GameObject {
-  protected _size: Polar.Coord;
+  public texture: PIXI.Texture;
+  public topTexture: PIXI.Texture;
   protected _solidLeft: boolean;
   protected _solidRight: boolean;
   protected _solidTop: boolean;
   protected _solidBottom: boolean;
-  protected _mesh: PolarRectMesh;
-  protected _padding: number;
+  private _size: Polar.Coord;
+  private _meshes: PolarRectMesh[];
+  private _padding: number;
+  private _cachedTotalMeshBounds: Polar.Rect;
 
   public get z(): number {
     return 10;
@@ -47,18 +76,19 @@ abstract class Terrain extends GameObject {
 
   public constructor(game: GameInstance,
                      r: number, theta: number, height: number, width: number,
-                     resourceName: string) {
+                     padding: number, texture: PIXI.Texture,
+                     topTexture?: PIXI.Texture) {
     super(game);
     // Set up dimensions
     this.pos.r = r;
     this.pos.theta = theta;
     this._size = new Polar.Coord(height, width);
-    this._padding = getTopPadding(resourceName);
-    // Create the mesh
-    const texture = PIXI.loader.resources[resourceName].texture;
-    const meshBounds = this._getMeshBounds();
-    this._mesh = new PolarRectMesh(texture, meshBounds);
-    this.addChild(this._mesh);
+    this._padding = padding
+    // Create the mesh. Have a "top texture" for things like blocks topped with
+    // grass, where you want a grassy top with dirt tiled below
+    this.texture = texture;
+    this.topTexture = topTexture;
+    this._refreshMeshes();
   }
 
   /**
@@ -66,20 +96,63 @@ abstract class Terrain extends GameObject {
    * bounds used for collision returned by getPolarBounds(). This utility
    * function accounts for padding and margins.
    */
-  protected _getMeshBounds(): Polar.Rect {
+  private _getTotalMeshBounds(): Polar.Rect {
     const bounds = this.getPolarBounds();
 
     // Add a bit to the top to account for padding, e.g. for grass
     bounds.r += this._padding;
     bounds.height += this._padding;
 
-    // Add a bit to the right and bottom so that adjacent terrain objects
-    // overlap
-    const OVERLAP = 1.5;
-    bounds.width += OVERLAP / bounds.r;
-    bounds.height += OVERLAP;
-
     return bounds;
+  }
+
+  protected _refreshMeshes(): void {
+    // Destroy previous meshes
+    if (this._meshes) {
+      this._meshes.forEach(mesh => {
+        mesh.destroy();
+      })
+    }
+
+    this._meshes = [];
+    const remainingBounds = this._getTotalMeshBounds();
+    // Slight padding to add to each mesh to make adjacent meshes flush
+    const OVERLAP = 1.5;
+    // Amount that the meshes can be off from the actual bounds of the terrain
+    const EPSILON = 0.1;
+
+    // Carve a chunk off the remaining rect for the topTexture, if set
+    if (this.topTexture && remainingBounds.height > EPSILON) {
+      const rect = new Polar.Rect(
+        remainingBounds.r, remainingBounds.theta,
+        Math.min(this.topTexture.height - OVERLAP, remainingBounds.height),
+        remainingBounds.width
+      );
+      remainingBounds.r -= rect.height;
+      remainingBounds.height -= rect.height;
+      // Add some overlap so that there aren't tiny lines along adjacent meshes
+      rect.width += OVERLAP / rect.r;
+      rect.height += OVERLAP;
+      // Create the mesh and store it
+      const mesh = new PolarRectMesh(this.topTexture, rect);
+      this.addChild(mesh);
+      this._meshes.push(mesh);
+    }
+
+    // If there is need for it, add a rectangle for the remaining bounds
+    if (remainingBounds.height > EPSILON) {
+      const rect = remainingBounds.clone();
+      // Add some overlap so that there aren't tiny lines along adjacent meshes
+      rect.width += OVERLAP / rect.r;
+      rect.height += OVERLAP;
+      // Create the mesh and store it
+      const mesh = new PolarRectMesh(this.texture, rect);
+      this.addChild(mesh);
+      this._meshes.push(mesh);
+    }
+
+    // Reset cached total rect bounds
+    this._cachedTotalMeshBounds = this._getTotalMeshBounds();
   }
 
   /**
@@ -130,11 +203,13 @@ abstract class Terrain extends GameObject {
   }
 
   /**
-   * Update the mesh's bounds.
+   * Update the terrain block's meshes if their bounds have changed.
    */
   public updatePostCollision(): void {
     super.updatePostCollision();
-    this._mesh.setRect(this._getMeshBounds());
+    if (!this._cachedTotalMeshBounds.equals(this._getTotalMeshBounds())) {
+      this._refreshMeshes();
+    }
   }
 
   public getPolarBounds(): Polar.Rect {
@@ -159,7 +234,12 @@ export class Platform extends Terrain {
                      moves: boolean = false,
                      rate: number = 0,
                      thetaPrime: number = theta) {
-    super(game, r, theta, height, width, 'game/platform');
+    super(
+      game, r, theta, height, width,
+      getTopPadding('platform'),
+      getTexture('platform'),
+      getTopTexture('platform')
+    );
     // Assign animation characteristics for moving between theta and thetaPrime
     // every rate frames
     if (moves && rate > 0) {
@@ -191,7 +271,12 @@ export class Block extends Terrain {
   public constructor(game: GameInstance,
                      r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(game, r, theta, height, width, `game/${blockType}`);
+    super(
+      game, r, theta, height, width,
+      getTopPadding(blockType),
+      getTexture(blockType),
+      getTopTexture(blockType)
+    );
     // Blocks can't be entered from any side, unlike platforms
     this._solidLeft = true;
     this._solidRight = true;
@@ -212,7 +297,11 @@ export class BackgroundBlock extends Terrain {
   public constructor(game: GameInstance,
                      r: number, theta: number, height: number, width: number,
                      blockType: string) {
-    super(game, r, theta, height, width, `game/${blockType}`);
+    super(game, r, theta, height, width,
+      getTopPadding(blockType),
+      getTexture(blockType),
+      getTopTexture(blockType)
+    );
     // Blocks can't be collided with from any side
     this._solidLeft = false;
     this._solidRight = false;
@@ -291,7 +380,7 @@ export class Decoration extends GameObject {
     // Set up some masking so that you can't see sprites that are hidden
     // outside of the container (like gravestones/flower patches when they
     // slide down into the ground)
-    let mask = new PIXI.Graphics();
+    const mask = new PIXI.Graphics();
     mask.beginFill(0xffffff);
     mask.drawRect(-this.width / 2, -this.height / 2, this.width, this.height);
     mask.endFill();

@@ -85,7 +85,7 @@
     "files": [
       {
         "src": "assets/images/game/platform.png",
-        "size": 18264
+        "size": 18031
       }
     ]
   },
@@ -105,7 +105,7 @@
     "files": [
       {
         "src": "assets/images/game/stone.png",
-        "size": 5356
+        "size": 12293
       }
     ]
   },
@@ -115,7 +115,7 @@
     "files": [
       {
         "src": "assets/images/game/underground.png",
-        "size": 5969
+        "size": 10755
       }
     ]
   },

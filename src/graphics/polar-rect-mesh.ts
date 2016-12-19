@@ -2,43 +2,16 @@ import { Polar } from '../math/polar';
 
 export class PolarRectMesh extends PIXI.mesh.Mesh {
   protected _rect: Polar.Rect;
-  protected _cachedRect: Polar.Rect;
 
   public constructor(texture: PIXI.Texture, rect: Polar.Rect) {
     super(texture);
     this._rect = rect.clone();
-    this._cachedRect = null;
     this.drawMode = PIXI.mesh.Mesh.DRAW_MODES.TRIANGLE_MESH;
-    this.refresh();
-  }
+    texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
 
-  /**
-   * Gets a copy of the current polar rectangle.
-   */
-  public getRect(): Polar.Rect {
-    return this._rect.clone();
-  }
-
-  /**
-   * Sets the current polar rectangle and updates vertices/uvs.
-   */
-  public setRect(rect: Polar.Rect): void {
-    this._rect = rect.clone();
-    this.refresh();
-  }
-
-  /**
-   * Refreshes vertices and uv coordinates.
-   */
-  public refresh(): void {
-    // If cachedRect is the same as rect, no sense in re-calculating uniforms
-    if (this._cachedRect && this._cachedRect.equals(this._rect)) {
-      return;
-    }
-
+    // Create points for the mesh
     // Set up constants and containers used for the calculation
-    const SEGMENT_LENGTH = 50;
-    const rect = this._rect;
+    const SEGMENT_LENGTH = 30 + (rect.r / 20);
     const numSegments = Math.max(
       1,
       Math.round(rect.r * rect.width / SEGMENT_LENGTH)
@@ -77,16 +50,11 @@ export class PolarRectMesh extends PIXI.mesh.Mesh {
       const textureY = pixelY / texHeight;
       const texCoordDiff = textureX2 - textureX1;
       const uvX1 = textureX1 - Math.floor(textureX1);
-      let uvX2 = uvX1 + texCoordDiff;
-      if (uvX2 > 1) {
-        uvX2 = uvX1 - texCoordDiff;
-      }
+      const uvX2 = uvX1 + texCoordDiff;
       // Hack - slightly more than 0 to prevent weird jaggies at transparent
       // top edges
       const uvY1 = 0.01;
-      // TODO: if uvY2 > 1, we need more rows of vertices to prevent stretching
-      // of the texture
-      const uvY2 = Math.min(1, textureY);
+      const uvY2 = textureY;
       uvs.push(uvX1, uvY1, uvX1, uvY2, uvX2, uvY1, uvX2, uvY2);
       // Add indices for two triangles between a pair of segments
       const i0 = i * 4;
@@ -103,12 +71,12 @@ export class PolarRectMesh extends PIXI.mesh.Mesh {
     this.vertices = new Float32Array(verts);
     this.uvs = new Float32Array(uvs);
     this.indices = new Uint16Array(indices);
+  }
 
-    // Mark UVs and indices as dirty
-    this.dirty++;
-    // TODO: marking indices as dirty causes horrible, horrible WebGL errors.
-    // this.indexDirty++;
-
-    this._cachedRect = this._rect.clone();
+  /**
+   * Gets a copy of the current polar rectangle.
+   */
+  public getRect(): Polar.Rect {
+    return this._rect.clone();
   }
 }
