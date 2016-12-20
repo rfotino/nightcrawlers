@@ -440,7 +440,7 @@ export class GameInstance extends UIContainer {
     });
     // Remove dead game objects
     this.gameObjects.forEach(obj => {
-      if (!obj.alive) {
+      if (obj !== this.player && !obj.alive) {
         obj.destroy({ children: true });
       }
     });

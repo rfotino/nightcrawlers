@@ -97,6 +97,11 @@ export abstract class UIContainer extends PIXI.Container {
     this.removeChild(child);
   }
 
+  public destroy(options?: any): void {
+    super.destroy(options);
+    this._childComponents = [];
+  }
+
   public doLayout(): void {
     this._childComponents.forEach(child => child.doLayout());
   }
