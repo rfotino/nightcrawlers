@@ -184,7 +184,7 @@ export class Game {
         this._activeScreen.startTransition(true);
         this._transitionState = TransitionState.IN;
         if (this._destroyOldScreen) {
-          oldScreen.destroy();
+          oldScreen.destroy({ children: true });
         }
       }
     } else if (this._transitionState === TransitionState.IN) {

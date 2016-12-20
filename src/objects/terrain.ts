@@ -107,10 +107,12 @@ abstract class Terrain extends GameObject {
   }
 
   protected _refreshMeshes(): void {
-    // Destroy previous meshes
+    // Destroy previous meshes. Would be more memory efficient to reuse old
+    // meshes, but uploading new vertex indices causes crazy WebGL errors
+    // (possibly due to a bug in PIXI).
     if (this._meshes) {
       this._meshes.forEach(mesh => {
-        mesh.destroy();
+        mesh.destroy({ children: true });
       })
     }
 

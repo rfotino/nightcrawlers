@@ -441,7 +441,7 @@ export class GameInstance extends UIContainer {
     // Remove dead game objects
     this.gameObjects.forEach(obj => {
       if (!obj.alive) {
-        this._innerViewStage.removeChild(obj);
+        obj.destroy({ children: true });
       }
     });
     this.gameObjects = this.gameObjects.filter(obj => obj.alive);
@@ -512,11 +512,8 @@ export class GameInstance extends UIContainer {
   /**
    * Clean up resources from game instance.
    */
-  public destroy(options?: boolean): void {
+  public destroy(options?: any): void {
     super.destroy(options);
     this._nightMusic.stop();
-    this.gameObjects.forEach(obj => {
-      obj.destroy(options);
-    });
   }
 }
