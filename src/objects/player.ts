@@ -226,12 +226,6 @@ export class Player extends GameObject {
    * Damage armor before health.
    */
   public damage(amount: number): void {
-    // Add to the percentage of the player's red fade, up to a certain
-    // maximum. Taking more damage in a short period makes you more red
-    this._hurtFade += Config.player.hurtFadePerDamage * amount;
-    if (this._hurtFade > Config.player.hurtFadeMax) {
-      this._hurtFade = Config.player.hurtFadeMax;
-    }
     // Also spawn a red fading text with the amount of damage shown
     this._game.addGameObject(new FadingText(
       this._game,
@@ -245,8 +239,15 @@ export class Player extends GameObject {
     if (amount <= this._armor) {
       this.armor -= amount;
     } else {
-      this.health -= amount - this._armor;
+      const healthDamage = amount - this._armor;
+      this.health -= healthDamage;
       this.armor = 0;
+      // Add to the percentage of the player's red fade, up to a certain
+      // maximum. Taking more damage in a short period makes you more red
+      this._hurtFade += Config.player.hurtFadePerDamage * healthDamage;
+      if (this._hurtFade > Config.player.hurtFadeMax) {
+        this._hurtFade = Config.player.hurtFadeMax;
+      }
     }
     // Check if the player is dead
     if (this.health <= 0) {
