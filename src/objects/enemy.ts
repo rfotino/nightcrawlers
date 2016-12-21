@@ -10,6 +10,7 @@ import { Collider } from '../math/collider';
 import { Counter } from '../math/counter';
 import { Color } from '../graphics/color';
 import { SpriteSheet } from '../graphics/spritesheet';
+import { HealthBar } from '../ui/health-bar';
 import { LagFactor } from '../math/lag-factor';
 import { Config } from '../config';
 import { Options } from '../options';
@@ -33,86 +34,13 @@ const enum EnemyState {
 }
 
 /**
- * Miniature health bar that floats above the head of each enemy. Only has to
- * do with on-screen display of the enemy so this doesn't need to get exported.
- */
-class EnemyHealthBar extends PIXI.Container {
-  protected _emptySprite: PIXI.Sprite;
-  protected _fullSprite: PIXI.Sprite;
-  protected _fullSpriteMask: PIXI.Graphics;
-  protected static _barTexture: PIXI.Texture = null;
-
-  protected static get WIDTH(): number { return 45; }
-  protected static get HEIGHT(): number { return 8; }
-  protected static get MARGIN(): number { return 8; }
-
-  protected static _getBarTexture(): PIXI.Texture {
-    if (!EnemyHealthBar._barTexture) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = EnemyHealthBar.WIDTH + 2;
-      canvas.height = EnemyHealthBar.HEIGHT + 2;
-      ctx.strokeStyle = 'white';
-      ctx.lineWidth = EnemyHealthBar.HEIGHT - 2;
-      ctx.beginPath();
-      const radius = 350;
-      const theta = canvas.width / radius;
-      ctx.arc(
-        canvas.width / 2,
-        radius + (canvas.height / 2),
-        radius,
-        (-theta / 2) - (Math.PI / 2),
-        (theta / 2) - (Math.PI / 2)
-      );
-      ctx.stroke();
-      EnemyHealthBar._barTexture = PIXI.Texture.fromCanvas(canvas);
-    }
-    return EnemyHealthBar._barTexture;
-  }
-
-  public constructor(enemy: Enemy) {
-    super();
-    const texture = EnemyHealthBar._getBarTexture();
-    const margin = EnemyHealthBar.MARGIN;
-    const height = EnemyHealthBar.HEIGHT;
-    const x = -texture.width / 2;
-    const y = -margin - (0.5 * (enemy.height + height));
-    // Have empty sprite on the bottom
-    this._emptySprite = new PIXI.Sprite(texture);
-    this._emptySprite.tint = new Color(255, 50, 50).toPixi();
-    this._emptySprite.position.set(x, y);
-    this.addChild(this._emptySprite);
-    // Overlay full sprite on top
-    this._fullSprite = new PIXI.Sprite(texture);
-    this._fullSprite.tint = new Color(0, 255, 100).toPixi();
-    this._fullSprite.position.set(x, y);
-    this.addChild(this._fullSprite);
-    // Add clipping mask to full sprite
-    this._fullSpriteMask = new PIXI.Graphics();
-    this._fullSprite.mask = this._fullSpriteMask;
-    this._fullSprite.addChild(this._fullSpriteMask);
-  }
-
-  // Update size of green sprite to be proportional to enemy health
-  public update(enemy: Enemy): void {
-    this._fullSpriteMask.clear();
-    this._fullSpriteMask.beginFill(0xffffff);
-    this._fullSpriteMask.drawRect(
-      0, 0,
-      1 + this._fullSprite.width * enemy.health / enemy.maxHealth,
-      this._fullSprite.height
-    );
-  }
-}
-
-/**
  * General enemy class, moves left and right towards the player but cannot
  * fly or jump. Is affected by gravity by default.
  */
 export class Enemy extends GameObject {
   protected _enemyType: string;
   protected _sprite: SpriteSheet;
-  protected _healthBar: EnemyHealthBar;
+  protected _healthBar: HealthBar;
   protected _shouldGoLeft: boolean = false;
   protected _shouldGoRight: boolean = false;
   protected _knockbackCounter: Counter = new Counter(0);
@@ -182,7 +110,7 @@ export class Enemy extends GameObject {
     this._mirrorList.push(this._sprite);
     this.addChild(this._sprite);
     // Add health bar
-    this._healthBar = new EnemyHealthBar(this);
+    this._healthBar = new HealthBar(this, 8 /* bar/sprite margin */);
     this._mirrorList.push(this._healthBar);
     this.addChild(this._healthBar);
     // Push the enemy sprite up and out of the ground, if that is where it is

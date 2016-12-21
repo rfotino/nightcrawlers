@@ -15,6 +15,7 @@ import { AssaultRifle } from '../weapons/assault-rifle';
 import { FadingText } from './fading-text';
 import { ProximityMine } from './proximity-mine';
 import { SpriteSheet } from '../graphics/spritesheet';
+import { HealthBar } from '../ui/health-bar';
 import { Color } from '../graphics/color';
 import { Config } from '../config';
 
@@ -28,7 +29,7 @@ class PlayerCooldownBar extends PIXI.Container {
 
   protected static get WIDTH(): number { return 50; }
   protected static get HEIGHT(): number { return 5; }
-  protected static get MARGIN(): number { return 10; }
+  protected static get MARGIN(): number { return 11; }
 
   protected static _getBarTexture(): PIXI.Texture {
     if (!PlayerCooldownBar._barTexture) {
@@ -37,7 +38,7 @@ class PlayerCooldownBar extends PIXI.Container {
       canvas.width = PlayerCooldownBar.WIDTH + 2;
       canvas.height = PlayerCooldownBar.HEIGHT + 2;
       ctx.strokeStyle = 'white';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 3;
       ctx.beginPath();
       const radius = 350;
       const theta = canvas.width / radius;
@@ -104,6 +105,7 @@ export class Player extends GameObject {
   protected _armor: number;
   protected _maxEnergy: number;
   protected _energy: number;
+  protected _healthBar: HealthBar;
   protected _cooldownBar: PlayerCooldownBar;
   protected _hurtFade: number = 0;
   public facingLeft: boolean = false;
@@ -197,6 +199,9 @@ export class Player extends GameObject {
     // Add weapon cooldown bar above player's head
     this._cooldownBar = new PlayerCooldownBar(this);
     this.addChild(this._cooldownBar);
+    // Add health bar above player's head
+    this._healthBar = new HealthBar(this, 15 /* bar/sprite margin */);
+    this.addChild(this._healthBar);
     // Spawn the player at a random spawn point
     const spawnPoint = game.level.getPlayerSpawn();
     this.pos.r = spawnPoint.r;
@@ -298,12 +303,12 @@ export class Player extends GameObject {
       this.vel.theta = -speed;
       this.facingLeft = true;
       this._spriteBottom.playAnim(anim);
-      this.scale.x = -1;
+      this._spriteTop.scale.x = this._spriteBottom.scale.x = -1;
     } else if (rightArrow && !leftArrow) {
       this.vel.theta = speed;
       this.facingLeft = false;
       this._spriteBottom.playAnim(anim);
-      this.scale.x = 1;
+      this._spriteTop.scale.x = this._spriteBottom.scale.x = 1;
     } else {
       this.vel.theta = 0;
       this._spriteBottom.stopAnim();
@@ -332,6 +337,9 @@ export class Player extends GameObject {
    * appropriate position.
    */
   public updatePostCollision(): void {
+    // Update health bar after collision since player can gain/lose health from
+    // collision
+    this._healthBar.update(this);
     // Change weapons if we pressed the button to do so and the corresponding
     // weapon has ammo left. Switch the default idle animation as we switch
     // weapons.
