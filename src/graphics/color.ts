@@ -86,6 +86,19 @@ export class Color {
   }
 
   /**
+   * Returns a 4-entry array with the RGBA values of the color normalized to
+   * between 0 and 1.
+   */
+  public toVec4(): number[] {
+    return [
+      this._r / 255,
+      this._g / 255,
+      this._b / 255,
+      this._a,
+    ];
+  }
+
+  /**
    * Returns a CSS color string representing this color in the rgba(r, g, b, a)
    * format.
    */

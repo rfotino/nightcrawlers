@@ -20,6 +20,74 @@ import { Color } from '../graphics/color';
 import { Config } from '../config';
 
 /**
+ * Fills in the player sprite starting from the bottom, first colorizing a
+ * mirrored top/bottom half sprite with a filter and then showing part of
+ * that with a graphics mask.
+ */
+class PlayerArmorMeter extends PIXI.Sprite {
+  protected _graphicsMask: PIXI.Graphics;
+  protected _spriteTop: PIXI.Sprite;
+  protected _spriteBottom: PIXI.Sprite;
+  protected _spriteTopMirror: PIXI.Sprite;
+  protected _spriteBottomMirror: PIXI.Sprite;
+  protected _spriteFullMirror: PIXI.Sprite;
+
+  public constructor(spriteTop: PIXI.Sprite, spriteBottom: PIXI.Sprite) {
+    super();
+    this._spriteTop = spriteTop;
+    this._spriteBottom = spriteBottom;
+    // Set up mirror sprite
+    this._spriteTopMirror = new PIXI.Sprite();
+    this._spriteBottomMirror = new PIXI.Sprite();
+    this._spriteTopMirror.anchor.set(spriteTop.anchor.x, spriteTop.anchor.y);
+    this._spriteBottomMirror.anchor.set(spriteBottom.anchor.x, spriteBottom.anchor.y);
+    this._spriteFullMirror = new PIXI.Sprite();
+    this._spriteFullMirror.addChild(this._spriteTopMirror);
+    this._spriteFullMirror.addChild(this._spriteBottomMirror);
+    this.addChild(this._spriteFullMirror);
+    // Add filter to mirror sprite
+    const colorizeFilter = new PIXI.Filter(
+      // Vertex shader
+      PIXI.Filter.defaultVertexSrc,
+      // Fragment shader
+      `
+      uniform sampler2D uSampler;
+      varying vec2 vTextureCoord;
+      void main(void) {
+        vec4 sample = texture2D(uSampler, vTextureCoord);
+        vec4 color = vec4(0.0, 0.75, 1.0, 1.0);
+        float blend = 0.75;
+        gl_FragColor = ((color * blend) + (sample * (1.0 - blend))) * sample.a;
+      }
+      `
+    );
+    this._spriteFullMirror.filters = [ colorizeFilter ];
+    // Add mask one step above mirror sprite
+    this._graphicsMask = new PIXI.Graphics();
+    this.addChild(this._graphicsMask);
+    this.mask = this._graphicsMask;
+  }
+
+  public update(player: Player) {
+    // Update mask
+    this._spriteTopMirror.texture = this._spriteTop.texture;
+    this._spriteTopMirror.position = this._spriteTop.position;
+    this._spriteTopMirror.scale.x = this._spriteTop.scale.x;
+    this._spriteBottomMirror.texture = this._spriteBottom.texture;
+    this._spriteBottomMirror.position = this._spriteBottom.position;
+    this._spriteBottomMirror.scale.x = this._spriteBottom.scale.x;
+    // Update fill percent
+    const percent = 1 - player.armor / player.maxArmor;
+    const width = 100;
+    const height = 80;
+    this._graphicsMask.clear();
+    this._graphicsMask.beginFill(Color.white.toPixi());
+    this._graphicsMask.drawRect(-width / 2, height * (percent - 0.5), width, height);
+    this._graphicsMask.endFill();
+  }
+}
+
+/**
  * Private class for a weapon cooldown bar that floats above the player's head.
  */
 class PlayerCooldownBar extends PIXI.Container {
@@ -100,6 +168,7 @@ class PlayerCooldownBar extends PIXI.Container {
 export class Player extends GameObject {
   private _spriteBottom: SpriteSheet;
   private _spriteTop: SpriteSheet;
+  protected _sprite: PIXI.Sprite;
   protected _baseballBat: BaseballBat;
   protected _maxArmor: number;
   protected _armor: number;
@@ -108,6 +177,7 @@ export class Player extends GameObject {
   protected _healthBar: HealthBar;
   protected _cooldownBar: PlayerCooldownBar;
   protected _hurtFade: number = 0;
+  protected _armorMeter: PlayerArmorMeter;
   public facingLeft: boolean = false;
   public score: number = 0;
   public weapons: Weapon[];
@@ -193,15 +263,23 @@ export class Player extends GameObject {
       Config.player.topHalf.sprite.anchor.x,
       Config.player.topHalf.sprite.anchor.y
     );
-    this._mirrorList.push(this);
-    this.addChild(this._spriteBottom);
-    this.addChild(this._spriteTop);
+    this._sprite = new PIXI.Sprite();
+    this._sprite.addChild(this._spriteBottom);
+    this._sprite.addChild(this._spriteTop);
+    this._mirrorList.push(this._sprite);
+    this.addChild(this._sprite);
     // Add weapon cooldown bar above player's head
     this._cooldownBar = new PlayerCooldownBar(this);
+    this._mirrorList.push(this._cooldownBar);
     this.addChild(this._cooldownBar);
     // Add health bar above player's head
     this._healthBar = new HealthBar(this, 15 /* bar/sprite margin */);
+    this._mirrorList.push(this._healthBar);
     this.addChild(this._healthBar);
+    // Add energy level filter
+    this._armorMeter = new PlayerArmorMeter(this._spriteTop, this._spriteBottom);
+    this._mirrorList.push(this._armorMeter);
+    this.addChild(this._armorMeter);
     // Spawn the player at a random spawn point
     const spawnPoint = game.level.getPlayerSpawn();
     this.pos.r = spawnPoint.r;
@@ -390,6 +468,8 @@ export class Player extends GameObject {
     }
     // Update weapon cooldown bar
     this._cooldownBar.update(this);
+    // Update the armor meter
+    this._armorMeter.update(this);
   }
 
   public getPolarBounds(): Polar.Rect {
