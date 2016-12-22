@@ -163,6 +163,81 @@ class PlayerCooldownBar extends PIXI.Container {
 }
 
 /**
+ * Private class for an energy bar that floats below the player's feet.
+ */
+class PlayerEnergyBar extends PIXI.Container {
+  protected _sprite: PIXI.Sprite;
+  protected _spriteMask: PIXI.Graphics;
+  protected static _barTexture: PIXI.Texture = null;
+
+  protected static get WIDTH(): number { return 40; }
+  protected static get HEIGHT(): number { return 10; }
+  protected static get MARGIN(): number { return -3; }
+
+  protected static _getBarTexture(): PIXI.Texture {
+    if (!PlayerEnergyBar._barTexture) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = PlayerEnergyBar.WIDTH + 2;
+      canvas.height = PlayerEnergyBar.HEIGHT + 2;
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      const radius = 400;
+      const theta = canvas.width / radius;
+      ctx.arc(
+        canvas.width / 2,
+        -radius + (canvas.height / 2),
+        radius,
+        (-theta / 2) + (Math.PI / 2),
+        (theta / 2) + (Math.PI / 2)
+      );
+      ctx.stroke();
+      PlayerEnergyBar._barTexture = PIXI.Texture.fromCanvas(canvas);
+    }
+    return PlayerEnergyBar._barTexture;
+  }
+
+  public constructor(player: Player) {
+    super();
+    const texture = PlayerEnergyBar._getBarTexture();
+    const margin = PlayerEnergyBar.MARGIN;
+    const height = PlayerEnergyBar.HEIGHT;
+    const x = -texture.width / 2;
+    const y = margin + (0.5 * (player.height + height));
+    // Overlay full sprite on top
+    this._sprite = new PIXI.Sprite(texture);
+    this._sprite.tint = new Color(0, 100, 255).toPixi();
+    this._sprite.position.set(x, y);
+    this.addChild(this._sprite);
+    // Add clipping mask to full sprite
+    this._spriteMask = new PIXI.Graphics();
+    this._sprite.mask = this._spriteMask;
+    this._sprite.addChild(this._spriteMask);
+  }
+
+  // Update size of sprite to be proportional to player energy
+  public update(player: Player): void {
+    const maskWidth = (
+      (this._sprite.width - 2) * (player.energy / player.maxEnergy)
+    );
+    this._spriteMask.clear();
+    this._spriteMask.beginFill(0xffffff);
+    this._spriteMask.drawRect(
+      (this._sprite.width - maskWidth) / 2,
+      0,
+      maskWidth,
+      this._sprite.height
+    );
+    if (player.energy <= 0) {
+      this._sprite.alpha = 0;
+    } else {
+      this._sprite.alpha = 1;
+    }
+  }
+}
+
+/**
  * Player class; handles input, animation, etc for the player.
  */
 export class Player extends GameObject {
@@ -176,6 +251,7 @@ export class Player extends GameObject {
   protected _energy: number;
   protected _healthBar: HealthBar;
   protected _cooldownBar: PlayerCooldownBar;
+  protected _energyBar: PlayerEnergyBar;
   protected _hurtFade: number = 0;
   protected _armorMeter: PlayerArmorMeter;
   public facingLeft: boolean = false;
@@ -276,7 +352,11 @@ export class Player extends GameObject {
     this._healthBar = new HealthBar(this, 15 /* bar/sprite margin */);
     this._mirrorList.push(this._healthBar);
     this.addChild(this._healthBar);
-    // Add energy level filter
+    // Add energy bar below player's feet
+    this._energyBar = new PlayerEnergyBar(this);
+    this._mirrorList.push(this._energyBar);
+    this.addChild(this._energyBar);
+    // Add armor level filter
     this._armorMeter = new PlayerArmorMeter(this._spriteTop, this._spriteBottom);
     this._mirrorList.push(this._armorMeter);
     this.addChild(this._armorMeter);
@@ -468,6 +548,8 @@ export class Player extends GameObject {
     }
     // Update weapon cooldown bar
     this._cooldownBar.update(this);
+    // Update energy bar
+    this._energyBar.update(this);
     // Update the armor meter
     this._armorMeter.update(this);
   }
