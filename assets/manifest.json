@@ -360,66 +360,6 @@
     ]
   },
   {
-    "name": "ui/portrait",
-    "type": "image",
-    "files": [
-      {
-        "src": "assets/images/ui/portrait.png",
-        "size": 5792
-      }
-    ]
-  },
-  {
-    "name": "ui/full-health",
-    "type": "image",
-    "files": [
-      {
-        "src": "assets/images/ui/full-health.png",
-        "size": 723
-      }
-    ]
-  },
-  {
-    "name": "ui/empty-health",
-    "type": "image",
-    "files": [
-      {
-        "src": "assets/images/ui/empty-health.png",
-        "size": 712
-      }
-    ]
-  },
-  {
-    "name": "ui/full-energy",
-    "type": "image",
-    "files": [
-      {
-        "src": "assets/images/ui/full-energy.png",
-        "size": 432
-      }
-    ]
-  },
-  {
-    "name": "ui/empty-energy",
-    "type": "image",
-    "files": [
-      {
-        "src": "assets/images/ui/empty-energy.png",
-        "size": 427
-      }
-    ]
-  },
-  {
-    "name": "ui/full-armor",
-    "type": "image",
-    "files": [
-      {
-        "src": "assets/images/ui/full-armor.png",
-        "size": 2611
-      }
-    ]
-  },
-  {
     "name": "ui/hurt-overlay",
     "type": "image",
     "files": [

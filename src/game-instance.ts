@@ -20,7 +20,6 @@ import { Collider } from './math/collider';
 import { UIContainer } from './ui/container';
 import { UILabel } from './ui/label';
 import { PauseMenu, GameOverMenu } from './ui/menu';
-import { UIPortrait } from './ui/portrait';
 import { CurrentWeaponIndicator } from './ui/current-weapon';
 import { EnemyIndicator } from './ui/enemy-indicator';
 import { HurtOverlay } from './ui/hurt-overlay';
@@ -47,7 +46,6 @@ export class GameInstance extends UIContainer {
   protected _pauseMenu: PauseMenu;
   protected _paused: boolean;
   protected _enemyIndicator: EnemyIndicator;
-  protected _playerPortrait: UIPortrait;
   protected _currentWeaponIndicator: CurrentWeaponIndicator;
   protected _scoreLabel: UILabel;
   protected _dayNumLabel: UILabel;
@@ -115,9 +113,6 @@ export class GameInstance extends UIContainer {
     // Add enemy indicator
     this._enemyIndicator = new EnemyIndicator(game, this);
     this.addComponent(this._enemyIndicator);
-    // Add the player portrait, which comes with health and energy bars
-    this._playerPortrait = new UIPortrait(game, this.player);
-    this.addComponent(this._playerPortrait);
     // Add current weapon indicator
     this._currentWeaponIndicator = new CurrentWeaponIndicator(
       game, this.player
@@ -320,9 +315,6 @@ export class GameInstance extends UIContainer {
     this._enemyIndicator.y = 0;
     this._enemyIndicator.width = this.view.width;
     this._enemyIndicator.height = this.view.height;
-    // Update player portrait's position
-    this._playerPortrait.x = Math.min(50, 0.05 * this.view.width);
-    this._playerPortrait.y = Math.min(50, 0.05 * this.view.height);
     // Update sore multiplier position
     this.scoreMultiplier.x = (this.view.width - this.scoreMultiplier.width) / 2;
     this.scoreMultiplier.y = this.view.height * 0.05;
@@ -341,11 +333,13 @@ export class GameInstance extends UIContainer {
     );
     this._dayNumLabel.y = this._scoreLabel.y + this._scoreLabel.height;
     // Update current weapon indicator position
-    this._currentWeaponIndicator.x = this._playerPortrait.x + 20;
+    this._currentWeaponIndicator.x = (
+      (this.view.width * 0.5) -
+      (this._currentWeaponIndicator.width * 0.5)
+    );
     this._currentWeaponIndicator.y = (
-      this._playerPortrait.y +
-      this._playerPortrait.height +
-      20
+      (this.view.height * 0.975) -
+      this._currentWeaponIndicator.height
     );
     // Update debugger position
     this._debugger.x = (this.view.width * 0.95) - this._debugger.width;
