@@ -506,7 +506,6 @@ export class Enemy extends GameObject {
    */
   public updatePreCollision(): void {
     super.updatePreCollision();
-    this._healthBar.update(this);
     // All enemies are affected by gravity by default
     this.accel.r = Terrain.GRAVITY;
     // Enemies are opaque by default
@@ -537,6 +536,14 @@ export class Enemy extends GameObject {
     }
     // Update current animation
     this._sprite.nextFrame();
+  }
+
+  public updatePostCollision(): void {
+    super.updatePostCollision();
+    // Update state of health bar after possible damage from collision
+    this._healthBar.update(this);
+    // Only show health bar if injured
+    this._healthBar.visible = this.health < this.maxHealth;
   }
 
   public knockback(knockbackVel: number, knockbackTime: number,
