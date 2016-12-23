@@ -187,10 +187,10 @@ class PlayerEnergyBar extends PIXI.Container {
       const theta = canvas.width / radius;
       ctx.arc(
         canvas.width / 2,
-        -radius + (canvas.height / 2),
+        radius + (canvas.height / 2),
         radius,
-        (-theta / 2) + (Math.PI / 2),
-        (theta / 2) + (Math.PI / 2)
+        (-theta / 2) - (Math.PI / 2),
+        (theta / 2) - (Math.PI / 2)
       );
       ctx.stroke();
       PlayerEnergyBar._barTexture = PIXI.Texture.fromCanvas(canvas);
