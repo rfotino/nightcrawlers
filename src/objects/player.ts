@@ -78,7 +78,7 @@ class PlayerArmorMeter extends PIXI.Sprite {
     this._spriteBottomMirror.scale.x = this._spriteBottom.scale.x;
     // Update fill percent
     const percent = 1 - player.armor / player.maxArmor;
-    const width = 100;
+    const width = 120;
     const height = 80;
     this._graphicsMask.clear();
     this._graphicsMask.beginFill(Color.white.toPixi());
