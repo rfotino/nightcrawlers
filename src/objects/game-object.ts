@@ -109,6 +109,11 @@ export abstract class GameObject extends PIXI.Container {
       this.pos.theta += this._groundVel * lagFactor;
     }
     this._groundVel = 0;
+    // If the object has fallen through the level, kill it
+    if (this.pos.r < 0) {
+      this.pos.r = 0;
+      this.kill();
+    }
   }
 
   public updatePostCollision(): void { }
