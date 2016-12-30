@@ -118,7 +118,7 @@ export class ProximityMine extends GameObject {
     const enemies = this._game.gameObjects
       .filter(obj => obj.type() === 'enemy')
       .map(obj => <Enemy>obj);
-    const blockBounds = this._game.level.blocks
+    const blockBounds = this._game.getTerrain()
       .map(block => block.getPolarBounds());
     for (let i = 0; i < enemies.length; i++) {
       const enemy = enemies[i];

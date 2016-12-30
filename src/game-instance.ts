@@ -347,7 +347,20 @@ export class GameInstance extends UIContainer {
   }
 
   /**
-   * Returns true if we are neither fading in nor out.
+   * Return an array of all terrain elements for things like line of sight
+   * calculations.
+   */
+  public getTerrain(): GameObject[] {
+    return this.gameObjects.filter(obj => {
+      const type = obj.type();
+      return type === 'block' || type === 'platform';
+    });
+  }
+
+  /**
+   * Returns true if we are neither fading in nor out - this is NOT the
+   * day/night transition, rather it is the fade in / fade out transition
+   * for this UI component.
    */
   public isTransitionDone(): boolean {
     return !this._fadeTransitioningIn && !this._fadeTransitioningOut;

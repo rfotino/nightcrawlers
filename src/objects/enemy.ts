@@ -114,7 +114,7 @@ export class Enemy extends GameObject {
     this._mirrorList.push(this._healthBar);
     this.addChild(this._healthBar);
     // Push the enemy sprite up and out of the ground, if that is where it is
-    const blockBounds = game.level.blocks.map(block => block.getPolarBounds());
+    const blockBounds = game.getTerrain().map(block => block.getPolarBounds());
     let enemyRect = this.getPolarBounds();
     for (let i = 0; i < blockBounds.length; i++) {
       let blockRect = blockBounds[i];
@@ -236,7 +236,7 @@ export class Enemy extends GameObject {
       this._game.player.pos.theta
     );
     let numHor = 0, numVer = 0;
-    this._game.level.blocks.forEach(block => {
+    this._game.getTerrain().forEach(block => {
       let bounds = block.getPolarBounds();
       let result = line.intersectsRect(bounds);
       if (result.top) { numHor++; }
@@ -728,7 +728,7 @@ export class GroundSpawnEnemy extends JumpingEnemy {
     }
     // Then find all blocks that can be found at that angle and sort them by
     // distance from the player.
-    const blockBounds = game.level.blocks.map(block => block.getPolarBounds());
+    const blockBounds = game.getTerrain().map(block => block.getPolarBounds());
     const possibleRects = blockBounds.filter(rect => {
       return Polar.thetaBetween(
         this.pos.theta,
@@ -741,8 +741,7 @@ export class GroundSpawnEnemy extends JumpingEnemy {
         Math.abs(game.player.pos.r - r2.r)
       );
     });
-    // Choose the closest possible rectangle, if available, and then push the
-    // enemy up until it isn't intersecting any blocks
+    // Choose the closest possible rectangle, if available
     if (possibleRects.length > 0) {
       const rect = possibleRects[0];
       this.pos.r = rect.r + (this.height / 2);
