@@ -342,9 +342,7 @@ export class Enemy extends GameObject {
     // Otherwise, if we are not moving left or right, then choose a new
     // direction
     const moveSpeed = this.attributes.moveSpeed;
-    const moveDist = Math.abs((this.pos.theta - this.prevPos.theta) * this.pos.r);
-    if (moveDist < moveSpeed / 2 ||
-        this._searchDir === Direction.None) {
+    if (this._searchDir === Direction.None) {
       if (Math.random() < 0.5) {
         this._searchDir = Direction.Left;
         this._sprite.scale.x = -1;
@@ -538,6 +536,30 @@ export class Enemy extends GameObject {
     this._sprite.nextFrame();
   }
 
+  /**
+   * If we are searching and run into a wall, choose a new search direction.
+   */
+  public collide(other: GameObject, result: Collider.Result): void {
+    super.collide(other, result);
+    const otherType = other.type();
+    if (EnemyState.Searching === this._state) {
+      if ('block' === otherType || 'platform' === otherType) {
+        if (result.right) {
+          this._searchDir = Direction.Left;
+          this._sprite.scale.x = -1;
+          this._facingLeft = true;
+        } else if (result.left) {
+          this._searchDir = Direction.Right;
+          this._sprite.scale.x = 1;
+          this._facingLeft = false;
+        }
+      }
+    }
+  }
+
+  /**
+   * Since collision can reduce health, only update health bar afterward.
+   */
   public updatePostCollision(): void {
     super.updatePostCollision();
     // Update state of health bar after possible damage from collision
@@ -546,6 +568,10 @@ export class Enemy extends GameObject {
     this._healthBar.visible = this.health < this.maxHealth;
   }
 
+  /**
+   * Applies the given knockback velocities and knockback/stun times to the
+   * enemy, usually when it gets damaged by the player.
+   */
   public knockback(knockbackVel: number, knockbackTime: number,
                    stunTime: number) {
     this._state = EnemyState.Knockback;
