@@ -15,6 +15,7 @@ class LevelObject {
   public moves: boolean;
   public thetaPrime: number;
   public itemType: string;
+  public daySpawn: number;
   public frame: number;
   public framesUp: boolean;
 
@@ -49,6 +50,7 @@ class LevelObject {
     this.moves = false;
     this.thetaPrime = this.theta;
     this.itemType = elem('item-type').value;
+    this.daySpawn = 0;
     this.frame = 0;
     this.framesUp = true;
   }
@@ -173,6 +175,7 @@ function setFields(obj: LevelObject): void {
   elem('moves').checked = obj.moves;
   elem('theta-prime').value = obj.thetaPrime.toString();
   elem('item-type').value = obj.itemType;
+  elem('day-spawn').value = obj.daySpawn.toString();
 }
 
 function addEventListeners(elem: HTMLElement,
@@ -191,6 +194,7 @@ function addEventListeners(elem: HTMLElement,
   'moves',
   'theta-prime',
   'item-type',
+  'day-spawn',
 ].forEach((id: string) => {
   addEventListeners(elem(id), ['change', 'input'], (e: Event) => {
     if (selectedObj) {
@@ -203,6 +207,7 @@ function addEventListeners(elem: HTMLElement,
       selectedObj.moves = elem('moves').checked;
       selectedObj.thetaPrime = parseFloat(elem('theta-prime').value);
       selectedObj.itemType = elem('item-type').value;
+      selectedObj.daySpawn = parseFloat(elem('day-spawn').value);
     }
   });
 });
@@ -419,6 +424,7 @@ elem('load').addEventListener('click', () => {
           block.height,
           block.width
         );
+        obj.daySpawn = block.daySpawn || 0;
         objects.push(obj);
       });
     }
@@ -431,6 +437,7 @@ elem('load').addEventListener('click', () => {
           bgBlock.height,
           bgBlock.width
         );
+        obj.daySpawn = bgBlock.daySpawn || 0;
         objects.push(obj);
       })
     }
@@ -443,6 +450,7 @@ elem('load').addEventListener('click', () => {
           platform.height,
           platform.width
         );
+        obj.daySpawn = platform.daySpawn || 0;
         obj.rate = platform.rate || 60;
         obj.moves = platform.moves || false;
         obj.thetaPrime = platform.thetaPrime || platform.theta;
@@ -498,7 +506,7 @@ elem('save').addEventListener('click', () => {
   objects = objects.filter(obj => obj.r > 0).sort((a, b) => {
     return a.r - b.r || a.theta - b.theta;
   });
-  let data = {
+  const data = {
     playerSpawns: objects.filter(obj => {
       return obj.type === 'player-spawn';
     }).map(obj => {
@@ -525,6 +533,7 @@ elem('save').addEventListener('click', () => {
         theta: Math.round(obj.theta * 1000) / 1000,
         height: Math.round(obj.height),
         width: Math.round(obj.width * 1000) / 1000,
+        daySpawn: obj.daySpawn,
         type: obj.type,
       };
     }),
@@ -536,15 +545,17 @@ elem('save').addEventListener('click', () => {
         theta: Math.round(obj.theta * 1000) / 1000,
         height: Math.round(obj.height),
         width: Math.round(obj.width * 1000) / 1000,
+        daySpawn: obj.daySpawn,
         type: obj.type,
       }
     }),
     platforms: objects.filter(obj => obj.type === 'platform').map(obj => {
-      let ret = {
+      const ret = {
         r: Math.round(obj.r),
         theta: Math.round(obj.theta * 1000) / 1000,
         height: Math.round(obj.height),
         width: Math.round(obj.width * 1000) / 1000,
+        daySpawn: obj.daySpawn,
         moves: obj.moves,
       };
       if (obj.moves) {
@@ -561,7 +572,7 @@ elem('save').addEventListener('click', () => {
         'tree2',
       ].indexOf(obj.type) !== -1;
     }).map(obj => {
-      let ret = {
+      const ret = {
         r: Math.round(obj.r),
         theta: Math.round(obj.theta * 1000) / 1000,
       };
@@ -574,10 +585,10 @@ elem('save').addEventListener('click', () => {
     }),
     waves: waves
   }
-  let dataString = JSON.stringify(data, null, 2);
-  let anchor = document.createElement('a');
-  let file = new Blob([dataString], {type: 'text/json'});
-  let url = URL.createObjectURL(file);
+  const dataString = JSON.stringify(data, null, 2);
+  const anchor = document.createElement('a');
+  const file = new Blob([dataString], {type: 'text/json'});
+  const url = URL.createObjectURL(file);
   anchor.href = url;
   anchor['download'] = 'level.json';
   document.body.appendChild(anchor);

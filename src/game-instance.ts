@@ -69,6 +69,7 @@ export class GameInstance extends UIContainer {
   public constructor(game: Game, options: Options, levelData: Object) {
     super(game);
     this._options = options;
+    this.timeKeeper = new TimeKeeper();
     this.level = new Level(this, levelData);
     this._outerViewStage = new PIXI.Container();
     this._innerViewStage = new PIXI.Container();
@@ -76,7 +77,6 @@ export class GameInstance extends UIContainer {
     this._outerViewStage.addChild(this._innerViewStage);
     // Construct game objects
     this.player = new Player(this);
-    this.timeKeeper = new TimeKeeper();
     this.enemySpawner = new EnemySpawner();
     this.itemSpawners = this.level.getItemSpawners();
     this.fog = new Fog(this, 6);
@@ -460,11 +460,11 @@ export class GameInstance extends UIContainer {
       this._waveIndex++;
       this.enemySpawner.addWave(this.level.getWave(this._waveIndex));
     }
-    // Sort game objects by depth, then radial position so that lower objects
-    // are on top of higher objects of the same type, then sort by ID so that
+    // Sort game objects by depth, then radial position so that higher objects
+    // are on top of lower objects of the same type, then sort by ID so that
     // the sorting is deterministic
     this.gameObjects.sort((a, b) => {
-      return a.z - b.z || b.pos.r - a.pos.r || a.id - b.id;
+      return a.z - b.z || a.pos.r - b.pos.r || a.id - b.id;
     });
     this.gameObjects.forEach((obj, index) => {
       this._innerViewStage.setChildIndex(obj, index);

@@ -30,6 +30,16 @@
     ]
   },
   {
+    "name": "levels/growing",
+    "type": "level",
+    "files": [
+      {
+        "src": "assets/levels/growing.json",
+        "size": 6833
+      }
+    ]
+  },
+  {
     "name": "levels/huge",
     "type": "level",
     "files": [

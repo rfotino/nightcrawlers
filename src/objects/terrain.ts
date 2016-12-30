@@ -1,26 +1,31 @@
 import { GameObject } from './game-object';
 import { GameInstance } from '../game-instance';
 import { Polar } from '../math/polar';
+import { LagFactor } from '../math/lag-factor';
 import { Color } from '../graphics/color';
 import { PolarRectMesh } from '../graphics/polar-rect-mesh';
 import { Collider } from '../math/collider';
+/**
+ * Private interface for a padding object.
+ */
+interface IPadding {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
 
 /**
- * Number of extra pixels at the top of the grass texture, where there is
- * texture but should be no collision.
+ * Function for getting padding amount based on the type of terrain block.
  */
-const GRASS_PADDING = 8;
-
-/**
- * Function for getting top padding amount based on the type of terrain block.
- */
-function getTopPadding(blockType: string): number {
+function getTerrainPadding(blockType: string): IPadding {
   switch (blockType) {
     case 'grass':
+      return { left: 0, right: 0, top: 8, bottom: 11 };
     case 'platform':
-      return GRASS_PADDING;
+      return { left: 0, right: 0, top: 8, bottom: 0 };
     default:
-      return 0;
+      return { left: 0, right: 0, top: 0, bottom: 0 };
   }
 }
 
@@ -63,8 +68,10 @@ abstract class Terrain extends GameObject {
   protected _solidBottom: boolean;
   private _size: Polar.Coord;
   private _meshes: PolarRectMesh[];
-  private _padding: number;
+  private _padding: IPadding;
   private _cachedTotalMeshBounds: Polar.Rect;
+  protected _daySpawnNum: number;
+  protected _spawnTransition: number;
 
   public get z(): number {
     return 10;
@@ -74,16 +81,22 @@ abstract class Terrain extends GameObject {
     return this._size;
   }
 
-  public constructor(game: GameInstance,
-                     r: number, theta: number, height: number, width: number,
-                     padding: number, texture: PIXI.Texture,
-                     topTexture?: PIXI.Texture) {
+  public constructor(
+    game: GameInstance,
+    r: number, theta: number, height: number, width: number,
+    daySpawn: number,
+    padding: IPadding, texture: PIXI.Texture,
+    topTexture?: PIXI.Texture
+  ) {
     super(game);
     // Set up dimensions
     this.pos.r = r;
     this.pos.theta = theta;
     this._size = new Polar.Coord(height, width);
-    this._padding = padding
+    this._padding = padding;
+    // Wait to spawn until the given day
+    this._daySpawnNum = daySpawn;
+    this._spawnTransition = 1;
     // Create the mesh. Have a "top texture" for things like blocks topped with
     // grass, where you want a grassy top with dirt tiled below
     this.texture = texture;
@@ -99,9 +112,17 @@ abstract class Terrain extends GameObject {
   private _getTotalMeshBounds(): Polar.Rect {
     const bounds = this.getPolarBounds();
 
-    // Add a bit to the top to account for padding, e.g. for grass
-    bounds.r += this._padding;
-    bounds.height += this._padding;
+    // Account for padding, where we want to show more of the texture but don't
+    // want it to count towards collision bounds
+    bounds.r += this._padding.top;
+    bounds.height += this._padding.top + this._padding.bottom;
+    bounds.theta -= this._padding.left / bounds.r;
+    bounds.width += (this._padding.left + this._padding.right) / bounds.r;
+
+    // Make sure bounds doesn't extend into negative space, clip it if so
+    if (bounds.height > bounds.r) {
+      bounds.height = bounds.r;
+    }
 
     return bounds;
   }
@@ -176,7 +197,31 @@ abstract class Terrain extends GameObject {
     }
   }
 
+  /**
+   * Don't show this block unless it has at least started to spawn.
+   */
+  public updatePreCollision(): void {
+    super.updatePreCollision();
+    if (this._game.timeKeeper.dayNum < this._daySpawnNum) {
+      this._spawnTransition = 0;
+      this.alpha = 0;
+    } else if (this._game.timeKeeper.dayNum > this._daySpawnNum) {
+      this._spawnTransition = 1;
+      this.alpha = 1;
+    } else {
+      this._spawnTransition += 0.01 * LagFactor.get();
+      if (this._spawnTransition > 1) {
+        this._spawnTransition = 1;
+      }
+      this.alpha = 1;
+    }
+  }
+
   public collide(other: GameObject, result: Collider.Result): void {
+    if (this._game.timeKeeper.dayNum < this._daySpawnNum) {
+      return;
+    }
+    // If this block has not yet spawned, do nothing
     // Otherwise move the other object out of this terrain object and
     // stop it from moving
     let bounds = other.getPolarBounds();
@@ -214,11 +259,18 @@ abstract class Terrain extends GameObject {
     }
   }
 
+  /**
+   * Get the collision bounds of this terrain object, factoring in how far
+   * we have spawned since the bounds grows up from the ground as it spawns.
+   */
   public getPolarBounds(): Polar.Rect {
-    return new Polar.Rect(
+    const rect = new Polar.Rect(
       this.pos.r, this.pos.theta,
       this._size.r, this._size.theta
     );
+    rect.r -= rect.height * (1 - this._spawnTransition);
+    rect.height *= this._spawnTransition;
+    return rect;
   }
 }
 
@@ -231,14 +283,17 @@ export class Platform extends Terrain {
   private _thetaMax: number;
   private _thetaSpeed: number;
 
-  public constructor(game: GameInstance,
-                     r: number, theta: number, height: number, width: number,
-                     moves: boolean = false,
-                     rate: number = 0,
-                     thetaPrime: number = theta) {
+  public constructor(
+    game: GameInstance,
+    r: number, theta: number, height: number, width: number,
+    daySpawn: number,
+    moves: boolean = false,
+    rate: number = 0,
+    thetaPrime: number = theta
+  ) {
     super(
-      game, r, theta, height, width,
-      getTopPadding('platform'),
+      game, r, theta, height, width, daySpawn,
+      getTerrainPadding('platform'),
       getTexture('platform'),
       getTopTexture('platform')
     );
@@ -270,12 +325,14 @@ export class Platform extends Terrain {
  * Immobile block that stops things from penetrating it from any side.
  */
 export class Block extends Terrain {
-  public constructor(game: GameInstance,
-                     r: number, theta: number, height: number, width: number,
-                     blockType: string) {
+  public constructor(
+    game: GameInstance,
+    r: number, theta: number, height: number, width: number,
+    daySpawn: number, blockType: string
+  ) {
     super(
-      game, r, theta, height, width,
-      getTopPadding(blockType),
+      game, r, theta, height, width, daySpawn,
+      getTerrainPadding(blockType),
       getTexture(blockType),
       getTopTexture(blockType)
     );
@@ -296,11 +353,14 @@ export class Block extends Terrain {
 export class BackgroundBlock extends Terrain {
   public get z(): number { return 5; }
 
-  public constructor(game: GameInstance,
-                     r: number, theta: number, height: number, width: number,
-                     blockType: string) {
-    super(game, r, theta, height, width,
-      getTopPadding(blockType),
+  public constructor(
+    game: GameInstance,
+    r: number, theta: number, height: number, width: number,
+    dayNum: number, blockType: string
+  ) {
+    super(
+      game, r, theta, height, width, dayNum,
+      getTerrainPadding(blockType),
       getTexture(blockType),
       getTopTexture(blockType)
     );

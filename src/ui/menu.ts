@@ -297,7 +297,11 @@ class LevelMenu extends UIMenu {
     // parsed into a JavaScript object. When the button for a given level gets
     // clicked by the user, a new game instance is spun up with the parsed
     // level object.
-    ['huge', 'tiny'].forEach(levelName => {
+    [
+      'huge',
+      'tiny',
+      'growing',
+    ].forEach(levelName => {
       const levelBtn = new UIButton(
         game,
         levelName.toLocaleUpperCase(),

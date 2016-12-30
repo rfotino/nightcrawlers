@@ -30,6 +30,7 @@ export class Level {
         rectProps['theta'],
         rectProps['height'],
         rectProps['width'],
+        rectProps['daySpawn'] || 0,
         rectProps['type'] || 'stone'
       ));
     });
@@ -42,6 +43,7 @@ export class Level {
         rectProps['theta'],
         rectProps['height'],
         rectProps['width'],
+        rectProps['daySpawn'] || 0,
         rectProps['type']
       ));
     });
@@ -55,6 +57,7 @@ export class Level {
           rectProps['theta'],
           rectProps['height'],
           rectProps['width'],
+          rectProps['daySpawn'] || 0,
           rectProps['moves'] || false,
           rectProps['rate'] || 0,
           rectProps['thetaPrime'] || rectProps['theta']
