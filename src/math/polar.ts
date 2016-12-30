@@ -45,14 +45,6 @@ export module Polar {
    * Returns true if r1 is to the right of r2.
    */
   export function aside(r1: Polar.Rect, r2: Polar.Rect): boolean {
-    // Not possible to be aside if either r1 or r2 are (nearly) complete circles
-    const TWOPI = Math.PI * 2;
-    const EPSILON = 5;
-    if (r1.width >= TWOPI - EPSILON / r1.r ||
-        r2.width >= TWOPI - EPSILON / r2.r) {
-      return false;
-    }
-    // Otherwise check for aside-ness
     const closest = Polar.closestTheta(r1.theta, r2.theta + (r2.width / 2));
     return closest >= r2.theta + r2.width;
   }
