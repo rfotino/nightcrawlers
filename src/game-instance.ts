@@ -405,8 +405,10 @@ export class GameInstance extends UIContainer {
     } else {
       this._fader.alpha = 0;
     }
-    // Do not update anything else if paused
+    // Do not update anything else if paused, besides making objects visible
+    // or not based on if they are in view
     if (this._paused) {
+      this._doViewFrustrumCulling();
       return;
     }
     // Pause if the player hit escape
