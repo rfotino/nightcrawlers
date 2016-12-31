@@ -218,32 +218,33 @@ abstract class Terrain extends GameObject {
   }
 
   public collide(other: GameObject, result: Collider.Result): void {
+    // If this block has not yet spawned, do nothing`
     if (this._game.timeKeeper.dayNum < this._daySpawnNum) {
       return;
     }
-    // If this block has not yet spawned, do nothing
     // Otherwise move the other object out of this terrain object and
     // stop it from moving
-    let bounds = other.getPolarBounds();
+    const thisBounds = this.getPolarBounds();
+    const otherBounds = other.getPolarBounds();
     if (result.left && this._solidLeft) {
-      let prevMin = this.pos.theta - (bounds.width / 2);
-      let closest = Polar.closestTheta(prevMin, other.pos.theta);
+      const prevMin = thisBounds.theta - (otherBounds.width / 2);
+      const closest = Polar.closestTheta(prevMin, other.pos.theta);
       other.pos.theta = closest;
       other.vel.theta = Math.min(0, other.vel.theta);
     }
     if (result.right && this._solidRight) {
-      let prevMax = this.pos.theta + this.size.theta + (bounds.width / 2);
-      let closest = Polar.closestTheta(prevMax, other.pos.theta);
+      const prevMax = thisBounds.theta + thisBounds.width + (otherBounds.width / 2);
+      const closest = Polar.closestTheta(prevMax, other.pos.theta);
       other.pos.theta = closest;
       other.vel.theta = Math.max(0, other.vel.theta);
     }
     if (result.top && this._solidTop) {
-      let prevMin = this.pos.r + (bounds.height / 2);
+      const prevMin = thisBounds.r + (otherBounds.height / 2);
       other.pos.r = prevMin;
       other.vel.r = Math.max(0, other.vel.r);
     }
     if (result.bottom && this._solidBottom) {
-      let prevMax = this.pos.r - this.size.r - (bounds.height / 2);
+      const prevMax = thisBounds.r - thisBounds.height - (otherBounds.height / 2);
       other.pos.r = prevMax;
       other.vel.r = Math.min(0, other.vel.r);
     }
