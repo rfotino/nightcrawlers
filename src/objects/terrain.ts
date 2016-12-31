@@ -202,6 +202,7 @@ abstract class Terrain extends GameObject {
    */
   public updatePreCollision(): void {
     super.updatePreCollision();
+    const SPAWN_SPEED = 0.05;
     if (this._game.timeKeeper.dayNum < this._daySpawnNum) {
       this._spawnTransition = 0;
       this.alpha = 0;
@@ -209,7 +210,7 @@ abstract class Terrain extends GameObject {
       this._spawnTransition = 1;
       this.alpha = 1;
     } else {
-      this._spawnTransition += 0.01 * LagFactor.get();
+      this._spawnTransition += SPAWN_SPEED * LagFactor.get();
       if (this._spawnTransition > 1) {
         this._spawnTransition = 1;
       }
